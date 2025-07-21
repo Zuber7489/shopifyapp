@@ -93,6 +93,8 @@
     }
     .functions-section{
           padding-top: 10px !important;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
     }
     .desktop-grid {
       padding: 0 !important;
@@ -102,28 +104,17 @@
       max-width: 100% !important;
     }
     
-    /* Ensure image fills complete width - Edge to Edge */
-    .product-gallery {
-      position: relative !important;
-      left: 50% !important;
-      right: 50% !important;
-      margin-left: -50vw !important;
-      margin-right: -50vw !important;
-      width: 100vw !important;
-      max-width: 100vw !important;
-    }
+    /* Ensure image fills complete width */
 
     #mobileMainVideo {
       width: 100% !important;
       max-width: 100% !important;
       padding-left: 0 !important;
-      object-fit: cover !important;
     }
         #mobileMainImage{
       width: 100% !important;
       max-width: 100% !important;
       padding-left: 0 !important;
-      object-fit: cover !important;
     }
     /* Keep normal spacing for other content */
     .product-details,
@@ -183,26 +174,43 @@
       margin: 18px 14px !important;
     }
     
-    /* 5-Star Function Images: Make bigger so second image shows 50% less */
+    /* 5-Star Function Images: Responsive sizing for mobile */
     .function-media-container {
-      min-width: 320px !important;
-      max-width: 320px !important;
-      height: 420px !important;
-      flex: 0 0 320px !important;
+      width: 100% !important;
+      max-width: 280px !important;
+      min-width: 250px !important;
+      height: auto !important;
+      aspect-ratio: 0.75 !important;
+      flex: 0 0 280px !important;
     }
     
     .function-media-container img,
     .function-media-container video {
-      min-width: 320px !important;
-      max-width: 320px !important;
-      min-height: 420px !important;
-      max-height: 420px !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      aspect-ratio: 0.75 !important;
     }
     
     .function-item {
-      min-width: 286px !important;
-      max-width: 324px !important;
-      flex: 0 0 320px !important;
+      min-width: 250px !important;
+      max-width: 280px !important;
+      flex: 0 0 280px !important;
+    }
+    
+    /* For very small screens */
+    @media (max-width: 375px) {
+      .function-media-container {
+        max-width: 240px !important;
+        min-width: 220px !important;
+        flex: 0 0 240px !important;
+      }
+      
+      .function-item {
+        min-width: 220px !important;
+        max-width: 240px !important;
+        flex: 0 0 240px !important;
+      }
     }
     
     /* Review Header: Font size 22px, letter spacing 0.5px, color #000 */
@@ -255,7 +263,7 @@
      
      <!-- Mobile Single Image View -->
      <div class="mobile-single-image" style="display: none; width: 100%;">
-       <div class="single-image-container" style="background-color: #f6f6f6; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1.3; position: relative; margin-bottom: 15px; width: 100%;">
+       <div class="single-image-container" style="background-color: #f6f6f6; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1.4; position: relative; margin-bottom: 15px; width: 100%;">
          <img id="mobileMainImage" src="{{ featured_image | img_url: '600x600', crop: 'center' }}" alt="{{ featured_image.alt | escape }}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6; cursor: pointer; display: block;" onclick="openImageModal('{{ featured_image | img_url: '1200x1200' }}')">
          
          <video id="mobileMainVideo" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block;" controls muted autoplay playsinline onclick="openVideoModal(this)">
@@ -1584,12 +1592,15 @@
   } */
   
   .functions-carousel-wrapper {
-   padding: 0px !important; /* Ensure this matches the item width calculation */
-   margin: 0 -60px !important;
+   padding: 0 15px !important; /* Add padding to prevent edge cutoff */
+   margin: 0 !important;
+   overflow: visible !important;
   }
   
   .functions-carousel {
    gap: 10px !important;
+   margin-left: 0 !important;
+   padding: 0 !important;
   }
   
   .functions-bottom-nav {
