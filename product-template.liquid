@@ -2251,7 +2251,7 @@
    {% if current_variant.metafields.custom.variant_gallery %}
      {% for image in current_variant.metafields.custom.variant_gallery.value %}
        {
-         src: "{{ image | img_url: '2200x1300', crop: 'center' }}",
+         src: "{{ image | img_url: '2200x2800', crop: 'center' }}",
          fullSrc: "{{ image | img_url: '1200x1200' }}",
          thumb: "{{ image | img_url: '120x120', crop: 'center' }}",
          type: 'image'
@@ -2260,7 +2260,7 @@
    {% else %}
      {% for image in product.images %}
        {
-         src: "{{ image | img_url: '2200x1300', crop: 'center' }}",
+         src: "{{ image | img_url: '2200x2800', crop: 'center' }}",
          fullSrc: "{{ image | img_url: '1200x1200' }}",
          thumb: "{{ image | img_url: '120x120', crop: 'center' }}",
          type: 'image'
