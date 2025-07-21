@@ -2547,7 +2547,7 @@
   function createDesktopGridCell(itemData) {
       const gridCell = document.createElement('div');
       gridCell.className = 'gallery-item';
-      gridCell.style.cssText = 'background-color: #f6f6f6; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1.3; position: relative;';
+      gridCell.style.cssText = 'background-color: #f6f6f6; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1.4; position: relative;';
   
   if (itemData.type === 'video') {
       const video = document.createElement('video');
@@ -2577,14 +2577,14 @@
   function createDesktopNavigableCellElement() {
       const navigableCell = document.createElement('div');
       navigableCell.className = 'gallery-item desktop-navigable-cell';
-      navigableCell.style.cssText = 'background-color: #f6f6f6; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1.3; position: relative;';
+      navigableCell.style.cssText = 'background-color: #f6f6f6; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1.4; position: relative;';
       
       const mediaContainer = document.createElement('div');
       mediaContainer.style.cssText = 'width: 100%; height: 100%; position: relative;';
   
       const navImg = document.createElement('img');
       navImg.id = 'desktopNavigableImage';
-      navImg.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f6f6f6; cursor: pointer; display: block;';
+      navImg.style.cssText = 'width: 100%; height: 100%; object-fit: cover; background: #f6f6f6; cursor: pointer; display: block;';
       mediaContainer.appendChild(navImg);
   
       const navVideo = document.createElement('video');
