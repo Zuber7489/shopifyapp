@@ -1,0 +1,414 @@
+<!-- activities_section.liquid -->
+<div class="activities-section">
+  <div class="containeractivities">
+    <div class="activities-content">
+      <div class="activities-text-column">
+        <h2 class="section-titledd">{{ section.settings.title }}</h2>
+        
+        <div class="activities-list">
+          {% for block in section.blocks %}
+            {% if block.type == 'activity' %}
+              <div class="activity-item" 
+                   data-activity="{{ block.id }}" 
+                   {{ block.shopify_attributes }}>
+                <!-- <a href="{{ block.settings.link }}" class="activity-link">
+                  <span class="activity-name">{{ block.settings.activity_name }}</span>
+                  <span class="activity-arrow {% unless block.settings.show_arrow %}hover-only{% endunless %}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M14 5L21 12L14 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M3 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </a> -->
+                      <a  class="activity-link">
+                  <span class="activity-name">{{ block.settings.activity_name }}</span>
+                  <span class="activity-arrow {% unless block.settings.show_arrow %}hover-only{% endunless %}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M14 5L21 12L14 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M3 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      
+      <div class="activity-image-container desktop-only">
+        {% assign first_block = section.blocks | first %}
+        {% if first_block.settings.desktop_image != blank %}
+          <img 
+            src="{{ first_block.settings.desktop_image | img_url: 'master' }}" 
+            alt="{{ first_block.settings.activity_name }}"
+            class="activity-image active"
+            id="activity-image-{{ first_block.id }}"
+            loading="lazy"
+          >
+        {% else %}
+          <div class="placeholder-image">
+            <svg width="100%" height="100%" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="800" height="600" fill="#E5E5E5"/>
+              <text x="400" y="300" font-family="sans-serif" font-size="24" text-anchor="middle" fill="#888">Activity Image</text>
+            </svg>
+          </div>
+        {% endif %}
+        
+        {% for block in section.blocks offset:1 %}
+          {% if block.type == 'activity' and block.settings.desktop_image != blank %}
+            <img 
+              src="{{ block.settings.desktop_image | img_url: 'master' }}" 
+              alt="{{ block.settings.activity_name }}"
+              class="activity-image"
+              id="activity-image-{{ block.id }}"
+              loading="lazy"
+            >
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .activities-section {
+    /* padding: 80px 0; */
+    /* Gray background removed as requested */
+  }
+  
+  .containeractivities {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px; /* Updated from 20px to 40px for carousel padding */
+  }
+  
+  .activities-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 80px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  
+  .activities-text-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .section-titledd {
+    font-size: 30px; /* Updated from 34px to 30px as requested */
+    font-weight: 300; /* Updated from 500 to 300 as requested */
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    color: #000000;
+  }
+  
+  .activities-list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .activity-item {
+    margin-bottom: 2px; /* Updated from 20px to 10px to tighten spacing by -10px */
+  }
+  
+/* Add this to your existing CSS */
+.activity-link {
+  display: flex;
+  justify-content: space-between; /* Changed from flex-start to space-between */
+  align-items: center;
+  width: 100%; /* Make sure the link takes full width */
+  text-decoration: none;
+  color: #000000;
+  font-size: 48px; /* As requested */
+  font-weight: 550; /* Updated from 700 to 550 as requested */
+  text-transform: normal; /* Updated from uppercase to normal as requested */
+  letter-spacing: 0.5px; /* Updated from 0px to 0.5px as requested */
+  line-height: 1.2;
+  font-family: sans-serif;
+  transition: all 0.3s ease;
+}
+
+.activity-name {
+  margin-right: 0; /* Remove the right margin */
+}
+
+.activity-arrow {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  margin-left: auto; /* Push to the right edge */
+}
+  
+  /* Default state for all screens - will be overridden by media queries */
+  .activity-arrow.hover-only {
+    opacity: 0;
+    transform: translateX(-5px);
+  }
+  
+  .activity-item:hover .activity-arrow.hover-only {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .activity-image-container {
+    flex: 0 0 auto;
+    position: relative;
+    width: 750px; /* Approximately 4in at 96dpi */
+    height: 600px; /* Approximately 6in at 96dpi */
+    overflow: hidden;
+    border-radius: 20px; /* More rounded corners for less rectangular shape */
+  }
+  @media screen and (min-width: 1440px) {
+  .activity-image-container {
+    flex: 0 0 auto;
+    position: relative;
+    width: 1000px; /* Updated width for big desktop */
+    height: 600px;
+    overflow: hidden;
+    border-radius: 20px;
+  }
+}
+  .activity-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    border-radius: 20px;
+  }
+  
+  .activity-image.active {
+    opacity: 1;
+  }
+  
+  .placeholder-image {
+    width: 100%;
+    height: 100%;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+  }
+  
+  .activity-item.active .activity-link {
+    color: #000000;
+  }
+  
+  .activity-item.active .activity-arrow.hover-only {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 1024px) {
+    .activities-content {
+      gap: 40px;
+    }
+    
+    .activity-link {
+      font-size: 36px;
+    }
+    
+    .activity-image-container {
+      width: 350px;
+      height: 525px;
+    }
+  }
+  
+  /* Desktop-specific styles */
+  @media (min-width: 768px) {
+    .activity-arrow.hover-only {
+      opacity: 0;
+      transform: translateX(-5px);
+    }
+    
+    .activity-item:hover .activity-arrow.hover-only {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  /* Mobile-specific styles */
+  @media (max-width: 767px) {
+    .activities-content {
+      flex-direction: column;
+      align-items: normal;
+      gap: 30px;
+    }
+    .containeractivities{
+      padding: 0 15px;
+    }
+    .activities-text-column {
+      align-items: center;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+  .activities-list {
+    width: 100%; /* Make sure the list takes full width */
+  }
+      .activity-item {
+    width: 100%; /* Make sure each item takes full width */
+    margin-bottom: 6px;
+  }
+    .activity-name {
+      margin-right: 10px;
+      font-size: 28px;
+      font-weight:550;
+      letter-spacing:0.5px;
+    }
+    
+    .activity-link {
+      font-size: 32px;
+    }
+    
+    .desktop-only {
+      display: none;
+    }
+    
+    /* Show arrows by default on mobile */
+   /* Show arrows by default on mobile and position them at the far right */
+  .activity-arrow.hover-only {
+    opacity: 1;
+    transform: translateX(0);
+  }
+    
+    .section-titledd {
+      font-size: 17px;
+      margin-right:auto;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const activityItems = document.querySelectorAll('.activity-item');
+    const activityImages = document.querySelectorAll('.activity-image');
+    
+    // Set first activity as active by default
+    if (activityItems.length > 0) {
+      activityItems[0].classList.add('active');
+    }
+    
+    // Handle hover events for desktop
+    activityItems.forEach(item => {
+      item.addEventListener('mouseenter', function() {
+        // Remove active class from all items
+        activityItems.forEach(i => i.classList.remove('active'));
+        
+        // Add active class to current item
+        this.classList.add('active');
+        
+        // Get the activity ID
+        const activityId = this.getAttribute('data-activity');
+        
+        // Hide all images
+        activityImages.forEach(img => {
+          img.classList.remove('active');
+        });
+        
+        // Show the corresponding image
+        const image = document.getElementById(`activity-image-${activityId}`);
+        if (image) {
+          image.classList.add('active');
+        }
+      });
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Activities",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "ACTIVITIES"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "activity",
+      "name": "Activity",
+      "settings": [
+        {
+          "type": "text",
+          "id": "activity_name",
+          "label": "Activity Name",
+          "default": "TRAVEL"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_arrow",
+          "label": "Show Arrow",
+          "default": false,
+          "info": "Check this to show an arrow permanently next to this activity (like in the COMMUTE example)"
+        },
+        {
+          "type": "image_picker",
+          "id": "desktop_image",
+          "label": "Activity Image",
+          "info": "Upload a square image. Recommended size: 800 x 800 pixels."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Activity Link",
+          "info": "Where users will go when they click on this activity"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Activities",
+      "category": "Custom Content",
+      "blocks": [
+        {
+          "type": "activity",
+          "settings": {
+            "activity_name": "TRAVEL"
+          }
+        },
+        {
+          "type": "activity",
+          "settings": {
+            "activity_name": "COMMUTE",
+            "show_arrow": true
+          }
+        },
+        {
+          "type": "activity",
+          "settings": {
+            "activity_name": "WORK"
+          }
+        },
+        {
+          "type": "activity",
+          "settings": {
+            "activity_name": "ADVENTURE"
+          }
+        },
+        {
+          "type": "activity",
+          "settings": {
+            "activity_name": "ACTIVE"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
