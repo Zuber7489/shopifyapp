@@ -103,13 +103,17 @@
     }
     
     /* Ensure image fills complete width */
-    #mobileMainImage,
+
     #mobileMainVideo {
       width: 100% !important;
       max-width: 100% !important;
       padding-left:65px !important;
     }
-    
+        #mobileMainImage{
+      width: 100% !important;
+      max-width: 100% !important;
+      padding-left:40px !important;
+    }
     /* Keep normal spacing for other content */
     .product-details,
     /* .product-header, */
@@ -241,7 +245,7 @@
      <!-- Mobile Single Image View -->
      <div class="mobile-single-image" style="display: none; width: 100%;">
        <div class="single-image-container" style="background-color: #f6f6f6; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1.3; position: relative; margin-bottom: 15px; width: 100%;">
-         <img id="mobileMainImage" src="{{ featured_image | img_url: '600x600', crop: 'center' }}" alt="{{ featured_image.alt | escape }}" style="width: 100%; height: 100%; object-fit: contain; background: #f6f6f6; cursor: pointer; display: block;" onclick="openImageModal('{{ featured_image | img_url: '1200x1200' }}')">
+         <img id="mobileMainImage" src="{{ featured_image | img_url: '600x600', crop: 'center' }}" alt="{{ featured_image.alt | escape }}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6; cursor: pointer; display: block;" onclick="openImageModal('{{ featured_image | img_url: '1200x1200' }}')">
          
          <video id="mobileMainVideo" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block;" controls muted autoplay playsinline onclick="openVideoModal(this)">
            {% if current_variant.metafields.custom.product_video_url %}
@@ -2832,7 +2836,7 @@
         const img = document.createElement('img');
         img.src = image.thumb;
         img.alt = image.alt;
-        img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f6f6f6;';
+        img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; background: #f6f6f6;';
         thumb.appendChild(img);
       }
       thumb.addEventListener('click', () => { currentMobileIndex = index; updateMobileImageDisplay(); });
