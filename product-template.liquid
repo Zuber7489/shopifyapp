@@ -217,28 +217,9 @@
       font-size: 16px !important;
     }
   }
-
-  .gallery-container {
-  position: sticky;
-  top: 0;
-  max-height: 100vh;
-  overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
-}
-.gallery-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-.product-details {
-  position: sticky !important;
-  top: 0 !important;
-  align-self: flex-start; /* Ensures it starts at the top of its grid cell */
-  /* Remove height: 100vh if present */
-}
-
   </style>
   
-  <div class="product-container" style="margin: 0 auto; padding: 20px 0; max-width: 100%; overflow-x: hidden;">
+  <div class="product-container" style="margin: 0 auto; padding: 20px 0; max-width: 100%;">
   {% assign current_variant = product.selected_or_first_available_variant %}
   {% assign featured_image = current_variant.featured_image | default: product.featured_image %}
   
@@ -247,9 +228,9 @@
     <div class="product-layout" style="display: grid; grid-template-columns: 2.2fr 1fr !important; gap: 20px !important; margin-top: 30px; margin-bottom:20px; padding: 0 15px;">
   
   <!-- Product Image Gallery -->
-  <div class="product-gallery" >
+  <div class="product-gallery" style="position: relative; width: 100%; max-width: 100%;">
    <!-- Gallery Container -->
-   <div class="gallery-container" >
+   <div class="gallery-container" style="position: relative; overflow: hidden; width: 100%;">
      
      <!-- Mobile Single Image View -->
      <div class="mobile-single-image" style="display: none; width: 100%;">
@@ -286,7 +267,10 @@
   </div>
   
   <!-- Product Details Card - DYNAMIC CONTENT WITH VARIANT TITLE -->
-  <div class="product-details" >
+  <div class="product-details" style="position: sticky;
+    top: 20px;
+    height: fit-content;
+    align-self: flex-start;">
   <div class="product-header" style="text-align: left; margin-bottom: 30px;">
    <!-- DYNAMIC PRODUCT TITLE - VARIANT SPECIFIC -->
    <div class="title-price-row" style="display: flex; align-items: baseline; justify-content: flex-start; gap: 15px;">
@@ -314,8 +298,8 @@
   </div>
     <div class="detailbox" style=" padding: 24px; background: #F6F6F6; box-shadow: 0 14px 28px -14px rgba(0,0,0,0.18); border-radius: 12px; ">
    <!-- Size and Fabric Row -->
-   <div class="fabricrowflex" style="display:flex; justify-content: space-between;">
-     <div>
+   <div class="fabricrowflex" style="display:flex; justify-content: space-between; align-items: flex-start;">
+     <div style="flex: 1;">
        <!-- SELECT SIZE Section -->
        {% assign size_option = false %}
        {% assign has_size_options = false %}
@@ -423,25 +407,38 @@
              <button class="comparemobilebtn" id="compareBtnMobile" style="border: 2px solid #2f7d7d; color: #2f7d7d; background: transparent; padding: 6px 16px; border-radius: 20px; font-size: 18px; cursor: pointer; margin-bottom: 6px; position: relative; z-index: 100;" onclick="openCompareBagsModalV2()">
     Compare bags
   </button>
-             <div class="reviewadjust" style="font-size: 16px; color: #2f7d7d; cursor: pointer; margin-top: 0;" onclick="scrollToReviews()">
-               {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
-             </div>
-           </div>
+          </div>
+          <div class="reviewadjust" style="font-size: 16px; color: #2f7d7d; cursor: pointer; margin-top: 0; text-align: right;" onclick="scrollToReviews()">
+            {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
+          </div>
          </div>
          <!-- End new flex row -->
        {% endif %}
      </div>
   
-     <!-- Price -->
-     <div class="pricesizeadjust" style="font-size: 15px; font-weight: bold; color: #111; position:relative; top: 26px;" id="variantPrice">
-       {{ current_variant.price | money }}
+     <!-- Always show reviews on mobile (and desktop) -->
+     <div class="reviewadjust mobile-only-reviews" style="font-size: 16px; color: #2f7d7d; cursor: pointer; margin-top: 0; text-align: right; margin-bottom: 10px;" onclick="scrollToReviews()">
+       {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
      </div>
+  
+     <!-- Price - Positioned differently based on whether there are color options -->
+     {% if has_color_options %}
+       <!-- When there are color options, price is positioned with top offset -->
+       <div class="pricesizeadjust" style="font-size: 15px; font-weight: bold; color: #111; position:relative; top: 26px;" id="variantPrice">
+         {{ current_variant.price | money }}
+       </div>
+     {% else %}
+       <!-- When there are no color options, price is positioned normally -->
+       <div class="pricesizeadjust" style="font-size: 15px; font-weight: bold; color: #111; margin-left: 20px;" id="variantPrice">
+         {{ current_variant.price | money }}
+       </div>
+     {% endif %}
    </div>
      
     
    <!-- Images and Rating -->
   <div class="responsive-flex" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-    <button id="compareBtnDesktop" class="comparedesktopbtn" style="border: 2px solid #2f7d7d; color: #2f7d7d; background: transparent; padding: 6px 16px; border-radius: 20px; font-size: 18px; cursor: pointer; margin: 0; position: relative; z-index: 100; pointer-events: auto;" onclick="openCompareBagsModalV2()">
+    <button id="compareBtnDesktop" class="comparedesktopbtn" style="border: 2px solid #2f7d7d; color: #2f7d7d; background: transparent; padding: 6px 16px; border-radius: 20px; font-size: 18px; cursor: pointer; margin: 0; position: relative; z-index: 100; pointer-events: auto; display:none;" onclick="openCompareBagsModalV2()">
       Compare bags
     </button>
     <div class="review-fix" style="display: flex; align-items: center; gap: 8px; color: #2f6f6f;">
@@ -959,7 +956,7 @@
     }
    
     .comparemobilebtn{
-      display: block !important;
+      display: none !important;
       margin-right: 0 !important;
       font-size: 13px !important;
           padding: 4px 8px !important;
@@ -1000,7 +997,7 @@
     .product-container {
       padding: 15px 0 !important;
       max-width: 100% !important;
-      overflow-x: hidden !important;
+      
     }
   } 
     
@@ -1856,7 +1853,7 @@
   
   /* Ensure no horizontal scroll */
   html, body {
-  overflow-x: hidden;
+
   max-width: 100%;
   }
   
@@ -2887,6 +2884,21 @@
         
         const currentColorOption = document.querySelector(".fabric-option.active");
         const currentColor = currentColorOption ? currentColorOption.getAttribute("data-value") : (currentVariant ? (currentVariant.option1 || currentVariant.option2 || currentVariant.option3) : null);
+        
+        // Handle products with only size options (no color/fabric)
+        if (!currentColorOption) {
+          // Find variant that matches the selected size
+          const matchingVariant = Object.values(productVariants).find(v => 
+            v.option1 === value || v.option2 === value || v.option3 === value
+          );
+          if (matchingVariant) {
+            console.log('Size-only product: Switching to variant', matchingVariant.id, 'with title:', matchingVariant.title);
+            switchToVariant(matchingVariant);
+            return;
+          }
+        }
+        
+        // Handle products with both color and size options
         if (currentColor) {
           const matchingVariant = Object.values(productVariants).find(v => 
             (v.option1 === currentColor || v.option2 === currentColor || v.option3 === currentColor) &&
@@ -2955,7 +2967,10 @@
     
     // Update all content sections
     const titleElement = document.getElementById("dynamicProductTitle");
-    if (titleElement) titleElement.textContent = content.title;
+    if (titleElement) {
+      console.log('Updating product title to:', content.title);
+      titleElement.textContent = content.title;
+    }
     
     const taglineElement = document.getElementById("dynamicTagline");
     if (taglineElement) taglineElement.textContent = content.tagline;
@@ -3104,7 +3119,7 @@
           let processedUrl = ensureHttpsUrl(urlStringToProcess);
           // Only resize for mobile
           if (processedUrl.includes('cdn.shopify.com') && window.innerWidth < 900) {
-            processedUrl = processedUrl.replace(/(\.[a-zA-Z0-9]+)($|\?)/, '_2000x2800_crop_center$1$2');
+            processedUrl = processedUrl.replace(/(\.[a-zA-Z0-9]+)($|\?)/, '_2000x3000_crop_center$1$2');
           }
           mediaUrl = processedUrl;
         }
@@ -4607,7 +4622,7 @@
     .bundle-section {
       max-width: 1920px !important;
       margin: 0 auto !important;
-      margin-bottom: 60px !important;
+      /* margin-bottom: 60px !important; */
     }
     .bundle-flex-wrapper {
       max-width: 1920px !important;
@@ -4745,7 +4760,7 @@
     max-width: 319px !important;
   }
   .function-media-container {
-    height: 376px !important;
+    height: 398px !important;
     max-width: 322px !important;
     min-width: 284px !important;
     aspect-ratio: 0.76 !important;
@@ -4930,65 +4945,11 @@
   }
 }
   </style>
-
   <style>
-@media (min-width: 900px) {
-  .product-container, .containerbb, .product-layout {
-    position: relative !important;
-    overflow: visible !important;
-    height: auto !important;
+  @media (min-width: 901px) {
+    .mobile-only-reviews { display: none !important; }
   }
-  .product-details {
-    width: 420px;
-    max-width: 100vw;
-    z-index: 100;
-    background: #fff;
-    box-shadow: 0 0 16px rgba(0,0,0,0.04);
+  @media (max-width: 900px) {
+    .mobile-only-reviews { display: block !important; }
   }
-  .product-layout {
-    display: grid;
-    grid-template-columns: 2.2fr 420px;
-    gap: 20px;
-  }
-}
 </style>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  if (window.innerWidth < 900) return;
-  var details = document.querySelector('.product-details');
-  var boundary = document.querySelector('.product-container');
-  if (!details || !boundary) return;
-  function getDetailsWidth() {
-    var computed = window.getComputedStyle(details);
-    return details.offsetWidth || parseInt(computed.width) || 420;
-  }
-  function onScroll() {
-    var scrollY = window.scrollY || window.pageYOffset;
-    var boundaryTop = boundary.offsetTop;
-    var boundaryHeight = boundary.offsetHeight;
-    var detailsHeight = details.offsetHeight;
-    var maxScroll = boundaryTop + boundaryHeight - detailsHeight;
-    var width = getDetailsWidth();
-    if (scrollY < boundaryTop) {
-      details.style.position = 'static';
-      details.style.top = 'auto';
-      details.style.bottom = 'auto';
-      details.style.width = '';
-    } else if (scrollY >= boundaryTop && scrollY < maxScroll) {
-      details.style.position = 'fixed';
-      details.style.top = '0';
-      details.style.bottom = 'auto';
-      details.style.width = width + 'px';
-    } else {
-      details.style.position = 'absolute';
-      details.style.top = 'auto';
-      details.style.bottom = '0';
-      details.style.width = width + 'px';
-    }
-  }
-  boundary.style.position = 'relative';
-  window.addEventListener('scroll', onScroll);
-  window.addEventListener('resize', onScroll);
-  onScroll();
-});
-</script>
