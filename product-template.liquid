@@ -145,6 +145,12 @@
       color: #000 !important;
     }
     
+    /* Ensure strong tags in specs are bold */
+    .specs-content strong {
+      font-weight: bold !important;
+      color: #000 !important;
+    }
+    
     /* Bundle & save Header: Font size 24px, font weight 600, letter spacing 0.5px */
     .bundleandsave {
       font-size: 24px !important;
@@ -237,7 +243,7 @@
        <div class="single-image-container" style="background-color: #f6f6f6; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1.3; position: relative; margin-bottom: 15px; width: 100%;">
          <img id="mobileMainImage" src="{{ featured_image | img_url: '600x600', crop: 'center' }}" alt="{{ featured_image.alt | escape }}" style="width: 100%; height: 100%; object-fit: contain; background: #f6f6f6; cursor: pointer; display: block;" onclick="openImageModal('{{ featured_image | img_url: '1200x1200' }}')">
          
-         <video id="mobileMainVideo" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: none;" controls muted onclick="openVideoModal(this)">
+         <video id="mobileMainVideo" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block;" controls muted autoplay playsinline onclick="openVideoModal(this)">
            {% if current_variant.metafields.custom.product_video_url %}
              <source src="{{ current_variant.metafields.custom.product_video_url }}" type="video/mp4">
            {% elsif product.metafields.custom.product_video_url %}
@@ -352,45 +358,76 @@
          </div>
        {% endif %}
   
-       <!-- SELECT FABRIC Section -->
+       <!-- SELECT FABRIC & COLOR Section -->
+       {% assign fabric_option = false %}
        {% assign color_option = false %}
+       {% assign has_fabric_options = false %}
        {% assign has_color_options = false %}
+       {% assign display_option = false %}
   
+       {% comment %}First, look for dedicated Fabric option{% endcomment %}
        {% for option in product.options_with_values %}
          {% assign option_name_lower = option.name | downcase %}
-         {% if option_name_lower == 'color' or option_name_lower == 'colour' %}
-           {% assign color_option = option %}
-           {% assign has_color_options = true %}
+         {% if option_name_lower == 'fabric' %}
+           {% assign fabric_option = option %}
+           {% assign has_fabric_options = true %}
+           {% assign display_option = option %}
            {% break %}
          {% endif %}
        {% endfor %}
+       
+       {% comment %}If no Fabric option found, look for Color option (backward compatibility){% endcomment %}
+       {% unless has_fabric_options %}
+         {% for option in product.options_with_values %}
+           {% assign option_name_lower = option.name | downcase %}
+           {% if option_name_lower == 'color' or option_name_lower == 'colour' %}
+             {% assign fabric_option = option %}
+             {% assign has_fabric_options = true %}
+             {% assign display_option = option %}
+             {% break %}
+           {% endif %}
+         {% endfor %}
+       {% endunless %}
+       
+       {% comment %}Also check for separate Color option (for future use){% endcomment %}
+       {% for option in product.options_with_values %}
+         {% assign option_name_lower = option.name | downcase %}
+         {% if option_name_lower == 'color' or option_name_lower == 'colour' %}
+           {% unless option_name_lower == 'fabric' %}
+             {% assign color_option = option %}
+             {% assign has_color_options = true %}
+           {% endunless %}
+         {% endif %}
+       {% endfor %}
   
-       {% if has_color_options %}
+       {% if has_fabric_options or has_color_options %}
          <!-- Start new flex row for fabric and compare/reviews -->
          <div class="fabric-compare-row" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 48px; margin-bottom: 10px; flex-wrap: wrap;">
            <!-- Left: Fabric label, selected color, swatches -->
            <div style="display: flex; flex-direction: column; align-items: flex-start;">
              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-               <label class="selectsizeadjust" style="display: block; color: #333; font-family: 'Neue Haas Display', sans-serif !important; font-weight:400; margin-bottom: 0;  font-size: 13px;">Select fabric:</label>
+               <label class="selectsizeadjust" style="display: block; color: #333; font-family: 'Neue Haas Display', sans-serif !important; font-weight:400; margin-bottom: 0;  font-size: 13px;">
+                 {% if has_fabric_options %}Select fabric:{% elsif has_color_options %}Select color:{% else %}Select option:{% endif %}
+               </label>
                <div style="font-size: 14px; color: #333; font-family: 'Neue Haas Display', sans-serif !important;" id="selectedFabricName">
-                 {{ color_option.selected_value | default: color_option.values.first }}
+                 {{ display_option.selected_value | default: display_option.values.first }}
                </div>
              </div>
              <div class="fabric-options" style="display: flex; gap: 19px; flex-wrap: wrap;">
-               {% for value in color_option.values %}
-                 {% assign color_variant = product.variants | where: 'option1', value | first %}
-                 {% unless color_variant %}
-                   {% assign color_variant = product.variants | where: 'option2', value | first %}
+               {% for value in display_option.values %}
+                 {% assign fabric_variant = product.variants | where: 'option1', value | first %}
+                 {% unless fabric_variant %}
+                   {% assign fabric_variant = product.variants | where: 'option2', value | first %}
                  {% endunless %}
-                 {% unless color_variant %}
-                   {% assign color_variant = product.variants | where: 'option3', value | first %}
+                 {% unless fabric_variant %}
+                   {% assign fabric_variant = product.variants | where: 'option3', value | first %}
                  {% endunless %}
-                 <div class="fabric-option{% if color_option.selected_value == value or forloop.first and color_option.selected_value == blank %} active{% endif %}"
+                 <div class="fabric-option{% if display_option.selected_value == value or forloop.first and display_option.selected_value == blank %} active{% endif %}"
                       data-value="{{ value | escape }}"
-                      data-variant-id="{{ color_variant.id }}"
+                      data-variant-id="{{ fabric_variant.id }}"
                       style="width: 75px; height: 75px; border-radius: 8px; cursor: pointer; border: 3px solid lightgray; overflow: hidden; transition: all 0.3s ease; position: relative;">
-                   {% if color_variant.featured_image %}
-                     <img src="{{ color_variant.featured_image | img_url: '100x100', crop: 'center' }}"
+                   {% if fabric_variant.featured_image %}
+                     <img src="{{ fabric_variant.featured_image | img_url: '100x100', crop: 'center' }}"
                           alt="{{ value }}"
                           style="width: 100%; height: 100%; object-fit: contain; background: #f6f6f6;">
                    {% else %}
@@ -408,7 +445,7 @@
     Compare bags
   </button>
           </div>
-          <div class="reviewadjust" style="font-size: 16px; color: #2f7d7d; cursor: pointer; margin-top: 0; text-align: right;" onclick="scrollToReviews()">
+          <div class="reviewadjust" style="font-size: 16px; color: #2f7d7d; cursor: pointer; margin-top: 0; text-align: right; display:none;" onclick="scrollToReviews()">
             {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
           </div>
          </div>
@@ -421,14 +458,14 @@
        {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
      </div>
   
-     <!-- Price - Positioned differently based on whether there are color options -->
-     {% if has_color_options %}
-       <!-- When there are color options, price is positioned with top offset -->
+     <!-- Price - Positioned differently based on whether there are fabric/color options -->
+     {% if has_fabric_options or has_color_options %}
+       <!-- When there are fabric/color options, price is positioned with top offset -->
        <div class="pricesizeadjust" style="font-size: 15px; font-weight: bold; color: #111; position:relative; top: 26px;" id="variantPrice">
          {{ current_variant.price | money }}
        </div>
      {% else %}
-       <!-- When there are no color options, price is positioned normally -->
+       <!-- When there are no fabric/color options, price is positioned normally -->
        <div class="pricesizeadjust" style="font-size: 15px; font-weight: bold; color: #111; margin-left: 20px;" id="variantPrice">
          {{ current_variant.price | money }}
        </div>
@@ -574,7 +611,7 @@
         </span>
       </div>
       <div class="accordion-content" id="mobile-featurehighlights-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
-        <ul class="mobilefeaturehighlighted" style="padding: 0 0 15px 18px; margin: 0; color: gray; font-size: 13px; line-height: 1.7;">
+        <ul class="mobilefeaturehighlighted" style="padding: 0 0 15px 18px; margin: 0; color: black; font-size: 14px; line-height: 1.7;">
           {% if current_variant.metafields.custom.features %}
             {% assign features = current_variant.metafields.custom.features.value | default: current_variant.metafields.custom.features | split: ',' %}
             {% for feature in features %}
@@ -626,9 +663,37 @@
     <div class="accordion-content" id="specs-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
       <div class="specs-content" id="dynamicSpecs" style="padding-bottom: 15px; color: #666; line-height: 1.6;">
         {% if current_variant.metafields.custom.specs %}
-          <pre style="white-space: pre-wrap; margin: 0; font-family: inherit;">{{ current_variant.metafields.custom.specs | replace: '&quot;', '"' | replace: 'weight', 'weight\n' | replace: 'Materials', '\nMaterials' }}</pre>
+          <div style="white-space: pre-wrap; margin: 0; font-family: inherit;">
+            {{ current_variant.metafields.custom.specs
+              | replace: 'Size: ', '<strong>Size:</strong> '
+              | replace: 'Size:', '<strong>Size:</strong>'
+              | replace: 'Volume: ', '<strong>Volume:</strong> '
+              | replace: 'Volume:', '<strong>Volume:</strong>'
+              | replace: 'Weight: ', '<strong>Weight:</strong> '
+              | replace: 'Weight:', '<strong>Weight:</strong>'
+              | replace: 'Materials: ', '<strong>Materials:</strong> '
+              | replace: 'Materials:', '<strong>Materials:</strong>'
+              | replace: 'Materials', '<strong>Materials:</strong>'
+              | replace: '&quot;', '"' 
+              | newline_to_br
+            }}
+          </div>
         {% elsif product.metafields.custom.specs %}
-          <pre style="white-space: pre-wrap; margin: 0; font-family: inherit;">{{ product.metafields.custom.specs | replace: '&quot;', '"' | replace: 'weight', 'weight\n' | replace: 'Materials', '\nMaterials' }}</pre>
+          <div style="white-space: pre-wrap; margin: 0; font-family: inherit;">
+            {{ product.metafields.custom.specs
+              | replace: 'Size: ', '<strong>Size:</strong> '
+              | replace: 'Size:', '<strong>Size:</strong>'
+              | replace: 'Volume: ', '<strong>Volume:</strong> '
+              | replace: 'Volume:', '<strong>Volume:</strong>'
+              | replace: 'Weight: ', '<strong>Weight:</strong> '
+              | replace: 'Weight:', '<strong>Weight:</strong>'
+              | replace: 'Materials: ', '<strong>Materials:</strong> '
+              | replace: 'Materials:', '<strong>Materials:</strong>'
+              | replace: 'Materials', '<strong>Materials:</strong>'
+              | replace: '&quot;', '"' 
+              | newline_to_br
+            }}
+          </div>
         {% else %}
           <p style="margin: 0;">Product specifications and materials information.</p>
         {% endif %}
@@ -2182,7 +2247,7 @@
    {% if current_variant.metafields.custom.variant_gallery %}
      {% for image in current_variant.metafields.custom.variant_gallery.value %}
        {
-         src: "{{ image | img_url: '1200x1300', crop: 'center' }}",
+         src: "{{ image | img_url: '2200x1300', crop: 'center' }}",
          fullSrc: "{{ image | img_url: '1200x1200' }}",
          thumb: "{{ image | img_url: '120x120', crop: 'center' }}",
          type: 'image'
@@ -2191,7 +2256,7 @@
    {% else %}
      {% for image in product.images %}
        {
-         src: "{{ image | img_url: '1200x1300', crop: 'center' }}",
+         src: "{{ image | img_url: '2200x1300', crop: 'center' }}",
          fullSrc: "{{ image | img_url: '1200x1200' }}",
          thumb: "{{ image | img_url: '120x120', crop: 'center' }}",
          type: 'image'
@@ -2344,7 +2409,7 @@
           "gallery": [
             {%- for image in variant.metafields.custom.variant_gallery.value -%}
               {
-                "src": "{{ image | img_url: '1200x1300', crop: 'center' }}",
+                "src": "{{ image | img_url: '2200x2800', crop: 'center' }}",
                 "fullSrc": "{{ image | img_url: '2048x' }}",
                 "thumb": "{{ image | img_url: '120x120', crop: 'center' }}",
                 "type": "image",
@@ -2882,11 +2947,11 @@
         sizeOptions.forEach(opt => { opt.classList.remove("active"); opt.style.backgroundColor = "#d8e2e2"; opt.style.color = "#2f6f6f"; });
         option.classList.add("active"); option.style.backgroundColor = "#2f6f6f"; option.style.color = "white";
         
-        const currentColorOption = document.querySelector(".fabric-option.active");
-        const currentColor = currentColorOption ? currentColorOption.getAttribute("data-value") : (currentVariant ? (currentVariant.option1 || currentVariant.option2 || currentVariant.option3) : null);
+        const currentFabricOption = document.querySelector(".fabric-option.active");
+        const currentFabric = currentFabricOption ? currentFabricOption.getAttribute("data-value") : (currentVariant ? (currentVariant.option1 || currentVariant.option2 || currentVariant.option3) : null);
         
-        // Handle products with only size options (no color/fabric)
-        if (!currentColorOption) {
+        // Handle products with only size options (no fabric)
+        if (!currentFabricOption) {
           // Find variant that matches the selected size
           const matchingVariant = Object.values(productVariants).find(v => 
             v.option1 === value || v.option2 === value || v.option3 === value
@@ -2898,10 +2963,10 @@
           }
         }
         
-        // Handle products with both color and size options
-        if (currentColor) {
+        // Handle products with both fabric and size options
+        if (currentFabric) {
           const matchingVariant = Object.values(productVariants).find(v => 
-            (v.option1 === currentColor || v.option2 === currentColor || v.option3 === currentColor) &&
+            (v.option1 === currentFabric || v.option2 === currentFabric || v.option3 === currentFabric) &&
             (v.option1 === value || v.option2 === value || v.option3 === value)
           );
           if (matchingVariant) switchToVariant(matchingVariant);
@@ -2986,11 +3051,25 @@
     
     const specsElement = document.getElementById("dynamicSpecs");
     if (specsElement) {
-      const pre = document.createElement('pre');
-      pre.style.cssText = 'white-space: pre-wrap; margin: 0; font-family: inherit;';
-      pre.textContent = content.specs; 
+      const div = document.createElement('div');
+      div.style.cssText = 'white-space: pre-wrap; margin: 0; font-family: inherit;';
+      
+      // Apply bold formatting to key labels
+      let formattedSpecs = content.specs
+        .replace(/Size: /g, '<strong>Size:</strong> ')
+        .replace(/Size:/g, '<strong>Size:</strong>')
+        .replace(/Volume: /g, '<strong>Volume:</strong> ')
+        .replace(/Volume:/g, '<strong>Volume:</strong>')
+        .replace(/Weight: /g, '<strong>Weight:</strong> ')
+        .replace(/Weight:/g, '<strong>Weight:</strong>')
+        .replace(/Materials: /g, '<strong>Materials:</strong> ')
+        .replace(/Materials:/g, '<strong>Materials:</strong>')
+        .replace(/Materials/g, '<strong>Materials:</strong>')
+        .replace(/\n/g, '<br>');
+      
+      div.innerHTML = formattedSpecs; 
       specsElement.innerHTML = ''; 
-      specsElement.appendChild(pre);
+      specsElement.appendChild(div);
     }
     
     // Update features and functions
@@ -3117,8 +3196,10 @@
         }
         if (urlStringToProcess) {
           let processedUrl = ensureHttpsUrl(urlStringToProcess);
-          // Only resize for mobile
-          if (processedUrl.includes('cdn.shopify.com') && window.innerWidth < 900) {
+          // Only resize images for mobile, not videos
+          const lowerUrl = processedUrl.toLowerCase();
+          const isVideo = lowerUrl.endsWith('.mp4') || lowerUrl.endsWith('.webm') || lowerUrl.endsWith('.ogg') || lowerUrl.endsWith('.mov');
+          if (processedUrl.includes('cdn.shopify.com') && window.innerWidth < 900 && !isVideo) {
             processedUrl = processedUrl.replace(/(\.[a-zA-Z0-9]+)($|\?)/, '_2000x3000_crop_center$1$2');
           }
           mediaUrl = processedUrl;
@@ -3130,7 +3211,7 @@
         let mediaElementHtml = '';
         const lowerMediaUrl = mediaUrl.toLowerCase();
         if (lowerMediaUrl.endsWith('.mp4') || lowerMediaUrl.endsWith('.webm') || lowerMediaUrl.endsWith('.ogg') || lowerMediaUrl.endsWith('.mov')) {
-          mediaElementHtml = `<video src="${mediaUrl}" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none';" onloadstart="console.log('Loading video for ${escapedTitle}:', this.src);"><Your browser does not support the video tag.</video>`;
+          mediaElementHtml = `<video src="${mediaUrl}" loop muted playsinline webkit-playsinline style="width: 100%; height: 100%; object-fit: cover;" oncanplay="this.style.display='block'; this.play().catch(e => console.log('Autoplay prevented:', e));" onerror="this.style.display='none';" onloadstart="console.log('Loading video for ${escapedTitle}:', this.src);" onclick="this.paused ? this.play() : this.pause();">Your browser does not support the video tag.</video>`;
         } else {
           mediaElementHtml = `<img src="${mediaUrl}" alt="${escapedTitle}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6;" onerror="this.onerror=null; this.src='${DEFAULT_FUNCTION_IMAGE_URL}';" onload="console.log('Successfully loaded image for ${escapedTitle}:', this.src);">`;
         }

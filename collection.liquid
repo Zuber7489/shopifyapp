@@ -84,10 +84,10 @@
                               {% if filter_value.active %}checked{% endif %}
                               {% if filter_value.count == 0 and filter_value.active == false %}disabled{% endif %}
                             >
-                            <!-- Special handling for color filters -->
-                            {% if filter.label contains 'Color' or filter.label contains 'color' %}
-                              {% assign color_name = filter_value.label | downcase %}
-                              <span class="color-swatch color-{{ color_name }}"></span>
+                            <!-- Special handling for fabric filters (previously color) -->
+                            {% if filter.label contains 'Color' or filter.label contains 'color' or filter.label contains 'Fabric' or filter.label contains 'fabric' or filter.label contains 'Material' or filter.label contains 'material' %}
+                              {% assign fabric_name = filter_value.label | downcase | replace: ' ', '' %}
+                              <span class="fabric-swatch fabric-{{ fabric_name }}"></span>
                             {% endif %}
                             <span>{{ filter_value.label }} ({{ filter_value.count }})</span>
                           </label>
@@ -241,29 +241,29 @@
                           </li>
                         {% endfor %}
                       {% when 'list' %}
-                        {% if filter.label contains 'Color' or filter.label contains 'color' or filter.label contains 'COLOUR' %}
-                          <!-- Special Color Grid Layout -->
-                          <div class="mobile-color-grid">
-                            {% for filter_value in filter.values %}
-                              {% assign color_name = filter_value.label | downcase | replace: ' ', '' %}
-                              <div class="mobile-color-item">
-                                <input
-                                  type="checkbox"
-                                  name="{{ filter_value.param_name }}"
-                                  value="{{ filter_value.value }}"
-                                  id="MobileFilter-{{ filter.param_name }}-{{ forloop.index }}"
-                                  class="facets__checkbox"
-                                  {% if filter_value.active %}checked{% endif %}
-                                  {% if filter_value.count == 0 and filter_value.active == false %}disabled{% endif %}
-                                  style="display: none;"
-                                >
-                                <label for="MobileFilter-{{ filter.param_name }}-{{ forloop.index }}" style="display: flex; align-items: center; width: 100%; cursor: pointer;">
-                                  <div class="mobile-color-swatch color-{{ color_name }}"></div>
-                                  <span class="mobile-color-text">{{ filter_value.label }}</span>
-                                </label>
-                              </div>
-                            {% endfor %}
-                          </div>
+                        {% if filter.label contains 'Color' or filter.label contains 'color' or filter.label contains 'COLOUR' or filter.label contains 'Fabric' or filter.label contains 'fabric' or filter.label contains 'Material' or filter.label contains 'material' %}
+                          <!-- Special Fabric/Color Grid Layout -->
+                                                      <div class="mobile-fabric-grid">
+                              {% for filter_value in filter.values %}
+                                {% assign fabric_name = filter_value.label | downcase | replace: ' ', '' %}
+                                <div class="mobile-fabric-item">
+                                  <input
+                                    type="checkbox"
+                                    name="{{ filter_value.param_name }}"
+                                    value="{{ filter_value.value }}"
+                                    id="MobileFilter-{{ filter.param_name }}-{{ forloop.index }}"
+                                    class="facets__checkbox"
+                                    {% if filter_value.active %}checked{% endif %}
+                                    {% if filter_value.count == 0 and filter_value.active == false %}disabled{% endif %}
+                                    style="display: none;"
+                                  >
+                                  <label for="MobileFilter-{{ filter.param_name }}-{{ forloop.index }}" style="display: flex; align-items: center; width: 100%; cursor: pointer;">
+                                    <div class="mobile-fabric-swatch fabric-{{ fabric_name }}"></div>
+                                    <span class="mobile-fabric-text">{{ filter_value.label }}</span>
+                                  </label>
+                                </div>
+                              {% endfor %}
+                            </div>
                         {% else %}
                           <!-- Regular List Layout -->
                           {% for filter_value in filter.values %}
@@ -484,20 +484,39 @@
                     {% endif %}
                   </div>
 
-                  <!-- Color Swatches -->
+                  <!-- Fabric/Color Swatches -->
+                  {% assign fabric_option = false %}
                   {% assign color_option = false %}
+                  {% assign has_fabric_options = false %}
                   {% assign has_color_options = false %}
+                  {% assign display_option = false %}
+                  
+                  {% comment %}First, look for dedicated Fabric option{% endcomment %}
                   {% for option in product.options_with_values %}
                     {% assign option_name_lower = option.name | downcase %}
-                    {% if option_name_lower == 'color' or option_name_lower == 'colour' %}
-                      {% assign color_option = option %}
-                      {% assign has_color_options = true %}
+                    {% if option_name_lower == 'fabric' %}
+                      {% assign fabric_option = option %}
+                      {% assign has_fabric_options = true %}
+                      {% assign display_option = option %}
                       {% break %}
                     {% endif %}
                   {% endfor %}
-                  {% if has_color_options %}
-                    <div class="color-swatches" style="display: flex; gap: 10px; margin-bottom: 0.5rem;">
-                      {% for value in color_option.values %}
+                  
+                  {% comment %}If no Fabric option found, look for Color option (backward compatibility){% endcomment %}
+                  {% unless has_fabric_options %}
+                    {% for option in product.options_with_values %}
+                      {% assign option_name_lower = option.name | downcase %}
+                      {% if option_name_lower == 'color' or option_name_lower == 'colour' %}
+                        {% assign fabric_option = option %}
+                        {% assign has_fabric_options = true %}
+                        {% assign display_option = option %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endunless %}
+                  {% if has_fabric_options %}
+                    <div class="fabric-swatches" style="display: flex; gap: 10px; margin-bottom: 0.5rem;">
+                      {% for value in display_option.values %}
                         {% comment %}Find the variant with current size and this color{% endcomment %}
                         {% assign current_size = size_value %}
                         {% assign matched_variant = null %}
@@ -560,7 +579,15 @@
                   <!-- Product Info -->
                   <div class="product-info">
                     <h3 class="product-title">
-                      {% assign custom_title = size_variant.metafields.custom.product_title %}
+                      {% comment %}Try multiple metafield sources in hierarchy{% endcomment %}
+                      {% assign custom_title = first_fabric_variant.metafields.custom.product_title %}
+                      {% unless custom_title != blank %}
+                        {% assign custom_title = size_variant.metafields.custom.product_title %}
+                      {% endunless %}
+                      {% unless custom_title != blank %}
+                        {% assign custom_title = product.metafields.custom.product_title %}
+                      {% endunless %}
+                      
                       {% if custom_title != blank %}
                         {{ custom_title }}
                       {% else %}
@@ -617,20 +644,39 @@
                 {% endif %}
               </div>
 
-              <!-- Color Swatches -->
+              <!-- Fabric/Color Swatches -->
+              {% assign fabric_option = false %}
               {% assign color_option = false %}
+              {% assign has_fabric_options = false %}
               {% assign has_color_options = false %}
+              {% assign display_option = false %}
+              
+              {% comment %}First, look for dedicated Fabric option{% endcomment %}
               {% for option in product.options_with_values %}
                 {% assign option_name_lower = option.name | downcase %}
-                {% if option_name_lower == 'color' or option_name_lower == 'colour' %}
-                  {% assign color_option = option %}
-                  {% assign has_color_options = true %}
+                {% if option_name_lower == 'fabric' %}
+                  {% assign fabric_option = option %}
+                  {% assign has_fabric_options = true %}
+                  {% assign display_option = option %}
                   {% break %}
                 {% endif %}
               {% endfor %}
-              {% if has_color_options %}
-                <div class="color-swatches" style="display: flex; gap: 10px; margin-bottom: 0.5rem;">
-                  {% for value in color_option.values %}
+              
+              {% comment %}If no Fabric option found, look for Color option (backward compatibility){% endcomment %}
+              {% unless has_fabric_options %}
+                {% for option in product.options_with_values %}
+                  {% assign option_name_lower = option.name | downcase %}
+                  {% if option_name_lower == 'color' or option_name_lower == 'colour' %}
+                    {% assign fabric_option = option %}
+                    {% assign has_fabric_options = true %}
+                    {% assign display_option = option %}
+                    {% break %}
+                  {% endif %}
+                {% endfor %}
+              {% endunless %}
+              {% if has_fabric_options %}
+                <div class="fabric-swatches" style="display: flex; gap: 10px; margin-bottom: 0.5rem;">
+                  {% for value in display_option.values %}
                     {% comment %}Find the variant with this color{% endcomment %}
                     {% assign matched_variant = product.variants | where: 'option1', value | first %}
                     {% unless matched_variant %}
@@ -666,7 +712,12 @@
               <!-- Product Info -->
               <div class="product-info">
                 <h3 class="product-title">
-                  {% assign custom_title = product.metafields.custom.product_title %}
+                  {% comment %}Try multiple metafield sources for products without size variants{% endcomment %}
+                  {% assign custom_title = product.selected_or_first_available_variant.metafields.custom.product_title %}
+                  {% unless custom_title != blank %}
+                    {% assign custom_title = product.metafields.custom.product_title %}
+                  {% endunless %}
+                  
                   {% if custom_title != blank %}
                     {{ custom_title }}
                   {% else %}
@@ -677,7 +728,7 @@
                         {% assign display_title = display_title | append: part | append: ' ' %}
                       {% endunless %}
                     {% endfor %}
-                    {{ display_title | strip }} {{ size_value }}
+                    {{ display_title | strip }}
                   {% endif %}
                 </h3>
                 <div class="product-price">
@@ -1085,8 +1136,8 @@ body.no-scroll {
   color: #6b7280;
 }
 
-/* Color Swatches in Filters */
-.color-swatch {
+/* Fabric Swatches in Filters (previously Color Swatches) */
+.fabric-swatch, .color-swatch {
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -1094,16 +1145,49 @@ body.no-scroll {
   margin-right: 0.5rem;
 }
 
-.color-black { background: #000; }
-.color-gray { background: #6b7280; }
-.color-brown { background: #92400e; }
-.color-navy { background: #1e3a8a; }
-.color-white { background: #fff; }
-.color-blue { background: #002e5d; }
-.color-green { background: #1b3c36; }
-.color-red { background: #dc2626; }
-.color-beige { background: #f5f5dc; }
-.color-tan { background: #d2b48c; }
+/* Color Swatches - for actual colors */
+.color-black, .fabric-black { background: #000; }
+.color-gray, .fabric-gray { background: #6b7280; }
+.color-brown, .fabric-brown { background: #92400e; }
+.color-navy, .fabric-navy { background: #1e3a8a; }
+.color-white, .fabric-white { background: #fff; }
+.color-blue, .fabric-blue { background: #002e5d; }
+.color-green, .fabric-green { background: #1b3c36; }
+.color-red, .fabric-red { background: #dc2626; }
+.color-beige, .fabric-beige { background: #f5f5dc; }
+.color-tan, .fabric-tan { background: #d2b48c; }
+
+/* Fabric Material Swatches - patterns/textures for different materials */
+.fabric-carbonate { 
+  background: linear-gradient(45deg, #2d3748 25%, transparent 25%), 
+              linear-gradient(-45deg, #2d3748 25%, transparent 25%), 
+              linear-gradient(45deg, transparent 75%, #2d3748 75%), 
+              linear-gradient(-45deg, transparent 75%, #2d3748 75%);
+  background-size: 4px 4px;
+  background-position: 0 0, 0 2px, 2px -2px, -2px 0px;
+  background-color: #4a5568;
+}
+
+.fabric-ballistic { 
+  background: repeating-linear-gradient(
+    45deg,
+    #1a202c,
+    #1a202c 2px,
+    #2d3748 2px,
+    #2d3748 4px
+  );
+}
+
+.fabric-cordura { 
+  background: radial-gradient(circle at 2px 2px, #4a5568 1px, transparent 1px);
+  background-size: 8px 8px;
+  background-color: #2d3748;
+}
+
+.fabric-nylon { 
+  background: linear-gradient(90deg, #4a5568 50%, #2d3748 50%);
+  background-size: 2px 2px;
+}
 
 /* Mobile Filters */
 .mobile-filters {
@@ -1250,15 +1334,15 @@ body.no-scroll {
   margin-right: 12px;
 }
 
-/* Mobile Color Swatches Grid */
-.mobile-color-grid {
+/* Mobile Fabric/Color Swatches Grid */
+.mobile-fabric-grid, .mobile-color-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
   padding: 0;
 }
 
-.mobile-color-item {
+.mobile-fabric-item, .mobile-color-item {
   display: flex;
   align-items: center;
   padding: 1.5rem 1.5rem;
@@ -1267,15 +1351,15 @@ body.no-scroll {
   transition: background-color 0.2s;
 }
 
-.mobile-color-item:hover {
+.mobile-fabric-item:hover, .mobile-color-item:hover {
   background: #f9fafb;
 }
 
-.mobile-color-item:nth-child(odd) {
+.mobile-fabric-item:nth-child(odd), .mobile-color-item:nth-child(odd) {
   border-right: 1px solid #f3f4f6;
 }
 
-.mobile-color-swatch {
+.mobile-fabric-swatch, .mobile-color-swatch {
   width: 28px;
   height: 28px;
   border-radius: 4px;
@@ -1284,7 +1368,7 @@ body.no-scroll {
   flex-shrink: 0;
 }
 
-.mobile-color-text {
+.mobile-fabric-text, .mobile-color-text {
   font-size: 1.25rem;
   color: #374151;
   font-weight: 400;
@@ -1755,12 +1839,20 @@ body.no-scroll {
   .variant-text{
         margin-right: 2px !important;
   }
-  /* .color-swatches{
+  /* Legacy color-swatches styling (commented out)
+  .color-swatches{
     gap:0px !important;
   }
   .variant-text{
     font-size:10px !important;
   } */
+  
+  /* New fabric-swatches styling */
+  .fabric-swatches {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 0.5rem;
+  }
 .shopbycategory{
   padding:0px !important;
 }
