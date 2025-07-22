@@ -438,39 +438,126 @@
       }
     }
     
-    @media (max-width: 600px) {
-      .sympl-hero-content {
-        top: var(--mobile-padding-top, 50%);
-        transform: translate(-50%, -50%);
-      }
-      
-      .sympl-content-wrapper {
-        padding: 0 15px;
-      }
-      
-      .sympl-cta-button {
-        margin-top: 12px;
-      }
-      
-      .sympl-hero-title {
-        font-size: 28px !important;
-        margin-bottom: 10px;
-      }
-      
-      .sympl-hero-description {
-        font-size: 16px !important;
-      }
-      
-      .sympl-hero-description p {
-        font-size: 16px !important;
-      }
-      
-      .sympl-cta-button {
-        padding: 10px 24px;
-        font-size: 14px;
-        min-width: 140px;
+      @media (max-width: 768px) {
+    .sympl-hero-section {
+      height: 100vh;
+      height: 100dvh; /* Dynamic viewport height for better mobile support */
+    }
+    
+    .sympl-hero-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 5;
+    }
+    
+    .sympl-content-wrapper {
+      padding: 0 20px;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .sympl-text-content {
+      width: 100%;
+      text-align: center;
+    }
+    
+    /* Force center alignment on mobile for all content */
+    .sympl-align-left .sympl-text-content,
+    .sympl-align-center .sympl-text-content,
+    .sympl-align-justify .sympl-text-content {
+      text-align: center;
+    }
+    
+    .sympl-align-left .sympl-hero-title,
+    .sympl-align-center .sympl-hero-title,
+    .sympl-align-justify .sympl-hero-title {
+      text-align: center !important;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .sympl-align-left .sympl-hero-description,
+    .sympl-align-left .sympl-hero-description p,
+    .sympl-align-center .sympl-hero-description,
+    .sympl-align-center .sympl-hero-description p,
+    .sympl-align-justify .sympl-hero-description,
+    .sympl-align-justify .sympl-hero-description p {
+      text-align: center !important;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .sympl-align-left .sympl-cta-wrapper,
+    .sympl-align-center .sympl-cta-wrapper,
+    .sympl-align-justify .sympl-cta-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+    
+    .sympl-cta-button {
+      margin-top: 12px;
+    }
+    
+    .sympl-hero-title {
+      font-size: 28px !important;
+      margin-bottom: 10px;
+    }
+    
+    .sympl-hero-description {
+      font-size: 16px !important;
+    }
+    
+    .sympl-hero-description p {
+      font-size: 16px !important;
+    }
+    
+    .sympl-cta-button {
+      padding: 10px 24px;
+      font-size: 14px;
+      min-width: 140px;
+    }
+  }
+  
+  /* Extra small screens */
+  @media (max-width: 480px) {
+    .sympl-content-wrapper {
+      padding: 0 15px;
+      max-width: 100%;
+    }
+    
+    .sympl-hero-title {
+      font-size: 24px !important;
+      line-height: 1.3;
+    }
+    
+    .sympl-hero-description {
+      font-size: 14px !important;
+    }
+    
+    .sympl-cta-button {
+      padding: 8px 20px;
+      font-size: 13px;
+      min-width: 120px;
+    }
+  }
+  
+  /* Fallback for older browsers that don't support dvh */
+  @supports not (height: 100dvh) {
+    @media (max-width: 768px) {
+      .sympl-hero-section {
+        height: 100vh;
       }
     }
+  }
     
     /* HIDE SHOPIFY PLACEHOLDER IMAGES */
     .sympl-hero-section img[alt="No image"],
