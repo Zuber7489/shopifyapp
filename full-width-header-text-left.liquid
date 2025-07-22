@@ -16,14 +16,14 @@
               <img src="{{ block.settings.mobile_image | img_url: 'master' }}" class="img-fluid mobile-only" alt="{{ block.settings.heading }}">
             {% elsif block.settings.content_type == 'video' %}
               <div class="video-container desktop-only">
-                <video class="hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster | img_url: 'master' | default: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTd5ktBHvLv2pBN0wWvCupiWDx6eXcSKCKChA&s' }}" preload="metadata">
+                <video class="hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster | img_url: 'master' | default: 'https://img.freepik.com/free-photo/white-empty-canvas_1194-7555.jpg?semt=ais_hybrid&w=740' }}" preload="metadata">
                   {% if block.settings.desktop_video != blank %}
                     <source src="{{ block.settings.desktop_video }}" type="video/mp4">
                   {% endif %}
                 </video>
               </div>
               <div class="video-container mobile-only">
-                <video class="hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster_mobile | default: block.settings.video_poster | img_url: 'master' | default: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTd5ktBHvLv2pBN0wWvCupiWDx6eXcSKCKChA&s' }}" preload="metadata">
+                <video class="hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster_mobile | default: block.settings.video_poster | img_url: 'master' | default: 'https://img.freepik.com/free-photo/white-empty-canvas_1194-7555.jpg?semt=ais_hybrid&w=740' }}" preload="metadata">
                   {% if block.settings.mobile_video != blank %}
                     <source src="{{ block.settings.mobile_video }}" type="video/mp4">
                   {% elsif block.settings.desktop_video != blank %}
@@ -37,7 +37,7 @@
           <div class="container">
             <div class="hero_b" style="{% if block.settings.mobile_padding_top != blank %}--mobile-padding-top: {{ block.settings.mobile_padding_top }}px;{% endif %}">
               <div class="hero_banner_wrap">
-                <div class="main_heading_wrap">
+                <div class="main_heading_wrap" style="margin-bottom:55%;">
                   <h1>{{ block.settings.heading }}</h1>
                   <div class="banner_text">{{ block.settings.text }}</div>
 
