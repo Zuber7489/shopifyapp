@@ -3486,7 +3486,15 @@
       body: JSON.stringify({ items: [{ id: id, quantity: quantity }] }),
     })
     .then(res => res.json())
-    .then(data => { showNotification(data.status === 'error' || data.errors ? (data.description || data.message || "Error adding product.") : "Product added to cart!", data.status === 'error' || data.errors); })
+    .then(data => { 
+      if (data.status === 'error' || data.errors) {
+        showNotification(data.description || data.message || "Error adding product.", true);
+      } else {
+        showNotification("Product added to cart!", false);
+        // Trigger cart count update in header
+        document.dispatchEvent(new CustomEvent('cart:refresh'));
+      }
+    })
     .catch(err => { console.error("Fetch error:", err); showNotification("Error adding product.", true); })
     .finally(() => {
       if (mainBtn && mainBtnText && mainBtn.form && new FormData(mainBtn.form).get("id") === id) {
