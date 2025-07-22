@@ -92,15 +92,22 @@
                               
                               <!-- Enhanced display labels for Features filter -->
                               {% assign display_label = filter_value.label %}
-                              {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' %}
-                                {% if filter_value.label == 'Other' and filter_value.value contains 'Limited' %}
-                                  {% assign display_label = 'Limited Edition' %}
-                                {% elsif filter_value.label == 'Other' and filter_value.value contains 'Waterproof' %}
-                                  {% assign display_label = 'Waterproof' %}
-                                {% elsif filter_value.label == 'Other' and filter_value.value contains 'TSA' %}
-                                  {% assign display_label = 'TSA Approved' %}
-                                {% elsif filter_value.label == 'Other' and filter_value.value contains 'Dustproof' %}
-                                  {% assign display_label = 'Dustproof' %}
+                              {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' or filter.label contains 'Bag/Case features' %}
+                                {% assign lower_label = filter_value.label | downcase %}
+                                {% assign lower_value = filter_value.value | downcase %}
+                                
+                                {% if lower_label == 'other' or lower_value contains 'other' %}
+                                  {% if lower_value contains 'limited' %}
+                                    {% assign display_label = 'Limited Edition' %}
+                                  {% elsif lower_value contains 'waterproof' %}
+                                    {% assign display_label = 'Waterproof' %}
+                                  {% elsif lower_value contains 'tsa' %}
+                                    {% assign display_label = 'TSA Approved' %}
+                                  {% elsif lower_value contains 'dustproof' %}
+                                    {% assign display_label = 'Dustproof' %}
+                                  {% else %}
+                                    {% assign display_label = 'Limited Edition' %}
+                                  {% endif %}
                                 {% endif %}
                               {% endif %}
                               
@@ -295,15 +302,22 @@
                                 >
                                 <!-- Enhanced display labels for Features filter in mobile -->
                                 {% assign display_label = filter_value.label %}
-                                {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' %}
-                                  {% if filter_value.label == 'Other' and filter_value.value contains 'Limited' %}
-                                    {% assign display_label = 'Limited Edition' %}
-                                  {% elsif filter_value.label == 'Other' and filter_value.value contains 'Waterproof' %}
-                                    {% assign display_label = 'Waterproof' %}
-                                  {% elsif filter_value.label == 'Other' and filter_value.value contains 'TSA' %}
-                                    {% assign display_label = 'TSA Approved' %}
-                                  {% elsif filter_value.label == 'Other' and filter_value.value contains 'Dustproof' %}
-                                    {% assign display_label = 'Dustproof' %}
+                                {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' or filter.label contains 'Bag/Case features' %}
+                                  {% assign lower_label = filter_value.label | downcase %}
+                                  {% assign lower_value = filter_value.value | downcase %}
+                                  
+                                  {% if lower_label == 'other' or lower_value contains 'other' %}
+                                    {% if lower_value contains 'limited' %}
+                                      {% assign display_label = 'Limited Edition' %}
+                                    {% elsif lower_value contains 'waterproof' %}
+                                      {% assign display_label = 'Waterproof' %}
+                                    {% elsif lower_value contains 'tsa' %}
+                                      {% assign display_label = 'TSA Approved' %}
+                                    {% elsif lower_value contains 'dustproof' %}
+                                      {% assign display_label = 'Dustproof' %}
+                                    {% else %}
+                                      {% assign display_label = 'Limited Edition' %}
+                                    {% endif %}
                                   {% endif %}
                                 {% endif %}
                                 <span>{{ display_label }} ({{ filter_value.count }})</span>
@@ -409,9 +423,30 @@
           <div class="active-filters-chips">
             {% for filter in collection.filters %}
               {% for filter_value in filter.active_values %}
+                {% comment %}Enhanced display labels for Features filter chips{% endcomment %}
+                {% assign chip_display_label = filter_value.label %}
+                {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' or filter.label contains 'Bag/Case features' %}
+                  {% assign lower_label = filter_value.label | downcase %}
+                  {% assign lower_value = filter_value.value | downcase %}
+                  
+                  {% if lower_label == 'other' or lower_value contains 'other' %}
+                    {% if lower_value contains 'limited' %}
+                      {% assign chip_display_label = 'Limited Edition' %}
+                    {% elsif lower_value contains 'waterproof' %}
+                      {% assign chip_display_label = 'Waterproof' %}
+                    {% elsif lower_value contains 'tsa' %}
+                      {% assign chip_display_label = 'TSA Approved' %}
+                    {% elsif lower_value contains 'dustproof' %}
+                      {% assign chip_display_label = 'Dustproof' %}
+                    {% else %}
+                      {% assign chip_display_label = 'Limited Edition' %}
+                    {% endif %}
+                  {% endif %}
+                {% endif %}
+                
                 <div class="filter-chip">
-                  <span class="chip-label">{{ filter_value.label }}</span>
-                  <a href="{{ filter_value.url_to_remove }}" class="chip-close" title="Remove {{ filter_value.label }}">⊗</a>
+                  <span class="chip-label">{{ chip_display_label }}</span>
+                  <a href="{{ filter_value.url_to_remove }}" class="chip-close" title="Remove {{ chip_display_label }}">⊗</a>
                 </div>
               {% endfor %}
             {% endfor %}
