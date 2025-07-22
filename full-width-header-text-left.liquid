@@ -2,28 +2,28 @@
 <div
   data-aos="fade-up"
   data-aos-duration="3000"
-  class="hero_banner {% if section.settings.text_position %}text-{{ section.settings.text_position }}{% else %}banner_centered{% endif %}"
+  class="sympl-hero-section {% if section.settings.text_position %}sympl-text-{{ section.settings.text_position }}{% else %}sympl-text-center{% endif %}"
   data-auto-slide="{{ section.settings.auto_slide }}"
   {% if section.settings.slide_interval != blank %}data-slide-interval="{{ section.settings.slide_interval | times: 1000 }}"{% endif %}
 >
-  <div class="hero-slider">
+  <div class="sympl-hero-slider">
     {% for block in section.blocks %}
       {% if block.type == 'slide' %}
-        <div class="hero-slide" {{ block.shopify_attributes }}>
-          <div class="banner-wrap-img {% if section.settings.fix %}bwi-inner{% endif %}">
+        <div class="sympl-hero-slide" {{ block.shopify_attributes }}>
+          <div class="sympl-media-wrapper {% if section.settings.fix %}sympl-media-fixed{% endif %}">
             {% if block.settings.content_type == 'image' %}
-              <img src="{{ block.settings.desktop_image | img_url: 'master' }}" class="img-fluid desktop-only" alt="{{ block.settings.heading }}">
-              <img src="{{ block.settings.mobile_image | img_url: 'master' }}" class="img-fluid mobile-only" alt="{{ block.settings.heading }}">
+              <img src="{{ block.settings.desktop_image | img_url: 'master' }}" class="sympl-media-content sympl-desktop-only" alt="{{ block.settings.heading }}">
+              <img src="{{ block.settings.mobile_image | img_url: 'master' }}" class="sympl-media-content sympl-mobile-only" alt="{{ block.settings.heading }}">
             {% elsif block.settings.content_type == 'video' %}
-              <div class="video-container desktop-only">
-                <video class="hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster | img_url: 'master' | default: 'https://img.freepik.com/free-photo/white-empty-canvas_1194-7555.jpg?semt=ais_hybrid&w=740' }}" preload="metadata">
+              <div class="sympl-video-container sympl-desktop-only">
+                <video class="sympl-hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster | img_url: 'master' | default: 'https://img.freepik.com/free-photo/white-empty-canvas_1194-7555.jpg?semt=ais_hybrid&w=740' }}" preload="metadata">
                   {% if block.settings.desktop_video != blank %}
                     <source src="{{ block.settings.desktop_video }}" type="video/mp4">
                   {% endif %}
                 </video>
               </div>
-              <div class="video-container mobile-only">
-                <video class="hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster_mobile | default: block.settings.video_poster | img_url: 'master' | default: 'https://img.freepik.com/free-photo/white-empty-canvas_1194-7555.jpg?semt=ais_hybrid&w=740' }}" preload="metadata">
+              <div class="sympl-video-container sympl-mobile-only">
+                <video class="sympl-hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster_mobile | default: block.settings.video_poster | img_url: 'master' | default: 'https://img.freepik.com/free-photo/white-empty-canvas_1194-7555.jpg?semt=ais_hybrid&w=740' }}" preload="metadata">
                   {% if block.settings.mobile_video != blank %}
                     <source src="{{ block.settings.mobile_video }}" type="video/mp4">
                   {% elsif block.settings.desktop_video != blank %}
@@ -34,16 +34,16 @@
             {% endif %}
           </div>
 
-          <div class="container">
-            <div class="hero_b" style="{% if block.settings.mobile_padding_top != blank %}--mobile-padding-top: {{ block.settings.mobile_padding_top }}px;{% endif %}">
-              <div class="hero_banner_wrap">
-                <div class="main_heading_wrap" style="margin-bottom:55%;">
-                  <h1>{{ block.settings.heading }}</h1>
-                  <div class="banner_text">{{ block.settings.text }}</div>
+          <div class="symplcontainer">
+            <div class="sympl-hero-content" style="{% if block.settings.mobile_padding_top != blank %}--mobile-padding-top: {{ block.settings.mobile_padding_top }}px;{% endif %}">
+              <div class="sympl-content-wrapper">
+                <div class="sympl-text-content">
+                  <h1 class="sympl-hero-title">{{ block.settings.heading }}</h1>
+                  <div class="sympl-hero-description">{{ block.settings.text }}</div>
 
                   {% if block.settings.btn_url %}
-                    <div class="cta">
-                      <a href="{{ block.settings.btn_url }}" class="btn2 btn3">{{ block.settings.btn_text }}</a>
+                    <div class="sympl-cta-wrapper">
+                      <a href="{{ block.settings.btn_url }}" class="sympl-cta-button">{{ block.settings.btn_text }}</a>
                     </div>
                   {% endif %}
                 </div>
@@ -55,15 +55,15 @@
     {% endfor %}
   </div>
 
-  <!-- Slider navigation - UPDATED: moved to bottom right -->
+  <!-- Slider navigation -->
   {% if section.blocks.size > 1 %}
-    <div class="hero-slider-nav">
-      <button class="hero-slider-prev" aria-label="Previous slide">
+    <div class="sympl-slider-nav">
+      <button class="sympl-slider-prev" aria-label="Previous slide">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <button class="hero-slider-next" aria-label="Next slide">
+      <button class="sympl-slider-next" aria-label="Next slide">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -75,139 +75,291 @@
 <!-- hero_banner section end -->
 
 <style>
-  /* FULL SCREEN HERO - UPDATED */
-  .hero_banner {
+  /* SYMPL HERO SECTION - UNIQUE CLASS NAMES TO AVOID CONFLICTS */
+  .sympl-hero-section {
     position: relative;
     overflow: hidden;
-    height: 100vh; /* Full screen height */
+    height: 100vh;
     width: 100%;
   }
   
-  .hero-slider {
+  /* CONTAINER STYLING */
+  .symplcontainer {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+  
+  @media (min-width: 576px) {
+    .symplcontainer {
+      max-width: 540px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .symplcontainer {
+      max-width: 720px;
+    }
+  }
+  
+  @media (min-width: 992px) {
+    .symplcontainer {
+      max-width: 960px;
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .symplcontainer {
+      max-width: 1140px;
+    }
+  }
+  
+  .sympl-hero-slider {
     position: relative;
     width: 100%;
     height: 100%;
   }
   
-  .hero-slide {
+  .sympl-hero-slide {
     width: 100%;
-    height: 100%; /* Full height */
+    height: 100%;
     display: none;
     position: relative;
   }
   
-  .hero-slide:first-child {
+  .sympl-hero-slide:first-child {
     display: block;
   }
   
-  .banner-wrap-img {
+  .sympl-media-wrapper {
     position: relative;
     width: 100%;
     height: 100%;
   }
   
-  /* IMPROVED IMAGE/VIDEO HANDLING */
-  .banner-wrap-img img,
-  .banner-wrap-img video {
+  /* MEDIA HANDLING */
+  .sympl-media-content,
+  .sympl-hero-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
   }
   
-  .video-container {
+  .sympl-video-container {
     width: 100%;
     height: 100%;
     position: relative;
     overflow: hidden;
   }
   
-  .hero-video {
-    width: 100%;
-    height: 100%;
-    color: transparent !important;
-    background: transparent !important;
-    font-size: 0 !important;
-    line-height: 0 !important;
-  }
-  .hero-video::before,
-  .hero-video::after {
-    display: none !important;
-    content: none !important;
+  .sympl-hero-video {
+    color: transparent;
+    background: transparent;
+    font-size: 0;
+    line-height: 0;
   }
   
-  .hero_b {
+  .sympl-hero-video::before,
+  .sympl-hero-video::after {
+    display: none;
+    content: none;
+  }
+  
+  /* CONTENT POSITIONING */
+  .sympl-hero-content {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100%;
     z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
-  /* Text positioning classes */
-  .hero_banner.text-left .hero_b {
+  .sympl-content-wrapper {
+    width: 100%;
+    position: relative;
+  }
+  
+  .sympl-text-content {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Add text backdrop for better readability */
+  .sympl-hero-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  /* TEXT POSITIONING VARIANTS */
+  .sympl-text-left .sympl-hero-content {
     left: 0;
     transform: translateY(-50%);
+    justify-content: flex-start;
     text-align: left;
     padding-left: 80px;
     width: auto;
     max-width: 60%;
   }
   
-  .hero_banner.text-left .main_heading_wrap {
+  .sympl-text-left .sympl-text-content {
     text-align: left;
   }
   
-  .hero_banner.text-left .main_heading_wrap h1,
-  .hero_banner.text-left .main_heading_wrap .banner_text,
-  .hero_banner.text-left .main_heading_wrap .cta {
+  .sympl-text-left .sympl-hero-title,
+  .sympl-text-left .sympl-hero-description,
+  .sympl-text-left .sympl-cta-wrapper {
     text-align: left;
     margin-left: 0;
     margin-right: auto;
-    
   }
   
-  .hero_banner.text-left .main_heading_wrap .cta {
+  .sympl-text-left .sympl-cta-wrapper {
     display: flex;
     justify-content: flex-start;
   }
   
-  .hero_banner.text-right .hero_b {
+  .sympl-text-right .sympl-hero-content {
     left: auto;
     right: 0;
     transform: translateY(-50%);
+    justify-content: flex-end;
     text-align: right;
     padding-right: 80px;
     width: auto;
     max-width: 60%;
   }
   
-  .hero_banner.text-center .hero_b,
-  .hero_banner.banner_centered .hero_b {
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
+  .sympl-text-right .sympl-text-content {
+    text-align: right;
   }
   
-  .banner_centered .main_heading_wrap .banner_text p {
-    max-width: 480px;
-    margin: 0 auto;
-  }
-  
-  .text-left .main_heading_wrap .banner_text p {
-    max-width: 480px;
-    margin: 0;
-  }
-  
-  .text-right .main_heading_wrap .banner_text p {
-    max-width: 480px;
+  .sympl-text-right .sympl-hero-title,
+  .sympl-text-right .sympl-hero-description,
+  .sympl-text-right .sympl-cta-wrapper {
+    text-align: right;
     margin-left: auto;
     margin-right: 0;
   }
   
-  /* SLIDER NAVIGATION - UPDATED: moved to bottom right, smaller size */
-  .hero-slider-nav {
+  .sympl-text-right .sympl-cta-wrapper {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .sympl-text-center .sympl-hero-content {
+    left: 50%;
+    transform: translate(-50%, -50%);
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .sympl-text-center .sympl-text-content {
+    text-align: center;
+  }
+  
+  /* TEXT CONTENT STYLING */
+  .sympl-hero-title {
+    margin-bottom: 15px;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 48px;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .sympl-hero-description {
+    margin-bottom: 20px;
+    color: #ffffff;
+    font-size: 18px;
+    line-height: 1.5;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  .sympl-hero-description p {
+    max-width: 480px;
+    color: #ffffff;
+    margin-bottom: 0;
+  }
+  
+  .sympl-text-center .sympl-hero-description p {
+    margin: 0 auto;
+  }
+  
+  .sympl-text-left .sympl-hero-description p {
+    margin: 0;
+  }
+  
+  .sympl-text-right .sympl-hero-description p {
+    margin-left: auto;
+    margin-right: 0;
+  }
+  
+  /* CTA WRAPPER STYLING */
+  .sympl-cta-wrapper {
+    margin-top: 25px;
+  }
+  
+  /* CTA BUTTON STYLING - PILL SHAPE */
+  .sympl-cta-button {
+    border-radius: 50px;
+    padding: 12px 32px;
+    border: 2px solid #ffffff;
+    transition: none;
+    display: inline-block;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    background-color: transparent;
+    color: #ffffff;
+    font-size: 16px;
+    text-transform: uppercase;
+    min-width: 160px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  .sympl-cta-button:hover {
+    border: 2px solid #ffffff;
+    background-color: transparent;
+    color: #ffffff;
+    text-decoration: none;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .sympl-cta-button:active {
+    transform: none;
+  }
+  
+  .sympl-cta-button:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  /* SLIDER NAVIGATION */
+  .sympl-slider-nav {
     position: absolute;
     bottom: 30px;
     right: 30px;
@@ -218,12 +370,12 @@
     gap: 10px;
   }
   
-  .hero-slider-prev,
-  .hero-slider-next {
+  .sympl-slider-prev,
+  .sympl-slider-next {
     background: rgba(255, 255, 255, 0.3);
     border: none;
-    width: 21px; /* Smaller size */
-    height: 21px; /* Smaller size */
+    width: 21px;
+    height: 21px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -232,62 +384,65 @@
     border-radius: 0;
   }
   
-  .hero-slider-prev:hover,
-  .hero-slider-next:hover {
+  .sympl-slider-prev:hover,
+  .sympl-slider-next:hover {
     background: rgba(255, 255, 255, 0.5);
   }
   
-  /* REMOVED DOTS - as requested */
-  .hero-slider-dots {
-    display: none;
-  }
-  
-  /* Mobile styles */
+  /* RESPONSIVE DESIGN */
   @media (max-width: 767px) {
-    .desktop-only {
+    .sympl-desktop-only {
       display: none;
     }
     
-    .mobile-only {
+    .sympl-mobile-only {
       display: block;
     }
     
-    .hero_banner.text-left .hero_b,
-    .hero_banner.text-right .hero_b {
+    .sympl-text-left .sympl-hero-content,
+    .sympl-text-right .sympl-hero-content {
       padding-left: 20px;
       padding-right: 20px;
       max-width: 100%;
     }
     
-    .hero-slider-nav {
+    .sympl-slider-nav {
       bottom: 20px;
       right: 20px;
     }
     
-    .hero-slider-prev,
-    .hero-slider-next {
+    .sympl-slider-prev,
+    .sympl-slider-next {
       width: 36px;
       height: 36px;
     }
   }
   
   @media (min-width: 768px) {
-    .desktop-only {
+    .sympl-desktop-only {
       display: block;
     }
     
-    .mobile-only {
+    .sympl-mobile-only {
       display: none;
+    }
+    
+    .sympl-hero-title {
+      font-size: 56px;
+    }
+    
+    .sympl-hero-description {
+      font-size: 20px;
     }
   }
   
   @media (max-width: 600px) {
-    .banner_centered .hero_b {
+    .sympl-text-center .sympl-hero-content {
       top: var(--mobile-padding-top, 50%);
-      transform: translateY(-50%) translateX(-50%);
+      transform: translate(-50%, -50%);
     }
     
-    .text-left .hero_b {
+    .sympl-text-left .sympl-hero-content {
       top: var(--mobile-padding-top, 50%);
       transform: translateY(-50%);
       left: 0;
@@ -295,7 +450,7 @@
       max-width: 100%;
     }
     
-    .text-right .hero_b {
+    .sympl-text-right .sympl-hero-content {
       top: var(--mobile-padding-top, 50%);
       transform: translateY(-50%);
       right: 0;
@@ -303,39 +458,48 @@
       max-width: 100%;
     }
     
-    .banner_centered .main_heading_wrap .btn2,
-    .text-left .main_heading_wrap .btn2,
-    .text-right .main_heading_wrap .btn2 {
+    .sympl-cta-button {
       margin-top: 12px;
     }
     
-    .main_heading_wrap h1 {
-      font-size: 24px;
+    .sympl-hero-title {
+      font-size: 28px !important;
       margin-bottom: 10px;
     }
     
-    .banner_text p {
+    .sympl-hero-description {
+      font-size: 16px !important;
+    }
+    
+    .sympl-hero-description p {
+      font-size: 16px !important;
+    }
+    
+    .sympl-cta-button {
+      padding: 10px 24px;
       font-size: 14px;
+      min-width: 140px;
     }
   }
-  /* Hide Shopify/theme 'No image' placeholder in hero banner */
-  .hero_banner img[alt="No image"],
-  .hero_banner img[alt="no image"],
-  .hero_banner img[src*="no-image"],
-  .hero_banner .no-image {
-    display: none !important;
+  
+  /* HIDE SHOPIFY PLACEHOLDER IMAGES */
+  .sympl-hero-section img[alt="No image"],
+  .sympl-hero-section img[alt="no image"],
+  .sympl-hero-section img[src*="no-image"],
+  .sympl-hero-section .no-image {
+    display: none;
   }
 </style>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Initialize hero slider
-    const slides = document.querySelectorAll('.hero-slide');
+    const slides = document.querySelectorAll('.sympl-hero-slide');
     if (slides.length <= 1) return;
     
-    const heroSlider = document.querySelector('.hero_banner');
-    const prevButton = document.querySelector('.hero-slider-prev');
-    const nextButton = document.querySelector('.hero-slider-next');
+    const heroSlider = document.querySelector('.sympl-hero-section');
+    const prevButton = document.querySelector('.sympl-slider-prev');
+    const nextButton = document.querySelector('.sympl-slider-next');
     let currentSlide = 0;
     let autoSlideInterval;
     
@@ -416,7 +580,7 @@
     let touchStartX = 0;
     let touchEndX = 0;
     
-    const slider = document.querySelector('.hero-slider');
+    const slider = document.querySelector('.sympl-hero-slider');
     
     slider.addEventListener('touchstart', e => {
       touchStartX = e.changedTouches[0].screenX;
@@ -634,6 +798,6 @@
         }
       ]
     }
-  ]
-}
+      ]
+  }
 {% endschema %}
