@@ -470,37 +470,71 @@
       text-align: center;
     }
     
-    /* Force center alignment on mobile for all content */
-    .sympl-align-left .sympl-text-content,
-    .sympl-align-center .sympl-text-content,
-    .sympl-align-justify .sympl-text-content {
-      text-align: center;
+    /* Mobile responsive text alignment - keep original alignment options */
+    .sympl-align-left .sympl-text-content {
+      text-align: left;
     }
     
-    .sympl-align-left .sympl-hero-title,
-    .sympl-align-center .sympl-hero-title,
-    .sympl-align-justify .sympl-hero-title {
-      text-align: center !important;
-      margin-left: auto;
+    .sympl-align-left .sympl-hero-title {
+      text-align: left;
+      margin-left: 0;
       margin-right: auto;
     }
     
     .sympl-align-left .sympl-hero-description,
-    .sympl-align-left .sympl-hero-description p,
-    .sympl-align-center .sympl-hero-description,
-    .sympl-align-center .sympl-hero-description p,
-    .sympl-align-justify .sympl-hero-description,
-    .sympl-align-justify .sympl-hero-description p {
-      text-align: center !important;
+    .sympl-align-left .sympl-hero-description p {
+      text-align: left;
+      margin-left: 0;
+      margin-right: auto;
+    }
+    
+    .sympl-align-left .sympl-cta-wrapper {
+      display: flex;
+      justify-content: flex-start;
+    }
+    
+    .sympl-align-center .sympl-text-content {
+      text-align: center;
+    }
+    
+    .sympl-align-center .sympl-hero-title {
+      text-align: center;
       margin-left: auto;
       margin-right: auto;
     }
     
-    .sympl-align-left .sympl-cta-wrapper,
-    .sympl-align-center .sympl-cta-wrapper,
-    .sympl-align-justify .sympl-cta-wrapper {
+    .sympl-align-center .sympl-hero-description,
+    .sympl-align-center .sympl-hero-description p {
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .sympl-align-center .sympl-cta-wrapper {
       display: flex;
       justify-content: center;
+    }
+    
+    .sympl-align-justify .sympl-text-content {
+      text-align: left;
+    }
+    
+    .sympl-align-justify .sympl-hero-title {
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .sympl-align-justify .sympl-hero-description,
+    .sympl-align-justify .sympl-hero-description p {
+      text-align: justify;
+      margin-left: 0;
+      margin-right: 0;
+    }
+    
+    .sympl-align-justify .sympl-cta-wrapper {
+      display: flex;
+      justify-content: flex-start;
     }
     
     .sympl-cta-button {
