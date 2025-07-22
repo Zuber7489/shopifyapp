@@ -70,7 +70,11 @@
     .pricesizeadjust {
       font-family: 'Neue Haas Display', sans-serif !important;
     }
-    
+        /* Ensure strong tags in specs have medium bold weight */
+      .specs-content strong {
+        font-weight: 400 !important;
+        color: #000 !important;
+      }
     /* Specific font weights */
     h1, h2, .product-title { font-weight: 700 !important; }
     h3, .bundleandsave { font-weight: 500 !important; }
@@ -151,11 +155,7 @@
         color: #000 !important;
       }
       
-      /* Ensure strong tags in specs have medium bold weight */
-      .specs-content strong {
-        font-weight: 400 !important;
-        color: #000 !important;
-      }
+  
       
       /* Bundle & save Header: Font size 24px, font weight 600, letter spacing 0.5px */
       .bundleandsave {
@@ -2657,7 +2657,7 @@
     }  else {
             const img = document.createElement('img');
             img.src = itemData.src; img.alt = itemData.alt;
-            img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f6f6f6; cursor: pointer;';
+            img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; background: #f6f6f6; cursor: pointer;';
             img.onclick = () => openImageModal(itemData.fullSrc);
             gridCell.appendChild(img);
         }
