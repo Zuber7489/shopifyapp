@@ -431,14 +431,18 @@
     <div class="products-grid">
       {% for product in collection.products %}
         {% assign has_size_variants = false %}
+        {% assign has_style_variants = false %}
         {% assign size_option = false %}
+        {% assign style_option = false %}
         
         {% for option in product.options_with_values %}
           {% assign option_name_lower = option.name | downcase %}
           {% if option_name_lower == 'size' %}
             {% assign size_option = option %}
             {% assign has_size_variants = true %}
-            {% break %}
+          {% elsif option_name_lower == 'style' %}
+            {% assign style_option = option %}
+            {% assign has_style_variants = true %}
           {% endif %}
         {% endfor %}
 
@@ -635,6 +639,206 @@
                         <span class="price-compare">{{ size_variant.compare_at_price | money }}</span>
                       {% else %}
                         <span class="price-regular">{{ size_variant.price | money }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% elsif has_style_variants %}
+          {% for style_value in style_option.values %}
+            {% assign style_variant = product.variants | where: 'option1', style_value | first %}
+            {% unless style_variant %}
+              {% assign style_variant = product.variants | where: 'option2', style_value | first %}
+            {% endunless %}
+            {% unless style_variant %}
+              {% assign style_variant = product.variants | where: 'option3', style_value | first %}
+            {% endunless %}
+
+            {% if style_variant %}
+              <div class="product-card">
+                {% comment %}Find the first fabric variant for this style{% endcomment %}
+                {% assign first_fabric_variant = style_variant %}
+                {% for option in product.options_with_values %}
+                  {% assign option_name_lower = option.name | downcase %}
+                  {% if option_name_lower == 'color' or option_name_lower == 'colour' %}
+                    {% assign first_color = option.values.first %}
+                    {% for variant in product.variants %}
+                      {% if variant.option1 == style_value and variant.option2 == first_color %}
+                        {% assign first_fabric_variant = variant %}
+                        {% break %}
+                      {% elsif variant.option2 == style_value and variant.option1 == first_color %}
+                        {% assign first_fabric_variant = variant %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+                    {% break %}
+                  {% endif %}
+                {% endfor %}
+                
+                <a href="{{ product.url }}?variant={{ first_fabric_variant.id }}" class="product-link">
+                  <!-- Product Image -->
+                  <div class="product-image-wrapper" 
+                       onmouseenter="showSecondImage('{{ product.id }}-{{ style_variant.id }}')" 
+                       onmouseleave="showFirstImage('{{ product.id }}-{{ style_variant.id }}')">
+                    {% if style_variant.featured_image %}
+                      <img 
+                        id="main-image-product-{{ product.id }}-{{ style_variant.id }}"
+                        src="{{ style_variant.featured_image | img_url: '2000x2000' }}" 
+                        alt="{{ style_variant.featured_image.alt | escape }}"
+                        class="product-image"
+                        loading="lazy"
+                        data-first-image="{{ style_variant.featured_image | img_url: '2000x2000' }}"
+                        {% if product.images[1] %}
+                        data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
+                        {% endif %}
+                      >
+                    {% elsif product.featured_image %}
+                      <img 
+                        id="main-image-product-{{ product.id }}-{{ style_variant.id }}"
+                        src="{{ product.featured_image | img_url: '2000x2000' }}" 
+                        alt="{{ product.featured_image.alt | escape }}"
+                        class="product-image"
+                        loading="lazy"
+                        data-first-image="{{ product.featured_image | img_url: '2000x2000' }}"
+                        {% if product.images[1] %}
+                        data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
+                        {% endif %}
+                      >
+                    {% else %}
+                      <div class="product-image-placeholder">
+                        <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                          <rect width="100" height="100" fill="#f3f4f6"/>
+                          <text x="50" y="50" text-anchor="middle" dy=".3em" fill="#9ca3af">No Image</text>
+                        </svg>
+                      </div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Fabric/Color Swatches -->
+                  {% assign fabric_option = false %}
+                  {% assign color_option = false %}
+                  {% assign has_fabric_options = false %}
+                  {% assign has_color_options = false %}
+                  {% assign display_option = false %}
+                  
+                  {% comment %}First, look for dedicated Fabric option{% endcomment %}
+                  {% for option in product.options_with_values %}
+                    {% assign option_name_lower = option.name | downcase %}
+                    {% if option_name_lower == 'fabric' %}
+                      {% assign fabric_option = option %}
+                      {% assign has_fabric_options = true %}
+                      {% assign display_option = option %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                  
+                  {% comment %}If no Fabric option found, look for Color option (backward compatibility){% endcomment %}
+                  {% unless has_fabric_options %}
+                    {% for option in product.options_with_values %}
+                      {% assign option_name_lower = option.name | downcase %}
+                      {% if option_name_lower == 'color' or option_name_lower == 'colour' %}
+                        {% assign fabric_option = option %}
+                        {% assign has_fabric_options = true %}
+                        {% assign display_option = option %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endunless %}
+                  {% if has_fabric_options %}
+                    <div class="fabric-swatches" style="display: flex; gap: 10px; margin-bottom: 0.5rem;">
+                      {% for value in display_option.values %}
+                        {% comment %}Find the variant with current style and this color{% endcomment %}
+                        {% assign current_style = style_value %}
+                        {% assign matched_variant = null %}
+                        
+                        {% for variant in product.variants %}
+                          {% if variant.option1 == current_style and variant.option2 == value %}
+                            {% assign matched_variant = variant %}
+                            {% break %}
+                          {% elsif variant.option2 == current_style and variant.option1 == value %}
+                            {% assign matched_variant = variant %}
+                            {% break %}
+                          {% elsif variant.option1 == current_style and variant.option3 == value %}
+                            {% assign matched_variant = variant %}
+                            {% break %}
+                          {% elsif variant.option3 == current_style and variant.option1 == value %}
+                            {% assign matched_variant = variant %}
+                            {% break %}
+                          {% elsif variant.option2 == current_style and variant.option3 == value %}
+                            {% assign matched_variant = variant %}
+                            {% break %}
+                          {% elsif variant.option3 == current_style and variant.option2 == value %}
+                            {% assign matched_variant = variant %}
+                            {% break %}
+                          {% endif %}
+                        {% endfor %}
+                        
+                        {% unless matched_variant %}
+                          {% assign matched_variant = product.variants | where: 'option1', value | first %}
+                          {% unless matched_variant %}
+                            {% assign matched_variant = product.variants | where: 'option2', value | first %}
+                          {% endunless %}
+                          {% unless matched_variant %}
+                            {% assign matched_variant = product.variants | where: 'option3', value | first %}
+                          {% endunless %}
+                        {% endunless %}
+                        
+                        <div 
+                          class="color-swatch-variant" 
+                          data-image="{% if matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
+                          data-product-id="{{ product.id }}-{{ style_variant.id }}"
+                          data-variant-index="{{ forloop.index0 }}"
+                          title="{{ value | capitalize }}"
+                          style="display:inline-block; cursor:pointer; text-align:center;"
+                          onclick="updateProductLink(this, '{{ product.url }}', '{{ matched_variant.id }}'); event.preventDefault(); event.stopPropagation();"
+                        >
+                          <div class="variant-thumbnail" style="width: 48px; height: 48px; overflow: hidden; box-sizing: border-box; background: #f6f6f6; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;">
+                            {% if matched_variant.featured_image %}
+                              <img src="{{ matched_variant.featured_image | img_url: '100x100', crop: 'center' }}" alt="{{ value }}" style="width: 100%; height: 100%; object-fit: contain;" />
+                            {% else %}
+                              <div style="width: 100%; height: 100%; background-color: #eee; display: flex; align-items: center; justify-content: center; color: #888; font-size: 10px; font-weight: bold;">{{ value | slice: 0, 2 | upcase }}</div>
+                            {% endif %}
+                          </div>
+                          <div class="variant-underline" style="width: 48px; height: 0.125rem; background: {% if forloop.first %}black{% else %}transparent{% endif %}; margin-top: 3px;"></div>
+                          <div class="variant-text" style="font-size: 14px; color: #b48a3a; font-weight: normal; letter-spacing: 0.5px; margin-top: 5px; white-space: nowrap; display: inline-block; margin-right: 17px;">{{ value | capitalize }}</div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+
+                  <!-- Product Info -->
+                  <div class="product-info">
+                    <h3 class="product-title">
+                      {% comment %}Try multiple metafield sources in hierarchy{% endcomment %}
+                      {% assign custom_title = first_fabric_variant.metafields.custom.product_title %}
+                      {% unless custom_title != blank %}
+                        {% assign custom_title = style_variant.metafields.custom.product_title %}
+                      {% endunless %}
+                      {% unless custom_title != blank %}
+                        {% assign custom_title = product.metafields.custom.product_title %}
+                      {% endunless %}
+                      
+                      {% if custom_title != blank %}
+                        {{ custom_title }}
+                      {% else %}
+                        {% assign base_title = product.title | split: ' ' %}
+                        {% assign display_title = '' %}
+                        {% for part in base_title %}
+                          {% unless part contains 'L' %}
+                            {% assign display_title = display_title | append: part | append: ' ' %}
+                          {% endunless %}
+                        {% endfor %}
+                        {{ display_title | strip }} {{ style_value }}
+                      {% endif %}
+                    </h3>
+                    <div class="product-price">
+                      {% if style_variant.compare_at_price > style_variant.price %}
+                        <span class="price-sale">{{ style_variant.price | money }}</span>
+                        <span class="price-compare">{{ style_variant.compare_at_price | money }}</span>
+                      {% else %}
+                        <span class="price-regular">{{ style_variant.price | money }}</span>
                       {% endif %}
                     </div>
                   </div>

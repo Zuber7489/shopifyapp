@@ -380,6 +380,53 @@
             </div>
           </div>
         {% endif %}
+
+        <!-- SELECT STYLE Section (for products like wallets with style variants) -->
+        {% assign style_option = false %}
+        {% assign has_style_options = false %}
+    
+        {% for option in product.options_with_values %}
+          {% assign option_name_lower = option.name | downcase %}
+          {% if option_name_lower == 'style' %}
+            {% assign style_option = option %}
+            {% assign has_style_options = true %}
+            {% break %}
+          {% endif %}
+        {% endfor %}
+    
+        {% unless has_style_options %}
+          {% if product.metafields.custom.style_options != blank %}
+            {% assign has_style_options = true %}
+          {% endif %}
+        {% endunless %}
+    
+        {% if has_style_options %}
+          <div class="style-selection" style="margin-bottom: 10px;">
+            <div style="display: flex; align-items: center;  gap: 10px; margin-bottom: 10px;">
+              <label class="selectsizeadjust" style="display: block;  color: #333;   font-family: 'Neue Haas Display', sans-serif !important; font-weight:400;  font-size:13px;">Select style:</label>
+              <div style="display: flex; background-color: #d8e2e2; border-radius: 20px; flex-wrap: wrap; gap: 5px;">
+                {% if style_option %}
+                  {% for value in style_option.values %}
+                      <button class="style-option{% if style_option.selected_value == value %} active{% endif %}" 
+                            data-value="{{ value | escape }}"
+                            style="padding: 5px 15px; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 11px; {% if style_option.selected_value == value %}background-color: #2f6f6f; color: white;{% else %}background-color: #d8e2e2; color: #2f6f6f;{% endif %}; white-space: nowrap;">
+                      {{ value }}
+                    </button>
+                  {% endfor %}
+                {% else %}
+                  {% assign style_values = product.metafields.custom.style_options.value | split: ',' %}
+                  {% for style in style_values %}
+                    <button class="style-option{% if forloop.first %} active{% endif %}" 
+                            data-value="{{ style | strip | escape }}"
+                            style="padding: 5px 15px; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 11px; {% if forloop.first %}background-color: #2f6f6f; color: white;{% else %}background-color: #d8e2e2; color: #2f6f6f;{% endif %}; white-space: nowrap;">
+                      {{ style | strip }}
+                    </button>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
     
         <!-- SELECT FABRIC & COLOR Section -->
         {% assign fabric_option = false %}
@@ -953,6 +1000,17 @@
       .selectsizeadjust{
         font-size:14px !important;
         text-transform: none !important;
+      }
+      
+      /* Style options mobile adjustments */
+      .style-selection {
+        margin-bottom: 8px !important;
+      }
+      
+      .style-option {
+        padding: 4px 12px !important;
+        font-size: 10px !important;
+        margin: 2px !important;
       }
       .functiondescriptionadjust{
         color:gray !important;
@@ -2955,6 +3013,7 @@
     function initVariantSelector() {
       const fabricOptions = document.querySelectorAll(".fabric-option");
       const sizeOptions = document.querySelectorAll(".size-option");
+      const styleOptions = document.querySelectorAll(".style-option");
       
       fabricOptions.forEach(option => {
         option.addEventListener("click", () => {
@@ -2996,6 +3055,40 @@
           }
           
           // Handle products with both fabric and size options
+          if (currentFabric) {
+            const matchingVariant = Object.values(productVariants).find(v => 
+              (v.option1 === currentFabric || v.option2 === currentFabric || v.option3 === currentFabric) &&
+              (v.option1 === value || v.option2 === value || v.option3 === value)
+            );
+            if (matchingVariant) switchToVariant(matchingVariant);
+          }
+        });
+      });
+
+      // Add style options handling
+      styleOptions.forEach(option => {
+        option.addEventListener("click", () => {
+          const value = option.getAttribute("data-value");
+          styleOptions.forEach(opt => { opt.classList.remove("active"); opt.style.backgroundColor = "#d8e2e2"; opt.style.color = "#2f6f6f"; });
+          option.classList.add("active"); option.style.backgroundColor = "#2f6f6f"; option.style.color = "white";
+          
+          const currentFabricOption = document.querySelector(".fabric-option.active");
+          const currentFabric = currentFabricOption ? currentFabricOption.getAttribute("data-value") : null;
+          
+          // Handle products with only style options (no fabric/color)
+          if (!currentFabricOption) {
+            // Find variant that matches the selected style
+            const matchingVariant = Object.values(productVariants).find(v => 
+              v.option1 === value || v.option2 === value || v.option3 === value
+            );
+            if (matchingVariant) {
+              console.log('Style-only product: Switching to variant', matchingVariant.id, 'with title:', matchingVariant.title);
+              switchToVariant(matchingVariant);
+              return;
+            }
+          }
+          
+          // Handle products with both fabric and style options
           if (currentFabric) {
             const matchingVariant = Object.values(productVariants).find(v => 
               (v.option1 === currentFabric || v.option2 === currentFabric || v.option3 === currentFabric) &&
