@@ -106,7 +106,7 @@
                                   {% elsif lower_value contains 'dustproof' %}
                                     {% assign display_label = 'Dustproof' %}
                                   {% else %}
-                                    {% assign display_label = 'Limited Edition' %}
+                                    {% assign display_label = filter_value.label %}
                                   {% endif %}
                                 {% endif %}
                               {% endif %}
@@ -316,7 +316,7 @@
                                     {% elsif lower_value contains 'dustproof' %}
                                       {% assign display_label = 'Dustproof' %}
                                     {% else %}
-                                      {% assign display_label = 'Limited Edition' %}
+                                      {% assign display_label = filter_value.label %}
                                     {% endif %}
                                   {% endif %}
                                 {% endif %}
@@ -439,7 +439,7 @@
                     {% elsif lower_value contains 'dustproof' %}
                       {% assign chip_display_label = 'Dustproof' %}
                     {% else %}
-                      {% assign chip_display_label = 'Limited Edition' %}
+                      {% assign chip_display_label = filter_value.label %}
                     {% endif %}
                   {% endif %}
                 {% endif %}
