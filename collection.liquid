@@ -6,7 +6,24 @@
     <div class="containerednew">
       <h1 class="collection-title">{{ collection.title | default: 'Shop all bags' }}</h1>
       <div class="collection-description">
-        {{ collection.description | default: 'Super-functional and versatile laptop backpacks in waterproof fabric – lightweight, spacious and comfy for business, gym trips and everyday travel.' }}
+        {% if collection.description != blank %}
+          {{ collection.description }}
+        {% else %}
+          {% case collection.handle %}
+            {% when 'bags' or 'all' %}
+              Super-functional and versatile laptop backpacks in waterproof fabric – lightweight, spacious and comfy for business, gym trips and everyday travel.
+            {% when 'totes' %}
+              Designed for life on the move, these versatile totes and shoulder bags are perfect for work, gym, errands, and everyday adventures.
+            {% when 'backpacks' %}
+              Premium travel and commuter backpacks built for the modern nomad. Waterproof, durable, and designed for every adventure.
+            {% when 'slings' %}
+              Compact and versatile sling bags for hands-free convenience. Perfect for daily essentials, travel, and active lifestyles.
+            {% when 'wallets' %}
+              Sleek and functional wallets designed for the tech-savvy. RFID protection, minimalist design, and premium materials.
+            {% when 'accessories' %}
+              Essential travel accessories to complement your journey. From packing cubes to tech organizers, we've got you covered.
+          {% endcase %}
+        {% endif %}
       </div>
     </div>
   </div>
