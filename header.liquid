@@ -95,6 +95,8 @@
     position: relative;
     transition: background-color 0.3s ease;
     background-color: {{ section.settings.bg_color_1 }};
+    margin-bottom: 0; /* Remove any bottom margin */
+    border-bottom: none; /* Remove any border */
   }
   
   .announcement-container {
@@ -431,6 +433,7 @@
     width: 100%;
     z-index: 1002;
     transition: transform 0.3s ease, background 0.3s, box-shadow 0.3s, top 0.3s;
+    margin-top: -1px; /* Remove any gap between announcement bar and header */
   }
   .header_wrap.header-hidden {
     transform: translateY(-100%);
@@ -503,9 +506,22 @@
   .header_wrap:focus-within #cart-count {
     color: #000 !important;
   }
+  /* Hamburger menu black on hover */
+  .header_wrap:hover .header__nav-button span,
+  .header_wrap:focus-within .header__nav-button span {
+    background: #000 !important;
+  }
   .top_bar {
     position: static;
     width: 100%;
+    border-bottom: none; /* Ensure no border */
+  }
+  
+  /* Ensure no gap between announcement and header */
+  .header_wrap .container {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
   }
   @media (max-width: 767px) {
     .header_wrap {
