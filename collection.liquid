@@ -90,9 +90,9 @@
                                 <span class="fabric-swatch fabric-{{ fabric_name }}"></span>
                               {% endif %}
                               
-                              <!-- Enhanced display labels for Features filter (product and variant level) -->
+                              <!-- Enhanced display labels for Features filter -->
                               {% assign display_label = filter_value.label %}
-                              {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' or filter.label contains 'Bag/Case features' or filter.label contains 'Variant Features' or filter.label contains 'variant features' %}
+                              {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' or filter.label contains 'Bag/Case features' %}
                                 {% assign lower_label = filter_value.label | downcase %}
                                 {% assign lower_value = filter_value.value | downcase %}
                                 
@@ -300,9 +300,9 @@
                                   {% if filter_value.active %}checked{% endif %}
                                   {% if filter_value.count == 0 and filter_value.active == false %}disabled{% endif %}
                                 >
-                                <!-- Enhanced display labels for Features filter in mobile (product and variant level) -->
+                                <!-- Enhanced display labels for Features filter in mobile -->
                                 {% assign display_label = filter_value.label %}
-                                {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' or filter.label contains 'Bag/Case features' or filter.label contains 'Variant Features' or filter.label contains 'variant features' %}
+                                {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' or filter.label contains 'Bag/Case features' %}
                                   {% assign lower_label = filter_value.label | downcase %}
                                   {% assign lower_value = filter_value.value | downcase %}
                                   
@@ -423,9 +423,9 @@
           <div class="active-filters-chips">
             {% for filter in collection.filters %}
               {% for filter_value in filter.active_values %}
-                {% comment %}Enhanced display labels for Features filter chips (product and variant level){% endcomment %}
+                {% comment %}Enhanced display labels for Features filter chips{% endcomment %}
                 {% assign chip_display_label = filter_value.label %}
-                {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' or filter.label contains 'Bag/Case features' or filter.label contains 'Variant Features' or filter.label contains 'variant features' %}
+                {% if filter.label contains 'Features' or filter.label contains 'features' or filter.label contains 'Feature' or filter.label contains 'Bag/Case features' %}
                   {% assign lower_label = filter_value.label | downcase %}
                   {% assign lower_value = filter_value.value | downcase %}
                   
