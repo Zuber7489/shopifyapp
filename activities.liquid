@@ -10,19 +10,12 @@
             {% if block.type == 'activity' %}
               <div class="activity-item" 
                    data-activity="{{ block.id }}" 
+                   data-link="{{ block.settings.link }}"
                    {{ block.shopify_attributes }}>
-                <!-- <a href="{{ block.settings.link }}" class="activity-link">
+                <a class="activity-link" {% if block.settings.link != blank %}data-mobile-link="{{ block.settings.link }}"{% endif %}>
                   <span class="activity-name">{{ block.settings.activity_name }}</span>
-                  <span class="activity-arrow {% unless block.settings.show_arrow %}hover-only{% endunless %}">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M14 5L21 12L14 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M3 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </span>
-                </a> -->
-                      <a  class="activity-link">
-                  <span class="activity-name">{{ block.settings.activity_name }}</span>
-                  <span class="activity-arrow {% unless block.settings.show_arrow %}hover-only{% endunless %}">
+                  <span class="activity-arrow {% unless block.settings.show_arrow %}hover-only{% endunless %}" 
+                        data-arrow-click="mobile-link">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M14 5L21 12L14 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M3 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -130,6 +123,7 @@
   line-height: 1.2;
   font-family: sans-serif;
   transition: all 0.3s ease;
+  cursor: default; /* Default cursor for desktop */
 }
 
 .activity-name {
@@ -236,6 +230,10 @@
       opacity: 1;
       transform: translateX(0);
     }
+    
+    .activity-name {
+      cursor: default; /* Not clickable on desktop */
+    }
   }
   
   /* Mobile-specific styles */
@@ -266,6 +264,7 @@
       font-size: 28px;
       font-weight:550;
       letter-spacing:0.5px;
+      cursor: pointer; /* Make it clear that it's clickable on mobile */
     }
     
     .activity-link {
@@ -281,6 +280,11 @@
   .activity-arrow.hover-only {
     opacity: 1;
     transform: translateX(0);
+  }
+  
+  /* Make arrows clickable on mobile */
+  .activity-arrow {
+    cursor: pointer;
   }
     
     .section-titledd {
@@ -324,6 +328,64 @@
         }
       });
     });
+
+    // Mobile-specific click functionality
+    function isMobile() {
+      return window.innerWidth <= 767;
+    }
+
+    function handleMobileClick(activityItem) {
+      const link = activityItem.getAttribute('data-link');
+      if (link && link.trim() !== '') {
+        window.location.href = link;
+      }
+    }
+
+    // Handle arrow clicks on mobile
+    document.querySelectorAll('.activity-arrow').forEach(arrow => {
+      arrow.addEventListener('click', function(e) {
+        // Only handle click on mobile devices
+        if (isMobile()) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const activityItem = this.closest('.activity-item');
+          handleMobileClick(activityItem);
+        }
+      });
+    });
+
+    // Handle activity name clicks on mobile
+    document.querySelectorAll('.activity-name').forEach(name => {
+      name.addEventListener('click', function(e) {
+        if (isMobile()) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const activityItem = this.closest('.activity-item');
+          handleMobileClick(activityItem);
+        }
+      });
+    });
+
+    // Handle full activity link clicks on mobile
+    document.querySelectorAll('.activity-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        if (isMobile()) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const activityItem = this.closest('.activity-item');
+          handleMobileClick(activityItem);
+        }
+      });
+    });
+
+    // Handle window resize to recheck mobile state
+    window.addEventListener('resize', function() {
+      // Remove any existing event listeners and reattach based on screen size
+      // This ensures proper behavior when switching between mobile and desktop
+    });
   });
 </script>
 
@@ -366,7 +428,7 @@
           "type": "url",
           "id": "link",
           "label": "Activity Link",
-          "info": "Where users will go when they click on this activity"
+          "info": "Where users will go when they click on this activity arrow (mobile only)"
         }
       ]
     }
