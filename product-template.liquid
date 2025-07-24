@@ -719,7 +719,29 @@
     </div>
     </div>
     
-    <!-- FIXED Dynamic Specs & Materials Accordion -->
+    <!-- Dynamic Specs & Materials Accordion - Always show, only display variant content -->
+    {% assign has_variant_specs_content = false %}
+    
+    {% comment %}Check ONLY variant specs content - NO product level fallback{% endcomment %}
+    {% if current_variant.metafields.custom.specs and current_variant.metafields.custom.specs != blank %}
+      {% if current_variant.metafields.custom.specs.type == 'rich_text' %}
+        {% comment %}For rich_text, use metafield_tag to render and then check for real content{% endcomment %}
+        {% assign specs_rendered = current_variant.metafields.custom.specs | metafield_tag %}
+        {% assign specs_content = specs_rendered | strip_html | strip %}
+        {% comment %}Check if content has meaningful text (more than just whitespace/basic structure){% endcomment %}
+        {% if specs_content != blank and specs_content != '' and specs_content.size > 5 %}
+          {% assign has_variant_specs_content = true %}
+        {% endif %}
+      {% else %}
+        {% comment %}For other metafield types{% endcomment %}
+        {% assign specs_content = current_variant.metafields.custom.specs | strip_html | strip %}
+        {% if specs_content != blank and specs_content != '' %}
+          {% assign has_variant_specs_content = true %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+    
+    {% comment %}Always show accordion regardless of content{% endcomment %}
     <div class="accordion-item" style="margin-bottom: 0; padding-left:10px; padding-right:10px; border-bottom: 1px solid #eee;">
       <hr class="desktop-divider" style="border: none; height: 2px; background-color: #eee; margin: 0; width: 100%; margin-left: 0; display: none;">
       <div class="accordion-header" style="padding: 15px 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" data-section="specs">
@@ -732,16 +754,19 @@
       </div>
       <div class="accordion-content" id="specs-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
         <div class="specs-content" id="dynamicSpecs" style="padding-bottom: 15px; color: #666; line-height: 1.6;">
-          {% if current_variant.metafields.custom.specs %}
+          {% if has_variant_specs_content %}
             <div style="white-space: pre-wrap; margin: 0; font-family: inherit;" class="specs-dynamic-content">
-              {{ current_variant.metafields.custom.specs | replace: '&quot;', '"' | newline_to_br }}
-            </div>
-          {% elsif product.metafields.custom.specs %}
-            <div style="white-space: pre-wrap; margin: 0; font-family: inherit;" class="specs-dynamic-content">
-              {{ product.metafields.custom.specs | replace: '&quot;', '"' | newline_to_br }}
+              {% if current_variant.metafields.custom.specs.type == 'rich_text' %}
+                {{ current_variant.metafields.custom.specs | metafield_tag }}
+              {% else %}
+                {{ current_variant.metafields.custom.specs | replace: '&quot;', '"' | newline_to_br }}
+              {% endif %}
             </div>
           {% else %}
-            <p style="margin: 0;">Product specifications and materials information.</p>
+            {% comment %}Show empty content when variant has no specs{% endcomment %}
+            <div style="margin: 0; min-height: 1px;">
+              &nbsp;
+            </div>
           {% endif %}
         </div>
       </div>
@@ -2445,22 +2470,45 @@
     };
     
     let currentVariant = {{ current_variant | json }};
-    let currentColorImages = [];
-    let currentMobileIndex = 0;
-    
-    const DESKTOP_NAVIGABLE_START_INDEX = 5; 
-    let currentDesktopNavigableDisplayIndex = 0;
-    
-    const DEFAULT_FUNCTION_IMAGE_URL = "https://symplofficial.com/cdn/shop/files/CommuterPack_V2-1_9da0b7c9-0468-4cd5-9359-d6ab8fb23fa1_400x400_crop_center.jpg?v=1746199613";
-    const PLACEHOLDER_IMAGE_URL = "/placeholder.svg?height=400&width=400";
-    
-    // Global modal state
-    let currentModalMediaIndex = 0;
-    let currentModalMediaSet = [];
-    let currentZoomLevel = 1;
-    const ZOOM_STEP = 0.2;
-    const MIN_ZOOM_LEVEL = 1;
-    const MAX_ZOOM_LEVEL = 3;
+let currentColorImages = [];
+let currentMobileIndex = 0;
+
+const DESKTOP_NAVIGABLE_START_INDEX = 5; 
+let currentDesktopNavigableDisplayIndex = 0;
+
+const DEFAULT_FUNCTION_IMAGE_URL = "https://symplofficial.com/cdn/shop/files/CommuterPack_V2-1_9da0b7c9-0468-4cd5-9359-d6ab8fb23fa1_400x400_crop_center.jpg?v=1746199613";
+const PLACEHOLDER_IMAGE_URL = "/placeholder.svg?height=400&width=400";
+
+// Global modal state
+let currentModalMediaIndex = 0;
+let currentModalMediaSet = [];
+let currentZoomLevel = 1;
+const ZOOM_STEP = 0.2;
+const MIN_ZOOM_LEVEL = 1;
+const MAX_ZOOM_LEVEL = 3;
+
+// Global touch management to prevent conflicts
+let globalTouchManager = {
+  isHandling: false,
+  handlingComponent: null,
+  activeHandlers: new Set(),
+  
+  requestHandling: function(componentId) {
+    if (!this.isHandling) {
+      this.isHandling = true;
+      this.handlingComponent = componentId;
+      return true;
+    }
+    return this.handlingComponent === componentId;
+  },
+  
+  releaseHandling: function(componentId) {
+    if (this.handlingComponent === componentId) {
+      this.isHandling = false;
+      this.handlingComponent = null;
+    }
+  }
+};
     
     const variant_gallery_data = {
       {%- for variant in product.variants -%}
@@ -2931,84 +2979,150 @@
     }
     
     function initMobileImageNavigation() {
-      if (window.mobileImageNavInitialized) return;
-      window.mobileImageNavInitialized = true;
       console.log('initMobileImageNavigation called');
       const container = document.querySelector('.single-image-container');
       if (!container) return;
-      let startX = 0;
-      let currentX = 0;
-      let isDragging = false;
-    
+      
+      // Remove existing event listeners if they exist
+      if (container._imageNavHandlers) {
+        container.removeEventListener('touchstart', container._imageNavHandlers.touchStart);
+        container.removeEventListener('touchmove', container._imageNavHandlers.touchMove);
+        container.removeEventListener('touchend', container._imageNavHandlers.touchEnd);
+      }
+
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchCurrentX = 0;
+      let touchCurrentY = 0;
+      let touchMoved = false;
+      let isHorizontalSwipe = false;
+      let touchStartTime = 0;
+      const swipeThreshold = 50;
+      const directionThreshold = 15;
+      const timeThreshold = 300;
+
       function touchStartHandler(e) {
         if (e.touches.length !== 1) return;
-        startX = e.touches[0].clientX;
-        currentX = startX;
-        isDragging = true;
+        
+        // Request touch handling from global manager
+        if (!globalTouchManager.requestHandling('mobileImageNav')) return;
+        
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchCurrentX = touchStartX;
+        touchCurrentY = touchStartY;
+        touchMoved = false;
+        isHorizontalSwipe = false;
+        touchStartTime = Date.now();
       }
+      
       function touchMoveHandler(e) {
-        if (!isDragging) return;
-        currentX = e.touches[0].clientX;
+        if (globalTouchManager.handlingComponent !== 'mobileImageNav') return;
+        
+        touchCurrentX = e.touches[0].clientX;
+        touchCurrentY = e.touches[0].clientY;
+        
+        const deltaX = Math.abs(touchCurrentX - touchStartX);
+        const deltaY = Math.abs(touchCurrentY - touchStartY);
+        
+        // Only set movement flags if we've moved enough to be intentional
+        if (deltaX > directionThreshold || deltaY > directionThreshold) {
+          touchMoved = true;
+          
+          // Determine if this is primarily a horizontal swipe
+          if (deltaX > deltaY && deltaX > directionThreshold) {
+            isHorizontalSwipe = true;
+            // Only prevent default (disable scrolling) for horizontal swipes
+            e.preventDefault();
+          } else if (deltaY > deltaX) {
+            // This is a vertical scroll, release touch handling
+            globalTouchManager.releaseHandling('mobileImageNav');
+          }
+          // For vertical scrolling (deltaY > deltaX), we let the browser handle it naturally
+        }
       }
-      // function touchEndHandler(e) {
-      //   if (!isDragging) return;
-      //   isDragging = false;
-      //   const diffX = startX - currentX;
-      //   if (Math.abs(diffX) > 50) {
-      //     if (diffX > 0 && currentMobileIndex < currentColorImages.length - 1) {
-      //       currentMobileIndex++;
-      //       console.log('Swipe right, index:', currentMobileIndex);
-      //       updateMobileImageDisplay();
-      //     } else if (diffX < 0 && currentMobileIndex > 0) {
-      //       currentMobileIndex--;
-      //       console.log('Swipe left, index:', currentMobileIndex);
-      //       updateMobileImageDisplay();
-      //     }
-      //   }
-      // }
-    
-      // Remove any previous listeners (defensive)
-      container.removeEventListener('touchstart', touchStartHandler);
-      container.removeEventListener('touchmove', touchMoveHandler);
-      container.removeEventListener('touchend', touchEndHandler);
-    
+      
+      function touchEndHandler(e) {
+        if (globalTouchManager.handlingComponent !== 'mobileImageNav') return;
+        
+        const touchEndTime = Date.now();
+        const touchDuration = touchEndTime - touchStartTime;
+        
+        // Only handle swipe if it was intentional horizontal movement within time threshold
+        if (touchMoved && isHorizontalSwipe && touchDuration < timeThreshold) {
+          const diffX = touchStartX - touchCurrentX;
+          if (Math.abs(diffX) > swipeThreshold && currentColorImages && currentColorImages.length > 1) {
+            if (diffX > 0 && currentMobileIndex < currentColorImages.length - 1) {
+              currentMobileIndex++;
+              console.log('Mobile image swipe right, index:', currentMobileIndex);
+              updateMobileImageDisplay();
+            } else if (diffX < 0 && currentMobileIndex > 0) {
+              currentMobileIndex--;
+              console.log('Mobile image swipe left, index:', currentMobileIndex);
+              updateMobileImageDisplay();
+            }
+          }
+        }
+        
+        // Reset touch state and release global handling
+        globalTouchManager.releaseHandling('mobileImageNav');
+        touchMoved = false;
+        isHorizontalSwipe = false;
+      }
+
+      // Store handlers for cleanup
+      container._imageNavHandlers = {
+        touchStart: touchStartHandler,
+        touchMove: touchMoveHandler,
+        touchEnd: touchEndHandler
+      };
+
       container.addEventListener('touchstart', touchStartHandler, { passive: true });
-      container.addEventListener('touchmove', touchMoveHandler, { passive: true });
+      container.addEventListener('touchmove', touchMoveHandler, { passive: false });
       container.addEventListener('touchend', touchEndHandler, { passive: true });
     }
     
     function updateMobileImageDisplay() {
-      const mobileMainImage = document.getElementById('mobileMainImage');
-      const mobileMainVideo = document.getElementById('mobileMainVideo');
-      const mobileThumbs = document.querySelectorAll('.mobile-thumb');
+  const mobileMainImage = document.getElementById('mobileMainImage');
+  const mobileMainVideo = document.getElementById('mobileMainVideo');
+  const mobileThumbs = document.querySelectorAll('.mobile-thumb');
+
+  if (!mobileMainImage || !mobileMainVideo) return;
+
+  // Ensure currentMobileIndex is within bounds
+  if (currentColorImages && currentColorImages.length > 0) {
+    currentMobileIndex = Math.max(0, Math.min(currentMobileIndex, currentColorImages.length - 1));
     
-      if (!mobileMainImage || !mobileMainVideo) return;
-    
-      if (currentColorImages && currentColorImages[currentMobileIndex]) {
-        const currentItem = currentColorImages[currentMobileIndex];
-        if (currentItem.type === 'video') {
-          mobileMainImage.style.display = 'none'; mobileMainVideo.style.display = 'block';
-          const source = mobileMainVideo.querySelector('source');
-          if (source) source.src = currentItem.src;
-          mobileMainVideo.load();
-          mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
-        } else {
-          mobileMainVideo.style.display = 'none'; mobileMainImage.style.display = 'block';
-          mobileMainImage.src = currentItem.src; mobileMainImage.alt = currentItem.alt;
-          mobileMainImage.onclick = () => openImageModal(currentItem.fullSrc);
-        }
-      } else if (currentColorImages && currentColorImages.length === 0) {
-          mobileMainImage.src = PLACEHOLDER_IMAGE_URL; mobileMainImage.alt = "No images available";
-          mobileMainVideo.style.display = 'none';
-      }
-    
-      if (mobileThumbs) {
-        mobileThumbs.forEach((thumb, index) => {
-          thumb.classList.toggle('active', index === currentMobileIndex);
-          thumb.style.borderColor = index === currentMobileIndex ? '#000' : 'transparent';
-        });
-      }
+    const currentItem = currentColorImages[currentMobileIndex];
+    if (currentItem && currentItem.type === 'video') {
+      mobileMainImage.style.display = 'none'; 
+      mobileMainVideo.style.display = 'block';
+      const source = mobileMainVideo.querySelector('source');
+      if (source) source.src = currentItem.src;
+      mobileMainVideo.load();
+      mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
+    } else if (currentItem) {
+      mobileMainVideo.style.display = 'none'; 
+      mobileMainImage.style.display = 'block';
+      mobileMainImage.src = currentItem.src; 
+      mobileMainImage.alt = currentItem.alt;
+      mobileMainImage.onclick = () => openImageModal(currentItem.fullSrc);
     }
+  } else {
+    // No images available
+    mobileMainImage.src = PLACEHOLDER_IMAGE_URL; 
+    mobileMainImage.alt = "No images available";
+    mobileMainVideo.style.display = 'none';
+    mobileMainImage.style.display = 'block';
+  }
+
+  if (mobileThumbs) {
+    mobileThumbs.forEach((thumb, index) => {
+      thumb.classList.toggle('active', index === currentMobileIndex);
+      thumb.style.borderColor = index === currentMobileIndex ? '#000' : 'transparent';
+    });
+  }
+}
     
     function initVariantSelector() {
       const fabricOptions = document.querySelectorAll(".fabric-option");
@@ -3101,33 +3215,47 @@
     }
     
     function switchToVariant(variant) {
-      if (!variant || !productVariants[variant.id]) return; 
-      currentVariant = productVariants[variant.id]; 
-      
-      const productSelect = document.getElementById("ProductSelect");
-      if (productSelect) productSelect.value = currentVariant.id;
-      
-      // Update ALL price elements (there are multiple with the same ID)
-      const priceElements = document.querySelectorAll('[id="variantPrice"], .pricesizeadjust');
-      priceElements.forEach(priceElement => {
-        if (priceElement) priceElement.textContent = currentVariant.formatted_price;
-      }); 
-      
-      const addToCartButton = document.getElementById("AddToCart");
-      const addToCartText = document.getElementById("AddToCartText");
-      if (addToCartButton && addToCartText) {
-        addToCartButton.disabled = !currentVariant.available;
-        addToCartButton.classList.toggle("disabled", !currentVariant.available);
-        addToCartButton.style.backgroundColor = currentVariant.available ? "#111" : "#ccc";
-        addToCartButton.style.cursor = currentVariant.available ? "pointer" : "not-allowed";
-        addToCartText.textContent = currentVariant.available ? "Add to bag" : "Sold out";
-      }
-      
-      updateContentForVariant(currentVariant); 
-      currentColorImages = getImagesByVariant(currentVariant);
-      updateGalleryImages(currentColorImages);
-      document.dispatchEvent(new CustomEvent('variant:change', { detail: { variant: currentVariant } }));
+  if (!variant || !productVariants[variant.id]) return; 
+  currentVariant = productVariants[variant.id]; 
+  
+  const productSelect = document.getElementById("ProductSelect");
+  if (productSelect) productSelect.value = currentVariant.id;
+  
+  // Update ALL price elements (there are multiple with the same ID)
+  const priceElements = document.querySelectorAll('[id="variantPrice"], .pricesizeadjust');
+  priceElements.forEach(priceElement => {
+    if (priceElement) priceElement.textContent = currentVariant.formatted_price;
+  }); 
+  
+  const addToCartButton = document.getElementById("AddToCart");
+  const addToCartText = document.getElementById("AddToCartText");
+  if (addToCartButton && addToCartText) {
+    addToCartButton.disabled = !currentVariant.available;
+    addToCartButton.classList.toggle("disabled", !currentVariant.available);
+    addToCartButton.style.backgroundColor = currentVariant.available ? "#111" : "#ccc";
+    addToCartButton.style.cursor = currentVariant.available ? "pointer" : "not-allowed";
+    addToCartText.textContent = currentVariant.available ? "Add to bag" : "Sold out";
+  }
+  
+  updateContentForVariant(currentVariant); 
+  currentColorImages = getImagesByVariant(currentVariant);
+  updateGalleryImages(currentColorImages);
+  
+  // IMPORTANT: Reinitialize all carousels and touch handlers after variant change
+  setTimeout(() => {
+    try {
+      console.log('Reinitializing carousels after variant change');
+      initMobileImageNavigation(); // Reinitialize mobile image navigation
+      initFunctionsCarousel(); // Reinitialize 5-star functions carousel
+      initBundleCarousel(); // Reinitialize bundle carousel
+      initRelatedProductsCarousel(); // Reinitialize related products carousel
+    } catch (error) {
+      console.error('Error reinitializing carousels:', error);
     }
+  }, 100);
+  
+  document.dispatchEvent(new CustomEvent('variant:change', { detail: { variant: currentVariant } }));
+}
     
     function updateContentForVariant(variant) {
       if (!variant || !variantContent || !variantContent[variant.id]) return;
@@ -3195,6 +3323,8 @@
       
       // Update features and functions
       updateFeatureHighlights(content.features);
+      
+      console.log('Updating functions section with variant:', variant.id, 'functions:', content.functions, 'images:', content.function_image_urls);
       updateFunctionsSection(content.functions, content.function_image_urls);
     }
     
@@ -3253,12 +3383,16 @@
         if (!input || typeof input !== 'string') {
             return DEFAULT_FUNCTION_IMAGE_URL;
         }
+        
         let str = input.trim();
         let extractedUrl = null;
+        
+        // First try to extract a complete URL
         const urlMatch = str.match(/(https?:\/\/[^"'\s\[\]<>]+)/); 
         if (urlMatch && urlMatch[0]) {
             extractedUrl = urlMatch[0];
         } else {
+            // Clean up wrapped URLs
             let cleaned = str;
             if ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
                 (cleaned.startsWith("'") && cleaned.endsWith("'")) ||
@@ -3272,10 +3406,14 @@
             }
             extractedUrl = cleaned;
         }
+        
         if (!extractedUrl || extractedUrl.toLowerCase() === 'http' || extractedUrl.toLowerCase() === 'https') {
             return DEFAULT_FUNCTION_IMAGE_URL;
         }
+        
         let processedUrl = extractedUrl;
+        
+        // Fix protocol issues
         if (processedUrl.startsWith('//')) {
             processedUrl = 'https:' + processedUrl;
         } else if (processedUrl.startsWith('http://')) {
@@ -3289,53 +3427,76 @@
                 return DEFAULT_FUNCTION_IMAGE_URL;
             }
         }
+        
         try {
             new URL(processedUrl); 
+            console.log('URL processed successfully:', input, '->', processedUrl);
             return processedUrl;
         } catch (error) {
+            console.error('Invalid URL:', input, error);
             return DEFAULT_FUNCTION_IMAGE_URL;
         }
     }
     
     function updateFunctionsSection(functions, functionImageUrls = []) {
-      const functionsCarousel = document.getElementById("functionsCarousel");
-      if (!functionsCarousel) return;
-      functionsCarousel.innerHTML = ''; 
-      if (functions && functions.length > 0) {
-        functions.forEach((func, index) => {
-          let mediaUrl = DEFAULT_FUNCTION_IMAGE_URL; 
-          const rawUrlEntry = functionImageUrls && Array.isArray(functionImageUrls) ? functionImageUrls[index] : null;
-          let urlStringToProcess = null;
-          if (rawUrlEntry) {
-            if (Array.isArray(rawUrlEntry)) { 
-              if (rawUrlEntry.length > 0 && typeof rawUrlEntry[0] === 'string') {
-                urlStringToProcess = rawUrlEntry[0];
-              }
-            } else if (typeof rawUrlEntry === 'string') {
-              urlStringToProcess = rawUrlEntry;
-            }
+  const functionsCarousel = document.getElementById("functionsCarousel");
+  if (!functionsCarousel) return;
+  
+  console.log('Updating functions section with:', functions, functionImageUrls);
+  functionsCarousel.innerHTML = ''; 
+  
+  if (functions && functions.length > 0) {
+    functions.forEach((func, index) => {
+      let mediaUrl = DEFAULT_FUNCTION_IMAGE_URL; 
+      const rawUrlEntry = functionImageUrls && Array.isArray(functionImageUrls) ? functionImageUrls[index] : null;
+      let urlStringToProcess = null;
+      
+      if (rawUrlEntry) {
+        if (Array.isArray(rawUrlEntry)) { 
+          if (rawUrlEntry.length > 0 && typeof rawUrlEntry[0] === 'string') {
+            urlStringToProcess = rawUrlEntry[0];
           }
-          if (urlStringToProcess) {
-            let processedUrl = ensureHttpsUrl(urlStringToProcess);
-            // Only resize images for mobile, not videos
-            const lowerUrl = processedUrl.toLowerCase();
-            const isVideo = lowerUrl.endsWith('.mp4') || lowerUrl.endsWith('.webm') || lowerUrl.endsWith('.ogg') || lowerUrl.endsWith('.mov');
-            if (processedUrl.includes('cdn.shopify.com') && window.innerWidth < 900 && !isVideo) {
-              processedUrl = processedUrl.replace(/(\.[a-zA-Z0-9]+)($|\?)/, '_2000x3000_crop_center$1$2');
-            }
-            mediaUrl = processedUrl;
-          }
-          const functionItem = document.createElement('div');
-          functionItem.className = 'function-item';
-          functionItem.style.cssText = 'min-width: 400px; flex: 0 0 400px; text-align: left; max-width: 400px;'; 
-          const escapedTitle = (func.title || 'Untitled Function').replace(/"/g, '&quot;');
-          let mediaElementHtml = '';
-          const lowerMediaUrl = mediaUrl.toLowerCase();
-          if (lowerMediaUrl.endsWith('.mp4') || lowerMediaUrl.endsWith('.webm') || lowerMediaUrl.endsWith('.ogg') || lowerMediaUrl.endsWith('.mov')) {
-            mediaElementHtml = `<video src="${mediaUrl}" loop muted playsinline webkit-playsinline style="width: 100%; height: 100%; object-fit: cover;" oncanplay="this.style.display='block'; this.play().catch(e => console.log('Autoplay prevented:', e));" onerror="this.style.display='none';" onloadstart="console.log('Loading video for ${escapedTitle}:', this.src);" onclick="this.paused ? this.play() : this.pause();">Your browser does not support the video tag.</video>`;
-          } else {
-            mediaElementHtml = `<img src="${mediaUrl}" alt="${escapedTitle}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6;" onerror="this.onerror=null; this.src='${DEFAULT_FUNCTION_IMAGE_URL}';" onload="console.log('Successfully loaded image for ${escapedTitle}:', this.src);">`;
-          }
+        } else if (typeof rawUrlEntry === 'string') {
+          urlStringToProcess = rawUrlEntry;
+        }
+      }
+      
+      if (urlStringToProcess) {
+        let processedUrl = ensureHttpsUrl(urlStringToProcess);
+        
+        // Check if it's a video BEFORE any URL modifications
+        const lowerUrl = processedUrl.toLowerCase();
+        const isVideo = lowerUrl.includes('.mp4') || lowerUrl.includes('.webm') || lowerUrl.includes('.ogg') || lowerUrl.includes('.mov') || lowerUrl.includes('video');
+        
+        // Only resize images for mobile, NOT videos
+        if (processedUrl.includes('cdn.shopify.com') && window.innerWidth < 900 && !isVideo) {
+          // Only add crop parameters to image URLs
+          processedUrl = processedUrl.replace(/(\.[a-zA-Z0-9]+)($|\?)/, '_2000x3000_crop_center$1$2');
+        }
+        
+        mediaUrl = processedUrl;
+        console.log(`Function ${index + 1}: ${func.title} - URL: ${mediaUrl}, isVideo: ${isVideo}`);
+      }
+                const functionItem = document.createElement('div');
+      functionItem.className = 'function-item';
+      functionItem.style.cssText = 'min-width: 400px; flex: 0 0 400px; text-align: left; max-width: 400px;'; 
+      const escapedTitle = (func.title || 'Untitled Function').replace(/"/g, '&quot;');
+      let mediaElementHtml = '';
+      
+      // Use the same video detection logic as above
+      const lowerMediaUrl = mediaUrl.toLowerCase();
+      const isVideoElement = lowerMediaUrl.includes('.mp4') || lowerMediaUrl.includes('.webm') || lowerMediaUrl.includes('.ogg') || lowerMediaUrl.includes('.mov') || lowerMediaUrl.includes('video');
+      
+      if (isVideoElement) {
+        // Create video element with better error handling
+        mediaElementHtml = `<video src="${mediaUrl}" loop muted playsinline webkit-playsinline preload="metadata" style="width: 100%; height: 100%; object-fit: cover;" oncanplay="this.style.display='block'; this.play().catch(e => console.log('Autoplay prevented for ${escapedTitle}:', e));" onerror="console.error('Video failed to load for ${escapedTitle}:', this.src); this.style.display='none';" onloadstart="console.log('Loading video for ${escapedTitle}:', this.src);" onclick="this.paused ? this.play() : this.pause();">
+          <source src="${mediaUrl}" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>`;
+      } else {
+        // Create image element with fallback
+        mediaElementHtml = `<img src="${mediaUrl}" alt="${escapedTitle}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6;" onerror="console.error('Image failed to load for ${escapedTitle}:', this.src); this.onerror=null; this.src='${DEFAULT_FUNCTION_IMAGE_URL}';" onload="console.log('Successfully loaded image for ${escapedTitle}:', this.src);">`;
+      }
           functionItem.innerHTML = `
             <div class="function-media-container" style="background-color: #f6f6f6; border-radius: 12px; overflow: hidden; margin-bottom: 20px; aspect-ratio: 0.7; position: relative; height:525px; max-width:400px; min-width:400px;">${mediaElementHtml}</div>
             <div class="function-content">
@@ -3345,26 +3506,39 @@
           functionsCarousel.appendChild(functionItem);
         });
       } else {
+        console.log('Using default functions - no variant-specific functions found');
         const defaultFunctions = [
           { title: "TECH CADDY", description: "We designed a compartment that specializes in travel-sized daily items like chargers, cables, adapters, and more." },
           { title: "LAPTOP & VALUABLES POCKET", description: "Padded laptop compartment fits up to 16-inch laptops and keeps your device protected during travel." },
           { title: "LUGGAGE PASS-THROUGH", description: "Streamline your travel with a convenient luggage pass-through that slides over your rolling luggage handle for easy transport." },
           { title: "SIDE CARRY", description: "Switch to hand carry mode with the reinforced side handle for comfortable carrying when the bag is not on your back." }
         ];
-        defaultFunctions.forEach((func) => {
+        defaultFunctions.forEach((func, index) => {
           const functionItem = document.createElement('div');
           functionItem.className = 'function-item';
           functionItem.style.cssText = 'min-width: 400px; flex: 0 0 400px; text-align: left; max-width: 400px;'; 
           functionItem.innerHTML = `
-            <div class="function-media-container" style="background-color: #f6f6f6; border-radius: 12px; overflow: hidden; margin-bottom: 20px; aspect-ratio: 0.7; position: relative; height:525px; max-width:400px; min-width:400px;"><img src="${DEFAULT_FUNCTION_IMAGE_URL}" alt="${func.title}" style="width: 100%; height: 100%; object-fit: cover;"></div>
+            <div class="function-media-container" style="background-color: #f6f6f6; border-radius: 12px; overflow: hidden; margin-bottom: 20px; aspect-ratio: 0.7; position: relative; height:525px; max-width:400px; min-width:400px;">
+              <img src="${DEFAULT_FUNCTION_IMAGE_URL}" alt="${func.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="console.error('Default image failed to load for ${func.title}');" onload="console.log('Default image loaded for ${func.title}');">
+            </div>
             <div class="function-content">
-              <h3 style="font-size: clamp(16px, 4vw, 18px); font-weight: 700; margin-bottom: 12px; color: #000; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;">${func.title}</h3>
-              <p style="margin: 0; font-size: clamp(14px, 3.5vw, 16px); color: #666; line-height: 1.5;">${func.description}</p>
+              <h3 style="font-size: 24px; margin-bottom: 12px; color: #000; letter-spacing: 0.5px; line-height: 1.2;">${func.title}</h3>
+              <p class="functiondescriptionadjust" style="margin: 0; font-size: 18px; line-height: 1.5; letter-spacing: 0.5px; font-weight: 300;">${func.description}</p>
             </div>`;
           functionsCarousel.appendChild(functionItem);
+          console.log(`Added default function ${index + 1}: ${func.title}`);
         });
       }
-      initFunctionsCarousel(); 
+      
+      // Force reinitialization of the functions carousel to ensure proper touch handling
+      setTimeout(() => {
+        try {
+          initFunctionsCarousel();
+          console.log('Functions carousel reinitialized after content update');
+        } catch (error) {
+          console.error('Error reinitializing functions carousel:', error);
+        }
+      }, 50);
     }
     
     function openImageModal(src) {
@@ -3666,44 +3840,73 @@
         nextButton.style.opacity = nextButton.disabled ? '0.5' : '1';
       }
     
-      prevButton.addEventListener('click', () => {
-        const itemsPerView = itemsPerViewFn ? itemsPerViewFn() : 1;
-        const scrollStep = (options && options.scrollStepFn) ? options.scrollStepFn() : itemsPerView;
-        if (currentIndex > 0) {
-          currentIndex = Math.max(0, currentIndex - scrollStep);
-          update();
-        }
-      });
-      nextButton.addEventListener('click', () => {
-        const itemsPerView = itemsPerViewFn ? itemsPerViewFn() : 1;
-        const scrollStep = (options && options.scrollStepFn) ? options.scrollStepFn() : itemsPerView;
-        if (currentIndex < items.length - itemsPerView) {
-          currentIndex = Math.min(items.length - itemsPerView, currentIndex + scrollStep);
-          update();
-        }
-      });
+        // Remove existing event listeners to prevent duplicates
+  prevButton.removeEventListener('click', prevButton._carouselClickHandler);
+  nextButton.removeEventListener('click', nextButton._carouselClickHandler);
+
+  const prevClickHandler = () => {
+    const itemsPerView = itemsPerViewFn ? itemsPerViewFn() : 1;
+    const scrollStep = (options && options.scrollStepFn) ? options.scrollStepFn() : itemsPerView;
+    if (currentIndex > 0) {
+      currentIndex = Math.max(0, currentIndex - scrollStep);
+      update();
+    }
+  };
+
+  const nextClickHandler = () => {
+    const itemsPerView = itemsPerViewFn ? itemsPerViewFn() : 1;
+    const scrollStep = (options && options.scrollStepFn) ? options.scrollStepFn() : itemsPerView;
+    if (currentIndex < items.length - itemsPerView) {
+      currentIndex = Math.min(items.length - itemsPerView, currentIndex + scrollStep);
+      update();
+    }
+  };
+
+  prevButton._carouselClickHandler = prevClickHandler;
+  nextButton._carouselClickHandler = nextClickHandler;
+
+  prevButton.addEventListener('click', prevClickHandler);
+  nextButton.addEventListener('click', nextClickHandler);
       
-      // Touch drag for mobile with proper scroll detection
+      // Improved touch handling with proper conflict management
       if (options.enableTouch !== false && window.matchMedia("(max-width: 767px)").matches) { 
+        // Remove existing touch handlers if they exist
+        if (carousel._touchHandlers) {
+          carousel.removeEventListener('touchstart', carousel._touchHandlers.touchStart);
+          carousel.removeEventListener('touchmove', carousel._touchHandlers.touchMove);
+          carousel.removeEventListener('touchend', carousel._touchHandlers.touchEnd);
+        }
+
+        const componentId = carouselSelector.replace(/[^a-zA-Z0-9]/g, '');
         let touchStartX = 0;
         let touchStartY = 0;
         let touchCurrentX = 0;
         let touchCurrentY = 0;
         let touchMoved = false;
         let isHorizontalSwipe = false;
+        let touchStartTime = 0;
         const swipeThreshold = options.swipeThreshold || 50;
-        const directionThreshold = 10; // Threshold to determine swipe direction
-    
-        carousel.addEventListener('touchstart', function(event) {
+        const directionThreshold = 15; // Increased threshold for better direction detection
+        const timeThreshold = 300; // Maximum time for a swipe gesture
+
+        const touchStartHandler = function(event) {
+          if (event.touches.length !== 1) return;
+          
+          // Request touch handling from global manager
+          if (!globalTouchManager.requestHandling(componentId)) return;
+          
           touchStartX = event.changedTouches[0].clientX;
           touchStartY = event.changedTouches[0].clientY;
           touchCurrentX = touchStartX;
           touchCurrentY = touchStartY;
           touchMoved = false;
           isHorizontalSwipe = false;
-        }, { passive: true });
+          touchStartTime = Date.now();
+        };
 
-        carousel.addEventListener('touchmove', function(event) {
+        const touchMoveHandler = function(event) {
+          if (globalTouchManager.handlingComponent !== componentId) return;
+          
           touchCurrentX = event.changedTouches[0].clientX;
           touchCurrentY = event.changedTouches[0].clientY;
           
@@ -3717,16 +3920,24 @@
             // Determine if this is primarily a horizontal swipe
             if (deltaX > deltaY && deltaX > directionThreshold) {
               isHorizontalSwipe = true;
-              // Only prevent default (disable scrolling) for horizontal swipes
+              // Only prevent default (disable scrolling) for horizontal swipes in this carousel
               event.preventDefault();
+            } else if (deltaY > deltaX) {
+              // This is a vertical scroll, release touch handling
+              globalTouchManager.releaseHandling(componentId);
             }
             // For vertical scrolling (deltaY > deltaX), we let the browser handle it naturally
           }
-        }, { passive: false }); // passive: false needed to call preventDefault()
-    
-        carousel.addEventListener('touchend', function(event) {
-          // Only handle swipe if it was intentional horizontal movement
-          if (touchMoved && isHorizontalSwipe) {
+        };
+
+        const touchEndHandler = function(event) {
+          if (globalTouchManager.handlingComponent !== componentId) return;
+          
+          const touchEndTime = Date.now();
+          const touchDuration = touchEndTime - touchStartTime;
+          
+          // Only handle swipe if it was intentional horizontal movement within time threshold
+          if (touchMoved && isHorizontalSwipe && touchDuration < timeThreshold) {
             const diffX = touchCurrentX - touchStartX;
             const itemsPerView = itemsPerViewFn ? itemsPerViewFn() : 1;
             const scrollStep = (options && options.scrollStepFn) ? options.scrollStepFn() : itemsPerView;
@@ -3746,10 +3957,22 @@
             }
           }
           
-          // Reset touch state
+          // Reset touch state and release global handling
+          globalTouchManager.releaseHandling(componentId);
           touchMoved = false;
           isHorizontalSwipe = false;
-        }, { passive: true });
+        };
+
+        // Store handlers for cleanup
+        carousel._touchHandlers = {
+          touchStart: touchStartHandler,
+          touchMove: touchMoveHandler,
+          touchEnd: touchEndHandler
+        };
+
+        carousel.addEventListener('touchstart', touchStartHandler, { passive: true });
+        carousel.addEventListener('touchmove', touchMoveHandler, { passive: false }); // passive: false needed for preventDefault()
+        carousel.addEventListener('touchend', touchEndHandler, { passive: true });
       }
     
     
@@ -3913,13 +4136,26 @@
     });
     
     document.addEventListener('DOMContentLoaded', () => {
-      if (window.innerWidth < 768) {
-        const mobileView = document.querySelector('.mobile-single-image');
-        const desktopView = document.querySelector('.desktop-grid');
-        if (mobileView) mobileView.style.display = 'block';
-        if (desktopView) desktopView.style.display = 'none';
+  if (window.innerWidth < 768) {
+    const mobileView = document.querySelector('.mobile-single-image');
+    const desktopView = document.querySelector('.desktop-grid');
+    if (mobileView) mobileView.style.display = 'block';
+    if (desktopView) desktopView.style.display = 'none';
+    
+    // Ensure mobile carousels are properly initialized
+    setTimeout(() => {
+      try {
+        initMobileImageNavigation();
+        initFunctionsCarousel();
+        initBundleCarousel();
+        initRelatedProductsCarousel();
+        console.log('Mobile carousels reinitialized on DOM ready');
+      } catch (error) {
+        console.error('Error initializing mobile carousels:', error);
       }
-    });
+    }, 200);
+  }
+});
     
     function enableModalImageGestures() {
       const modalImage = document.getElementById('modalImage');
