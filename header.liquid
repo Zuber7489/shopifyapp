@@ -239,6 +239,10 @@
     .h_menu_ul li a {
       color: #fff !important;
     }
+    /* Cart count white on homepage */
+    #cart-count {
+      color: #fff !important;
+    }
     @media (max-width: 767px) {
       {% if section.settings.mobile_header_color == 'white' %}
         .logo img,
@@ -446,6 +450,10 @@
   .header_wrap.sticky-bg svg {
     filter: none !important;
   }
+  /* Cart count black when sticky */
+  .header_wrap.sticky-bg #cart-count {
+    color: #000 !important;
+  }
   /* Override mobile header colors when sticky */
   @media (max-width: 767px) {
     .header_wrap.sticky-bg .logo img,
@@ -489,6 +497,11 @@
   .header_wrap:focus-within img,
   .header_wrap:focus-within svg {
     filter: none !important;
+  }
+  /* Cart count black on hover */
+  .header_wrap:hover #cart-count,
+  .header_wrap:focus-within #cart-count {
+    color: #000 !important;
   }
   .top_bar {
     position: static;
