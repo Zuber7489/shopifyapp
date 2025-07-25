@@ -9,8 +9,6 @@
     - Added Zoom In (+) and Zoom Out (-) buttons to the image modal.
     {% endcomment %}
     
-    {% render 'accordion-variables' %}
-    
     <style>
     @font-face {
       font-family: 'Neue Haas Display';
@@ -796,7 +794,9 @@
     </div>
     <div class="accordion-content" id="shipping-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
       <div class="shipping-content" style="padding-bottom: 15px; color: #666; line-height: 1.6;">
-        {{ shipping_content }}
+        <p><span style="font-weight: bold; color: #000;">Free</span> standard shipping on all U.S. orders. International shipping available at checkout.</p>
+        <p>We offer a 30-day return policy for all unused products in their original packaging. <a href="https://symplofficial.gorgias.help/en-US/articles/returns-and-exchanges-200534" class="button">Here</a></p>
+       
       </div>
     </div>
     </div>
@@ -814,7 +814,7 @@
     </div>
     <div class="accordion-content" id="warranty-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
       <div class="warranty-content" style="padding-bottom: 15px; color: #666; line-height: 1.6;">
-        {{ warranty_content }}
+        <p>All our products come with a lifetime warranty against manufacturing defects. We stand behind the quality of our products and will repair or replace any item that fails due to manufacturing defects.</p>
       </div>
     </div>
     <hr style="border: none; height: 2px; background-color: #eee; margin: 0; width: 100%; margin-left: 0;">
