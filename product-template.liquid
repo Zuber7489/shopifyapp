@@ -1046,7 +1046,7 @@
       /* Style options mobile adjustments */
       .style-selection {
         margin-bottom: 8px !important;
-        margin-top: 28px;
+      
       }
       
       .style-option {
@@ -5383,7 +5383,7 @@ let globalTouchManager = {
         z-index: 1000;
         background: #fff;
         box-shadow: 0 -2px 16px rgba(0,0,0,0.08);
-        padding: 9px 16px 9px 16px;
+       padding: 0px 8px 3px 8px;
         margin: 0;
         border-radius: 0;
         border-top: 1px solid #eee;
@@ -5551,7 +5551,7 @@ function adjustMobileReviewMargin() {
   var style = window.getComputedStyle(title);
   var lineHeight = parseFloat(style.lineHeight);
   var height = title.offsetHeight;
-  var marginValue = (height <= lineHeight * 1.2) ? '0px' : '-20px';
+  var marginValue = (height <= lineHeight * 1.2) ? '0px' : '-23px';
   reviewsList.forEach(function(reviews) {
     reviews.style.setProperty('margin-top', marginValue, 'important');
   });
