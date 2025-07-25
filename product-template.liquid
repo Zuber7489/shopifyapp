@@ -586,8 +586,8 @@
           {% endfor %}
         </select>
     
-        <button type="submit" name="add" id="AddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer;border-radius:31px !important; margin: 15px 0; transition: background 0.3s; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
-          <span id="AddToCartText">{% if current_variant.available %}Add to bag{% else %}Sold out{% endif %}</span>
+        <button type="submit" name="add" id="AddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer;border-radius:31px !important; margin: 15px 0; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
+          <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to bag{% else %}Sold out{% endif %}</span>
         </button>
       </form>
     
@@ -1094,6 +1094,13 @@
         text-align: right !important;
         position: relative;
         z-index: 1;
+      }
+      
+      /* Force text-transform override for buttons on mobile */
+      #AddToCart, #MobileAddToCart,
+      #AddToCartText, #MobileAddToCartText,
+      .add-to-cart-button, .add-to-cart-button span {
+        text-transform: none !important;
       }
       .bundle-flex-wrapper{
       justify-content: initial !important;
@@ -5023,12 +5030,15 @@ let globalTouchManager = {
         pointer-events: auto !important;
       }
       /* Add to bag button */
-      #AddToCart {
+      #AddToCart, #MobileAddToCart {
         font-size: 16px !important;
         font-weight: 400 !important;
         text-transform: none !important;
         padding-top: 10px !important;
         padding-bottom: 10px !important;
+      }
+      #AddToCartText, #MobileAddToCartText {
+        text-transform: none !important;
       }
       /* Gray Box Bottom Shadow */
       .detailbox {
@@ -5225,6 +5235,18 @@ let globalTouchManager = {
     
     <style>
     // ... existing code ...
+    /* Global text-transform override for all Add to Cart buttons */
+    .add-to-cart-button,
+    .add-to-cart-button *,
+    #AddToCart,
+    #AddToCart *,
+    #MobileAddToCart,
+    #MobileAddToCart *,
+    #AddToCartText,
+    #MobileAddToCartText {
+      text-transform: none !important;
+    }
+    
     /* --- 5-Star Functions Section: Mobile (default) --- */
     .function-item {
       min-width: 284px !important;
@@ -5311,8 +5333,8 @@ let globalTouchManager = {
             {% endif %}
           {% endfor %}
         </select>
-        <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer; border-radius:31px !important; margin-bottom: 0; transition: background 0.3s; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
-          <span id="MobileAddToCartText">{% if current_variant.available %}Add to Bag{% else %}Sold out{% endif %}</span>
+        <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer; border-radius:31px !important; margin-bottom: 0; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
+          <span id="MobileAddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to Bag{% else %}Sold out{% endif %}</span>
         </button>
       </form>
     </div>
