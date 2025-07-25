@@ -3167,7 +3167,7 @@ let globalTouchManager = {
   if (mobileThumbs) {
     mobileThumbs.forEach((thumb, index) => {
       thumb.classList.toggle('active', index === currentMobileIndex);
-      thumb.style.borderColor = index === currentMobileIndex ? '#000' : 'transparent';
+      thumb.style.setProperty('border-color', index === currentMobileIndex ? '#000' : 'transparent', 'important');
     });
   }
 }
@@ -3358,7 +3358,7 @@ let globalTouchManager = {
       const descriptionElement = document.getElementById("dynamicDescription");
       if (descriptionElement) descriptionElement.innerHTML = content.description; 
       
-          const specsElement = document.getElementById("dynamicSpecs");
+      const specsElement = document.getElementById("dynamicSpecs");
     if (specsElement) {
       const div = document.createElement('div');
       div.style.cssText = 'white-space: pre-wrap; margin: 0; font-family: inherit;';
@@ -3553,8 +3553,8 @@ let globalTouchManager = {
           functionItem.innerHTML = `
             <div class="function-media-container" style="background-color: #f6f6f6; border-radius: 12px; overflow: hidden; margin-bottom: 20px; aspect-ratio: 0.7; position: relative; height:525px; max-width:400px; min-width:400px;">${mediaElementHtml}</div>
             <div class="function-content">
-              <h3 style="font-size: 24px;  margin-bottom: 12px; color: #000;  letter-spacing: 0.5px; line-height: 1.2;">${func.title || 'Untitled Function'}</h3>
-              <p class="functiondescriptionadjust" style="margin: 0; font-size: 18px;  line-height: 1.5; letter-spacing: 0.5px; font-weight: 300;">${func.description || 'No description available'}</p>
+              <h3 style="font-size: 24px; margin-bottom: 12px; color: #000; letter-spacing: 0.5px; line-height: 1.2;">${func.title || 'Untitled Function'}</h3>
+              <p class="functiondescriptionadjust" style="margin: 0; font-size: 18px; line-height: 1.5; letter-spacing: 0.5px; font-weight: 300;">${func.description || 'No description available'}</p>
             </div>`;
           functionsCarousel.appendChild(functionItem);
         });
@@ -5542,3 +5542,20 @@ let globalTouchManager = {
       .mobile-only-reviews { display: block !important; }
     }
   </style>
+<script>
+function adjustMobileReviewMargin() {
+  if (window.innerWidth > 900) return;
+  var title = document.getElementById('dynamicProductTitle');
+  var reviewsList = document.querySelectorAll('.mobile-only-reviews-new');
+  if (!title || !reviewsList.length) return;
+  var style = window.getComputedStyle(title);
+  var lineHeight = parseFloat(style.lineHeight);
+  var height = title.offsetHeight;
+  var marginValue = (height <= lineHeight * 1.2) ? '0px' : '-20px';
+  reviewsList.forEach(function(reviews) {
+    reviews.style.setProperty('margin-top', marginValue, 'important');
+  });
+}
+window.addEventListener('DOMContentLoaded', adjustMobileReviewMargin);
+window.addEventListener('resize', adjustMobileReviewMargin);
+</script>
