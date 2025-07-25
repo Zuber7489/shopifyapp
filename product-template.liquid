@@ -589,11 +589,15 @@
         <button type="submit" name="add" id="AddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer;border-radius:31px !important; margin: 15px 0; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
           <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to bag{% else %}Sold out{% endif %}</span>
         </button>
+        
+        <!-- Apple Pay Button -->
+        <div class="apple-pay-button-container" style="margin-top: 10px;">
+          {{ form | payment_button }}
+        </div>
       </form>
     
       <!-- Shop Pay Installments Integration -->
-      <div class="shop-pay-installments" style="margin-top: 15px;">
-        {{ form | payment_button }}
+      <div class="shop-pay-installments" style="margin-top: 15px; display: none;">
         
         {% if current_variant.price >= 5000 %}
           <div class="installments-info" style="margin-top: 10px; text-align: center; font-size: 10px; color: #666;">
@@ -1101,6 +1105,18 @@
       #AddToCartText, #MobileAddToCartText,
       .add-to-cart-button, .add-to-cart-button span {
         text-transform: none !important;
+      }
+      
+      /* Apple Pay button styling */
+      .apple-pay-button-container {
+        width: 100% !important;
+      }
+      .apple-pay-button-container .shopify-payment-button {
+        width: 100% !important;
+      }
+      .apple-pay-button-container .shopify-payment-button__button {
+        width: 100% !important;
+        border-radius: 31px !important;
       }
       .bundle-flex-wrapper{
       justify-content: initial !important;
@@ -5040,6 +5056,18 @@ let globalTouchManager = {
       #AddToCartText, #MobileAddToCartText {
         text-transform: none !important;
       }
+      
+      /* Apple Pay button styling for desktop */
+      .apple-pay-button-container {
+        width: 100% !important;
+      }
+      .apple-pay-button-container .shopify-payment-button {
+        width: 100% !important;
+      }
+      .apple-pay-button-container .shopify-payment-button__button {
+        width: 100% !important;
+        border-radius: 31px !important;
+      }
       /* Gray Box Bottom Shadow */
       .detailbox {
         box-shadow: 0 14px 28px -14px rgba(0,0,0,0.18) !important;
@@ -5385,6 +5413,12 @@ let globalTouchManager = {
         mobileSelect.addEventListener('change', function() {
           mainSelect.value = mobileSelect.value;
         });
+      }
+      
+      // Ensure Apple Pay button is visible
+      var applePayContainer = document.querySelector('.apple-pay-button-container');
+      if (applePayContainer) {
+        applePayContainer.style.display = 'block';
       }
       // Sync Add to Cart button state
       function syncMobileAddToCartState() {
