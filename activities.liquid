@@ -28,6 +28,7 @@
         </div>
       </div>
       
+      <!-- Desktop Image Container -->
       <div class="activity-image-container desktop-only">
         {% assign first_block = section.blocks | first %}
         {% if first_block.settings.desktop_image != blank %}
@@ -56,6 +57,32 @@
               id="activity-image-{{ block.id }}"
               loading="lazy"
             >
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Mobile Image Container -->
+      <div class="mobile-activity-image-container mobile-only" style="display: none;">
+        {% for block in section.blocks %}
+          {% if block.type == 'activity' %}
+            {% assign mobile_image = block.settings.mobile_image | default: block.settings.desktop_image %}
+            {% if mobile_image != blank %}
+              <img 
+                src="{{ mobile_image | img_url: 'master' }}" 
+                alt="{{ block.settings.activity_name }}"
+                class="mobile-activity-image"
+                id="mobile-activity-image-{{ block.id }}"
+                loading="lazy"
+                style="display: none;"
+              >
+            {% else %}
+              <div class="mobile-placeholder-image" id="mobile-activity-image-{{ block.id }}" style="display: none;">
+                <svg width="100%" height="100%" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="400" height="400" fill="#E5E5E5"/>
+                  <text x="200" y="200" font-family="sans-serif" font-size="16" text-anchor="middle" fill="#888">{{ block.settings.activity_name }}</text>
+                </svg>
+              </div>
+            {% endif %}
           {% endif %}
         {% endfor %}
       </div>
@@ -239,57 +266,160 @@
   /* Mobile-specific styles */
   @media (max-width: 767px) {
     .activities-content {
-      flex-direction: column;
-      align-items: normal;
-      gap: 30px;
+      flex-direction: row; /* Keep horizontal layout on mobile */
+      align-items: flex-start;
+      gap: 15px; /* Reduced gap for small screens */
+      justify-content: space-between;
     }
     .containeractivities{
-      padding: 0 15px;
+      padding: 0 20px; /* Increased padding for better spacing */
     }
     .activities-text-column {
-      align-items: center;
-      text-align: center;
-      margin-bottom: 20px;
+      align-items: flex-start;
+      text-align: left;
+      flex: 1;
+      margin-bottom: 0;
     }
     
-  .activities-list {
-    width: 100%; /* Make sure the list takes full width */
-  }
-      .activity-item {
-    width: 100%; /* Make sure each item takes full width */
-    margin-bottom: 6px;
-  }
+    .activities-list {
+      width: 100%; /* Make sure the list takes full width */
+    }
+    
+    .activity-item {
+      width: 100%; /* Make sure each item takes full width */
+      margin-bottom: 4px; /* Tighter spacing for mobile */
+    }
+    
     .activity-name {
       margin-right: 10px;
-      font-size: 28px;
-      font-weight:550;
-      letter-spacing:0.5px;
+      font-size: 24px; /* Slightly smaller for mobile horizontal layout */
+      font-weight: 550;
+      letter-spacing: 0.5px;
       cursor: pointer; /* Make it clear that it's clickable on mobile */
+      transition: all 0.2s ease;
+      padding: 6px 0; /* Add touch target padding */
+    }
+    
+    .activity-name:active {
+      color: #666; /* Visual feedback on tap */
+      transform: scale(0.98);
     }
     
     .activity-link {
-      font-size: 32px;
+      font-size: 24px; /* Adjusted for mobile horizontal layout */
     }
     
     .desktop-only {
       display: none;
     }
     
-    /* Show arrows by default on mobile */
-   /* Show arrows by default on mobile and position them at the far right */
-  .activity-arrow.hover-only {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  
-  /* Make arrows clickable on mobile */
-  .activity-arrow {
-    cursor: pointer;
-  }
+    .mobile-only {
+      display: block !important;
+    }
+    
+    /* Mobile image container styling - matching red box dimensions */
+    .mobile-activity-image-container {
+      width: 180px; /* Slightly smaller for small devices */
+      height: 180px; /* Square aspect ratio as shown in red box */
+      margin: 0;
+      margin-top: 48px; /* Align with first activity item baseline - accounting for activity padding */
+      margin-right: 20px; /* Same as container left padding for symmetry */
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px; /* Slightly less rounded for cleaner look */
+      background-color: #f0f0f0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+      flex-shrink: 0; /* Prevent shrinking */
+      align-self: flex-start; /* Ensure it aligns to the top */
+    }
+    
+    .mobile-activity-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease, opacity 0.15s ease;
+      opacity: 0;
+    }
+    
+    .mobile-activity-image:active {
+      transform: scale(0.98); /* Subtle press feedback */
+    }
+    
+    .mobile-placeholder-image {
+      width: 100%;
+      height: 100%;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease, opacity 0.15s ease;
+      opacity: 0;
+    }
+    
+    .mobile-placeholder-image:active {
+      transform: scale(0.98); /* Subtle press feedback */
+      background-color: #e8e8e8;
+    }
+    
+    /* Hide arrows on mobile to save space */
+    .activity-arrow {
+      display: none;
+    }
     
     .section-titledd {
       font-size: 17px;
-      margin-right:auto;
+      margin-bottom: 20px;
+    }
+    
+    /* Mobile-specific activity states */
+    .activity-item.mobile-active .activity-name {
+      color: #007bff; /* Highlight color for active state */
+      font-weight: 600;
+    }
+    
+    .activity-item.loading .activity-name {
+      opacity: 0.6;
+      color: #999;
+    }
+    
+    .activity-item.loading .activity-name::after {
+      content: "...";
+      animation: loading-dots 1s infinite;
+    }
+    
+    @keyframes loading-dots {
+      0%, 20% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  }
+
+  /* Extra small devices (phones, 350px and down) */
+  @media (max-width: 350px) {
+    .containeractivities {
+      padding: 0 15px; /* Tighter padding for very small screens */
+    }
+    
+    .activities-content {
+      gap: 10px; /* Smaller gap for very small screens */
+    }
+    
+    .mobile-activity-image-container {
+      width: 150px; /* Even smaller for very small devices */
+      height: 150px;
+      margin-right: 15px; /* Same as container left padding for symmetry */
+    }
+    
+    .activity-name {
+      font-size: 20px; /* Smaller text for very small screens */
+    }
+    
+    .activity-link {
+      font-size: 20px;
     }
   }
 </style>
@@ -329,31 +459,109 @@
       });
     });
 
-    // Mobile-specific click functionality
+    // Mobile-specific functionality
     function isMobile() {
       return window.innerWidth <= 767;
     }
 
-    function handleMobileClick(activityItem) {
+    // Track tap states for mobile
+    const mobileState = {
+      currentlyShownImage: null,
+      tapCounts: {}
+    };
+
+    // Show first image by default on mobile
+    function initializeMobileView() {
+      if (isMobile() && activityItems.length > 0) {
+        const firstActivityId = activityItems[0].getAttribute('data-activity');
+        const firstImage = document.getElementById(`mobile-activity-image-${firstActivityId}`);
+        if (firstImage) {
+          firstImage.style.display = 'block';
+          firstImage.style.opacity = '1';
+          mobileState.currentlyShownImage = firstActivityId;
+          activityItems[0].classList.add('mobile-active');
+        }
+      }
+    }
+
+    function showMobileImage(activityId) {
+      // Hide all mobile images with fade effect
+      document.querySelectorAll('.mobile-activity-image, .mobile-placeholder-image').forEach(img => {
+        img.style.opacity = '0';
+        setTimeout(() => {
+          img.style.display = 'none';
+        }, 150);
+      });
+      
+      // Show the selected image with fade in effect
+      const targetImage = document.getElementById(`mobile-activity-image-${activityId}`);
+      if (targetImage) {
+        setTimeout(() => {
+          targetImage.style.display = 'block';
+          targetImage.style.opacity = '0';
+          setTimeout(() => {
+            targetImage.style.opacity = '1';
+          }, 10);
+        }, 150);
+        mobileState.currentlyShownImage = activityId;
+      }
+    }
+
+    function handleMobileActivityTap(activityItem) {
+      if (!isMobile()) return;
+      
+      const activityId = activityItem.getAttribute('data-activity');
       const link = activityItem.getAttribute('data-link');
+      
+      // Initialize tap count if not exists
+      if (!mobileState.tapCounts[activityId]) {
+        mobileState.tapCounts[activityId] = 0;
+      }
+      
+      mobileState.tapCounts[activityId]++;
+      
+      // First tap: show image
+      if (mobileState.tapCounts[activityId] === 1) {
+        // Reset other tap counts
+        Object.keys(mobileState.tapCounts).forEach(key => {
+          if (key !== activityId) {
+            mobileState.tapCounts[key] = 0;
+          }
+        });
+        
+        showMobileImage(activityId);
+        
+        // Visual feedback - highlight the tapped activity
+        activityItems.forEach(item => item.classList.remove('mobile-active'));
+        activityItem.classList.add('mobile-active');
+        
+        // Reset tap count after 4 seconds if no second tap (increased from 3s)
+        setTimeout(() => {
+          if (mobileState.tapCounts[activityId] === 1) {
+            mobileState.tapCounts[activityId] = 0;
+            activityItem.classList.remove('mobile-active');
+          }
+        }, 4000);
+      }
+      // Second tap: navigate to collection
+      else if (mobileState.tapCounts[activityId] === 2) {
+        if (link && link.trim() !== '') {
+          // Add loading state
+          activityItem.classList.add('loading');
+          window.location.href = link;
+        }
+        mobileState.tapCounts[activityId] = 0;
+      }
+    }
+
+    function handleMobileImageTap(activityId) {
+      const activityItem = document.querySelector(`[data-activity="${activityId}"]`);
+      const link = activityItem ? activityItem.getAttribute('data-link') : null;
+      
       if (link && link.trim() !== '') {
         window.location.href = link;
       }
     }
-
-    // Handle arrow clicks on mobile
-    document.querySelectorAll('.activity-arrow').forEach(arrow => {
-      arrow.addEventListener('click', function(e) {
-        // Only handle click on mobile devices
-        if (isMobile()) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          const activityItem = this.closest('.activity-item');
-          handleMobileClick(activityItem);
-        }
-      });
-    });
 
     // Handle activity name clicks on mobile
     document.querySelectorAll('.activity-name').forEach(name => {
@@ -363,28 +571,45 @@
           e.stopPropagation();
           
           const activityItem = this.closest('.activity-item');
-          handleMobileClick(activityItem);
+          handleMobileActivityTap(activityItem);
         }
       });
     });
 
-    // Handle full activity link clicks on mobile
-    document.querySelectorAll('.activity-link').forEach(link => {
-      link.addEventListener('click', function(e) {
+    // Handle mobile image clicks
+    document.querySelectorAll('.mobile-activity-image, .mobile-placeholder-image').forEach(image => {
+      image.addEventListener('click', function(e) {
         if (isMobile()) {
           e.preventDefault();
           e.stopPropagation();
           
-          const activityItem = this.closest('.activity-item');
-          handleMobileClick(activityItem);
+          const activityId = this.id.replace('mobile-activity-image-', '');
+          handleMobileImageTap(activityId);
         }
       });
     });
 
-    // Handle window resize to recheck mobile state
+    // Initialize mobile view on page load
+    initializeMobileView();
+
+    // Handle window resize to manage mobile/desktop state
     window.addEventListener('resize', function() {
-      // Remove any existing event listeners and reattach based on screen size
-      // This ensures proper behavior when switching between mobile and desktop
+      if (!isMobile()) {
+        // Reset mobile state when switching to desktop
+        mobileState.currentlyShownImage = null;
+        mobileState.tapCounts = {};
+        
+        // Hide all mobile images
+        document.querySelectorAll('.mobile-activity-image, .mobile-placeholder-image').forEach(img => {
+          img.style.display = 'none';
+        });
+        
+        // Remove mobile active states
+        activityItems.forEach(item => item.classList.remove('mobile-active'));
+      } else {
+        // Re-initialize mobile view when switching to mobile
+        initializeMobileView();
+      }
     });
   });
 </script>
@@ -421,8 +646,14 @@
         {
           "type": "image_picker",
           "id": "desktop_image",
-          "label": "Activity Image",
-          "info": "Upload a square image. Recommended size: 800 x 800 pixels."
+          "label": "Desktop Activity Image",
+          "info": "Upload a square image for desktop view. Recommended size: 800 x 800 pixels."
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile Activity Image",
+          "info": "Upload a square image for mobile view. Recommended size: 400 x 400 pixels. If not provided, desktop image will be used."
         },
         {
           "type": "url",
