@@ -586,7 +586,7 @@
           {% endfor %}
         </select>
     
-        <button type="submit" name="add" id="AddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer;border-radius:31px !important; margin: 15px 0; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
+        <button type="submit" name="add" id="AddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer;border-radius:31px !important; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
           <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to bag{% else %}Sold out{% endif %}</span>
         </button>
         
@@ -1046,6 +1046,7 @@
       /* Style options mobile adjustments */
       .style-selection {
         margin-bottom: 8px !important;
+        margin-top: 28px;
       }
       
       .style-option {
@@ -1099,12 +1100,15 @@
         position: relative;
         z-index: 1;
       }
-      
+      #AddToCart, #MobileAddToCart{
+        margin:15px 0;
+      }
       /* Force text-transform override for buttons on mobile */
       #AddToCart, #MobileAddToCart,
       #AddToCartText, #MobileAddToCartText,
       .add-to-cart-button, .add-to-cart-button span {
         text-transform: none !important;
+      
       }
       
       /* Apple Pay button styling */
