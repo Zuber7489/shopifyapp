@@ -587,7 +587,7 @@
         </select>
     
         <button type="submit" name="add" id="AddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer;border-radius:31px !important; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
-          <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to bag{% else %}Sold out{% endif %}</span>
+          <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to Bag{% else %}Sold out{% endif %}</span>
         </button>
         
         <!-- Apple Pay Button -->
@@ -1101,7 +1101,7 @@
         z-index: 1;
       }
       #AddToCart, #MobileAddToCart{
-        margin:15px 0;
+        margin:20px 0;
       }
       /* Force text-transform override for buttons on mobile */
       #AddToCart, #MobileAddToCart,
@@ -3282,7 +3282,7 @@ let globalTouchManager = {
     addToCartButton.classList.toggle("disabled", !currentVariant.available);
     addToCartButton.style.backgroundColor = currentVariant.available ? "#2f6f6f" : "#ccc";
     addToCartButton.style.cursor = currentVariant.available ? "pointer" : "not-allowed";
-    addToCartText.textContent = currentVariant.available ? "Add to bag" : "Sold out";
+    addToCartText.textContent = currentVariant.available ? "Add to Bag" : "Sold out";
   }
   
   // Sync mobile sticky cart
@@ -3798,7 +3798,7 @@ let globalTouchManager = {
     function addItemToCart(id, quantity, callback) {
       const mainBtn = document.getElementById("AddToCart");
       const mainBtnText = document.getElementById("AddToCartText");
-      const originalMainText = mainBtnText ? mainBtnText.textContent : "Add to bag";
+      const originalMainText = mainBtnText ? mainBtnText.textContent : "Add to Bag";
       if (mainBtn && mainBtn.form && new FormData(mainBtn.form).get("id") === id) {
         if(mainBtnText) mainBtnText.textContent = "Adding...";
         mainBtn.disabled = true;
@@ -5365,7 +5365,7 @@ let globalTouchManager = {
             {% endif %}
           {% endfor %}
         </select>
-        <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer; border-radius:31px !important; margin-bottom: 0; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
+        <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: #2f6f6f; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: pointer; border-radius:31px !important; margin-bottom: 0; margin-top:3px; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}background-color: #ccc; cursor: not-allowed;{% endunless %}">
           <span id="MobileAddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to Bag{% else %}Sold out{% endif %}</span>
         </button>
       </form>
@@ -5551,7 +5551,7 @@ function adjustMobileReviewMargin() {
   var style = window.getComputedStyle(title);
   var lineHeight = parseFloat(style.lineHeight);
   var height = title.offsetHeight;
-  var marginValue = (height <= lineHeight * 1.2) ? '0px' : '-23px';
+  var marginValue = (height <= lineHeight * 1.2) ? '0px' : '-22px';
   reviewsList.forEach(function(reviews) {
     reviews.style.setProperty('margin-top', marginValue, 'important');
   });
