@@ -12,18 +12,50 @@
           <div class="sympl-hero-slide" {{ block.shopify_attributes }}>
             <div class="sympl-media-wrapper {% if section.settings.fix %}sympl-media-fixed{% endif %}">
               {% if block.settings.content_type == 'image' %}
-                <img src="{{ block.settings.desktop_image | img_url: 'master' }}" class="sympl-media-content sympl-desktop-only" alt="{{ block.settings.heading }}">
-                <img src="{{ block.settings.mobile_image | img_url: 'master' }}" class="sympl-media-content sympl-mobile-only" alt="{{ block.settings.heading }}">
+                <img 
+                  src="{{ block.settings.desktop_image | img_url: '1920x' }}" 
+                  srcset="{{ block.settings.desktop_image | img_url: '1200x' }} 1200w, {{ block.settings.desktop_image | img_url: '1920x' }} 1920w"
+                  sizes="100vw"
+                  class="sympl-media-content sympl-desktop-only" 
+                  alt="{{ block.settings.heading }}"
+                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                  decoding="async">
+                <img 
+                  src="{{ block.settings.mobile_image | img_url: '768x' }}" 
+                  srcset="{{ block.settings.mobile_image | img_url: '480x' }} 480w, {{ block.settings.mobile_image | img_url: '768x' }} 768w"
+                  sizes="100vw"
+                  class="sympl-media-content sympl-mobile-only" 
+                  alt="{{ block.settings.heading }}"
+                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                  decoding="async">
               {% elsif block.settings.content_type == 'video' %}
                 <div class="sympl-video-container sympl-desktop-only">
-                  <video class="sympl-hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster | img_url: 'master' | default: 'https://img.freepik.com/free-photo/white-empty-canvas_1194-7555.jpg?semt=ais_hybrid&w=740' }}" preload="metadata">
+                  <video 
+                    class="sympl-hero-video" 
+                    {% if block.settings.autoplay %}autoplay{% endif %} 
+                    {% if block.settings.loop %}loop{% endif %} 
+                    {% if block.settings.muted %}muted{% endif %} 
+                    playsinline 
+                    {% if block.settings.controls %}controls{% endif %} 
+                    poster="{% if block.settings.video_poster %}{{ block.settings.video_poster | img_url: '1920x' }}{% endif %}"
+                    preload="{% if forloop.first %}metadata{% else %}none{% endif %}"
+                    loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
                     {% if block.settings.desktop_video != blank %}
                       <source src="{{ block.settings.desktop_video }}" type="video/mp4">
                     {% endif %}
                   </video>
                 </div>
                 <div class="sympl-video-container sympl-mobile-only">
-                  <video class="sympl-hero-video" {% if block.settings.autoplay %}autoplay{% endif %} {% if block.settings.loop %}loop{% endif %} {% if block.settings.muted %}muted{% endif %} playsinline {% if block.settings.controls %}controls{% endif %} poster="{{ block.settings.video_poster_mobile | default: block.settings.video_poster | img_url: 'master' | default: 'https://img.freepik.com/free-photo/white-empty-canvas_1194-7555.jpg?semt=ais_hybrid&w=740' }}" preload="metadata">
+                  <video 
+                    class="sympl-hero-video" 
+                    {% if block.settings.autoplay %}autoplay{% endif %} 
+                    {% if block.settings.loop %}loop{% endif %} 
+                    {% if block.settings.muted %}muted{% endif %} 
+                    playsinline 
+                    {% if block.settings.controls %}controls{% endif %} 
+                    poster="{% if block.settings.video_poster_mobile %}{{ block.settings.video_poster_mobile | img_url: '768x' }}{% elsif block.settings.video_poster %}{{ block.settings.video_poster | img_url: '768x' }}{% endif %}"
+                    preload="{% if forloop.first %}metadata{% else %}none{% endif %}"
+                    loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
                     {% if block.settings.mobile_video != blank %}
                       <source src="{{ block.settings.mobile_video }}" type="video/mp4">
                     {% elsif block.settings.desktop_video != blank %}
@@ -146,6 +178,9 @@
       height: 100%;
       object-fit: cover;
       object-position: center;
+      will-change: transform; /* Optimize for animations */
+      backface-visibility: hidden; /* Prevent flickering */
+      transform: translateZ(0); /* Force hardware acceleration */
     }
     
     .sympl-video-container {
@@ -160,12 +195,33 @@
       background: transparent;
       font-size: 0;
       line-height: 0;
+      /* Performance optimizations */
+      contain: layout style paint;
+      contain-intrinsic-size: 100% 100%;
     }
     
     .sympl-hero-video::before,
     .sympl-hero-video::after {
       display: none;
       content: none;
+    }
+    
+    /* Loading state for videos */
+    .sympl-video-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 1;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+    
+    .sympl-video-container video[readyState]::before {
+      opacity: 0;
     }
     
     /* CONTENT POSITIONING */
@@ -604,9 +660,11 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize hero slider
-      const slides = document.querySelectorAll('.sympl-hero-slide');
-      if (slides.length <= 1) return;
+      // Performance optimization: Use requestIdleCallback for non-critical initialization
+      const initSlider = () => {
+        // Initialize hero slider
+        const slides = document.querySelectorAll('.sympl-hero-slide');
+        if (slides.length <= 1) return;
       
       const heroSlider = document.querySelector('.sympl-hero-section');
       const prevButton = document.querySelector('.sympl-slider-prev');
@@ -628,18 +686,37 @@
         // Show current slide
         slides[index].style.display = 'block';
         
-        // Handle video autoplay
+        // Handle video loading and autoplay with performance optimization
         const currentVideo = slides[index].querySelector('video');
-        if (currentVideo && currentVideo.hasAttribute('autoplay')) {
-          currentVideo.currentTime = 0;
-          currentVideo.play().catch(e => console.log('Video autoplay prevented:', e));
+        if (currentVideo) {
+          // Set preload to metadata for current video to start loading
+          currentVideo.preload = 'metadata';
+          
+          // Only autoplay if explicitly set and video is ready
+          if (currentVideo.hasAttribute('autoplay')) {
+            // Wait for video to be ready before playing
+            if (currentVideo.readyState >= 2) { // HAVE_CURRENT_DATA
+              currentVideo.currentTime = 0;
+              currentVideo.play().catch(e => console.log('Video autoplay prevented:', e));
+            } else {
+              // Wait for video to load metadata before playing
+              currentVideo.addEventListener('loadedmetadata', function() {
+                currentVideo.currentTime = 0;
+                currentVideo.play().catch(e => console.log('Video autoplay prevented:', e));
+              }, { once: true });
+            }
+          }
         }
         
-        // Pause other videos
+        // Pause and unload other videos to save bandwidth
         slides.forEach((slide, i) => {
           if (i !== index) {
             const video = slide.querySelector('video');
-            if (video) video.pause();
+            if (video) {
+              video.pause();
+              video.currentTime = 0;
+              video.preload = 'none'; // Stop loading other videos
+            }
           }
         });
       }
@@ -716,6 +793,14 @@
       // Initialize slider
       showSlide(currentSlide);
       startAutoSlide(); // This will only start if auto-slide is enabled
+      };
+      
+      // Use requestIdleCallback for better performance, fallback to setTimeout
+      if (window.requestIdleCallback) {
+        requestIdleCallback(initSlider, { timeout: 1000 });
+      } else {
+        setTimeout(initSlider, 100);
+      }
     });
   </script>
 
