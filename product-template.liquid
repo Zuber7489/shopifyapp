@@ -103,6 +103,24 @@
         width: 100% !important;
         max-width: 100% !important;
       }
+      
+      /* Optimize mobile image loading */
+      #mobileMainImage,
+      #mobileMainVideo {
+        will-change: transform !important;
+        transform: translateZ(0) !important; /* Force hardware acceleration */
+      }
+      
+      /* Smooth transitions for mobile */
+      .mobile-thumb {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      
+      /* Optimize thumbnail scrolling */
+      .mobile-thumbnails {
+        -webkit-overflow-scrolling: touch !important;
+        scroll-behavior: smooth !important;
+      }
       .functions-section{
             padding-top: 10px !important;
             padding-left: 0 !important;
@@ -286,9 +304,7 @@
           <!-- Navigation arrows and image counter removed for mobile -->
         </div>
         
-        <div class="mobile-thumbnails" style="display: flex; overflow-x: auto; padding: 0 0 10px 0; scrollbar-width: none; -ms-overflow-style: none; width: 100%;" id="mobileThumbnails">
-          <!-- Thumbnails will be populated by JavaScript -->
-        </div>
+
       </div>
       
       <!-- Desktop Grid View - Adapts to number of images -->
@@ -556,7 +572,7 @@
       Compare bags
     </button>
             </div>
-            <div class="reviewadjust" style="font-size: 16px; color: #2f7d7d; cursor: pointer; margin-top: 0; text-align: right; display:none;" onclick="scrollToReviews()">
+            <div class="reviewadjust" style="font-size: 16px; color: #2f6f6f; cursor: pointer; margin-top: 0; text-align: right; display:none;" onclick="scrollToReviews()">
               {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
             </div>
           </div>
@@ -1543,7 +1559,7 @@
     
     <style>
     /* Styles remain largely the same, ensure .desktop-grid adapts if fewer than 6 items */
-    /* For example, if only 1 item, you might want it to span 2 columns or center */
+    /* For example, if only one child */
     .desktop-grid:has(> :nth-child(1):nth-last-child(1)) { /* If only one child */
       grid-template-columns: 1fr; /* Make it span full width */
     }
@@ -1583,22 +1599,7 @@
     display: none !important;
     }
     
-    /* Mobile thumbnail scrollbar hiding */
-    .mobile-thumbnails::-webkit-scrollbar {
-    display: none;
-    }
-    
-    .mobile-thumbnails {
-    /* -ms-overflow-style: none;
-    scrollbar-width: none;
-      */
-      display:none !important;
-    }
-    
-    /* Mobile thumbnail active state */
-    .mobile-thumb.active {
-    border-color: #000 !important;
-    }
+
     
     /* Adjust product layout for mobile */
     .product-layout {
@@ -2613,7 +2614,6 @@ let globalTouchManager = {
     try {
       initImageGallery();
       initVariantSelector();
-      initMobileImageNavigation();
       initDesktopNavigableCellNavigation();
       initAddToCart();
       initBundleCarousel();
@@ -2624,12 +2624,21 @@ let globalTouchManager = {
       initModalNavigationAndZoom(); 
       formatInitialSpecs(); // Format specs on initial load
       
+
+      
       if (currentVariant && productVariants[currentVariant.id]) {
         currentVariant = productVariants[currentVariant.id];
         updateContentForVariant(currentVariant);
-      } else if (Object.keys(productVariants).length > 0) {
+      } else       if (Object.keys(productVariants).length > 0) {
         currentVariant = Object.values(productVariants)[0];
         updateContentForVariant(currentVariant);
+      }
+      
+      // Initialize mobile navigation after everything is set up
+      if (window.innerWidth <= 900) {
+        setTimeout(() => {
+          initMobileImageNavigation();
+        }, 200);
       }
       
       // setTimeout(() => { toggleAccordion('description'); }, 500);
@@ -3042,10 +3051,11 @@ let globalTouchManager = {
     function updateMobileGallery(images) {
       const mobileMainImage = document.getElementById('mobileMainImage');
       const mobileMainVideo = document.getElementById('mobileMainVideo');
-      const mobileThumbnails = document.getElementById('mobileThumbnails');
-      // const mobileImageTotal = document.getElementById('mobileImageTotal'); // removed
     
-      if (!mobileMainImage || !mobileMainVideo || !mobileThumbnails) return;
+      if (!mobileMainImage || !mobileMainVideo) return;
+    
+      // Reset mobile index when gallery changes
+      currentMobileIndex = 0;
     
       if (images.length > 0) {
         const firstItem = images[0];
@@ -3068,43 +3078,15 @@ let globalTouchManager = {
           mobileMainImage.alt = "No image available";
           mobileMainVideo.style.display = 'none';
       }
-    
-      // mobileImageTotal.textContent = images.length; // removed
-      mobileThumbnails.innerHTML = '';
-      images.forEach((image, index) => {
-        const thumb = document.createElement('div');
-        thumb.className = `mobile-thumb${index === 0 ? ' active' : ''}`;
-        thumb.setAttribute('data-image-index', index);
-        thumb.style.cssText = `min-width: 55px; width: 55px; height: 55px; background-color: #f6f6f6; border-radius: 6px; overflow: hidden; cursor: pointer; border: ${index === 0 ? '2px solid #000' : '2px solid transparent'}; transition: all 0.3s ease; flex-shrink: 0; position: relative;`;
-        if (image.type === 'video') {
-          const video = document.createElement('video');
-          video.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
-          video.muted = true;
-          const source = document.createElement('source');
-          source.src = image.thumb || image.src;
-          source.type = 'video/mp4';
-          video.appendChild(source);
-          const playIcon = document.createElement('div');
-          playIcon.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; pointer-events: none;';
-          playIcon.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5V19L19 12L8 5Z" fill="white"/></svg>';
-          thumb.appendChild(video);
-          thumb.appendChild(playIcon);
-        } else {
-          const img = document.createElement('img');
-          img.src = image.thumb;
-          img.alt = image.alt;
-          img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; background: #f6f6f6;';
-          thumb.appendChild(img);
-        }
-        thumb.addEventListener('click', () => { currentMobileIndex = index; updateMobileImageDisplay(); });
-        mobileThumbnails.appendChild(thumb);
-      });
     }
     
     function initMobileImageNavigation() {
-      console.log('initMobileImageNavigation called');
       const container = document.querySelector('.single-image-container');
       if (!container) return;
+      
+      // Prevent multiple initializations
+      if (container._mobileNavInitialized) return;
+      container._mobileNavInitialized = true;
       
       // Remove existing event listeners if they exist
       if (container._imageNavHandlers) {
@@ -3115,80 +3097,74 @@ let globalTouchManager = {
 
       let touchStartX = 0;
       let touchStartY = 0;
-      let touchCurrentX = 0;
-      let touchCurrentY = 0;
       let touchMoved = false;
       let isHorizontalSwipe = false;
       let touchStartTime = 0;
-      const swipeThreshold = 50;
-      const directionThreshold = 15;
-      const timeThreshold = 300;
+      let lastSwipeTime = 0;
+      const swipeThreshold = 40; // Reduced for better responsiveness
+      const directionThreshold = 10; // Reduced for better detection
+      const timeThreshold = 500; // Increased for more forgiving timing
+      const swipeDebounceTime = 300; // Prevent rapid successive swipes
 
       function touchStartHandler(e) {
         if (e.touches.length !== 1) return;
         
-        // Request touch handling from global manager
-        if (!globalTouchManager.requestHandling('mobileImageNav')) return;
-        
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
-        touchCurrentX = touchStartX;
-        touchCurrentY = touchStartY;
         touchMoved = false;
         isHorizontalSwipe = false;
         touchStartTime = Date.now();
       }
       
       function touchMoveHandler(e) {
-        if (globalTouchManager.handlingComponent !== 'mobileImageNav') return;
-        
-        touchCurrentX = e.touches[0].clientX;
-        touchCurrentY = e.touches[0].clientY;
+        const touchCurrentX = e.touches[0].clientX;
+        const touchCurrentY = e.touches[0].clientY;
         
         const deltaX = Math.abs(touchCurrentX - touchStartX);
         const deltaY = Math.abs(touchCurrentY - touchStartY);
         
-        // Only set movement flags if we've moved enough to be intentional
+        // Determine swipe direction early
         if (deltaX > directionThreshold || deltaY > directionThreshold) {
           touchMoved = true;
           
-          // Determine if this is primarily a horizontal swipe
           if (deltaX > deltaY && deltaX > directionThreshold) {
             isHorizontalSwipe = true;
-            // Only prevent default (disable scrolling) for horizontal swipes
-            e.preventDefault();
-          } else if (deltaY > deltaX) {
-            // This is a vertical scroll, release touch handling
-            globalTouchManager.releaseHandling('mobileImageNav');
+            e.preventDefault(); // Prevent scrolling for horizontal swipes
           }
-          // For vertical scrolling (deltaY > deltaX), we let the browser handle it naturally
         }
       }
       
       function touchEndHandler(e) {
-        if (globalTouchManager.handlingComponent !== 'mobileImageNav') return;
+        if (!touchMoved || !isHorizontalSwipe) return;
         
         const touchEndTime = Date.now();
         const touchDuration = touchEndTime - touchStartTime;
+        const timeSinceLastSwipe = touchEndTime - lastSwipeTime;
         
-        // Only handle swipe if it was intentional horizontal movement within time threshold
-        if (touchMoved && isHorizontalSwipe && touchDuration < timeThreshold) {
-          const diffX = touchStartX - touchCurrentX;
-          if (Math.abs(diffX) > swipeThreshold && currentColorImages && currentColorImages.length > 1) {
+        // Prevent rapid successive swipes
+        if (timeSinceLastSwipe < swipeDebounceTime) {
+          touchMoved = false;
+          isHorizontalSwipe = false;
+          return;
+        }
+        
+        // More forgiving swipe detection
+        if (touchDuration < timeThreshold && currentColorImages && currentColorImages.length > 1) {
+          const diffX = touchStartX - e.changedTouches[0].clientX;
+          
+          if (Math.abs(diffX) > swipeThreshold) {
             if (diffX > 0 && currentMobileIndex < currentColorImages.length - 1) {
               currentMobileIndex++;
-              console.log('Mobile image swipe right, index:', currentMobileIndex);
+              lastSwipeTime = touchEndTime;
               updateMobileImageDisplay();
             } else if (diffX < 0 && currentMobileIndex > 0) {
               currentMobileIndex--;
-              console.log('Mobile image swipe left, index:', currentMobileIndex);
+              lastSwipeTime = touchEndTime;
               updateMobileImageDisplay();
             }
           }
         }
         
-        // Reset touch state and release global handling
-        globalTouchManager.releaseHandling('mobileImageNav');
         touchMoved = false;
         isHorizontalSwipe = false;
       }
@@ -3206,46 +3182,48 @@ let globalTouchManager = {
     }
     
     function updateMobileImageDisplay() {
-  const mobileMainImage = document.getElementById('mobileMainImage');
-  const mobileMainVideo = document.getElementById('mobileMainVideo');
-  const mobileThumbs = document.querySelectorAll('.mobile-thumb');
+      const mobileMainImage = document.getElementById('mobileMainImage');
+      const mobileMainVideo = document.getElementById('mobileMainVideo');
 
-  if (!mobileMainImage || !mobileMainVideo) return;
+      if (!mobileMainImage || !mobileMainVideo) return;
 
-  // Ensure currentMobileIndex is within bounds
-  if (currentColorImages && currentColorImages.length > 0) {
-    currentMobileIndex = Math.max(0, Math.min(currentMobileIndex, currentColorImages.length - 1));
-    
-    const currentItem = currentColorImages[currentMobileIndex];
-    if (currentItem && currentItem.type === 'video') {
-      mobileMainImage.style.display = 'none'; 
-      mobileMainVideo.style.display = 'block';
-      const source = mobileMainVideo.querySelector('source');
-      if (source) source.src = currentItem.src;
-      mobileMainVideo.load();
-      mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
-    } else if (currentItem) {
-      mobileMainVideo.style.display = 'none'; 
-      mobileMainImage.style.display = 'block';
-      mobileMainImage.src = currentItem.src; 
-      mobileMainImage.alt = currentItem.alt;
-      mobileMainImage.onclick = () => openImageModal(currentItem.fullSrc);
+      // Ensure currentMobileIndex is within bounds
+      if (currentColorImages && currentColorImages.length > 0) {
+        currentMobileIndex = Math.max(0, Math.min(currentMobileIndex, currentColorImages.length - 1));
+        
+        const currentItem = currentColorImages[currentMobileIndex];
+        if (currentItem && currentItem.type === 'video') {
+          mobileMainImage.style.display = 'none'; 
+          mobileMainVideo.style.display = 'block';
+          const source = mobileMainVideo.querySelector('source');
+          if (source) source.src = currentItem.src;
+          mobileMainVideo.load();
+          mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
+        } else if (currentItem) {
+          mobileMainVideo.style.display = 'none'; 
+          mobileMainImage.style.display = 'block';
+          mobileMainImage.src = currentItem.src; 
+          mobileMainImage.alt = currentItem.alt;
+          mobileMainImage.onclick = () => openImageModal(currentItem.fullSrc);
+        }
+        
+        // Preload next image for smoother swiping
+        const nextIndex = currentMobileIndex + 1;
+        if (nextIndex < currentColorImages.length) {
+          const nextItem = currentColorImages[nextIndex];
+          if (nextItem && nextItem.type === 'image') {
+            const preloadImg = new Image();
+            preloadImg.src = nextItem.src;
+          }
+        }
+      } else {
+        // No images available
+        mobileMainImage.src = PLACEHOLDER_IMAGE_URL; 
+        mobileMainImage.alt = "No images available";
+        mobileMainVideo.style.display = 'none';
+        mobileMainImage.style.display = 'block';
+      }
     }
-  } else {
-    // No images available
-    mobileMainImage.src = PLACEHOLDER_IMAGE_URL; 
-    mobileMainImage.alt = "No images available";
-    mobileMainVideo.style.display = 'none';
-    mobileMainImage.style.display = 'block';
-  }
-
-  if (mobileThumbs) {
-    mobileThumbs.forEach((thumb, index) => {
-      thumb.classList.toggle('active', index === currentMobileIndex);
-      thumb.style.setProperty('border-color', index === currentMobileIndex ? '#000' : 'transparent', 'important');
-    });
-  }
-}
     
 
 
@@ -4675,81 +4653,7 @@ let globalTouchManager = {
       }
     });
     
-      // --- Enable swipe for product image gallery on mobile with proper scroll detection ---
-    function initMobileImageNavigation() {
-      const container = document.querySelector('.single-image-container');
-      if (!container) return;
-      let touchStartX = 0;
-      let touchStartY = 0;
-      let touchCurrentX = 0;
-      let touchCurrentY = 0;
-      let touchMoved = false;
-      let isHorizontalSwipe = false;
-      const swipeThreshold = 50;
-      const directionThreshold = 10;
 
-      function touchStartHandler(e) {
-        if (e.touches.length !== 1) return;
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        touchCurrentX = touchStartX;
-        touchCurrentY = touchStartY;
-        touchMoved = false;
-        isHorizontalSwipe = false;
-      }
-      
-      function touchMoveHandler(e) {
-        touchCurrentX = e.touches[0].clientX;
-        touchCurrentY = e.touches[0].clientY;
-        
-        const deltaX = Math.abs(touchCurrentX - touchStartX);
-        const deltaY = Math.abs(touchCurrentY - touchStartY);
-        
-        // Only set movement flags if we've moved enough to be intentional
-        if (deltaX > directionThreshold || deltaY > directionThreshold) {
-          touchMoved = true;
-          
-          // Determine if this is primarily a horizontal swipe
-          if (deltaX > deltaY && deltaX > directionThreshold) {
-            isHorizontalSwipe = true;
-            // Only prevent default (disable scrolling) for horizontal swipes
-            e.preventDefault();
-          }
-          // For vertical scrolling (deltaY > deltaX), we let the browser handle it naturally
-        }
-      }
-      
-      function touchEndHandler(e) {
-        // Only handle swipe if it was intentional horizontal movement
-        if (touchMoved && isHorizontalSwipe) {
-          const diffX = touchStartX - touchCurrentX;
-          if (Math.abs(diffX) > swipeThreshold) {
-            if (diffX > 0 && currentMobileIndex < currentColorImages.length - 1) {
-              currentMobileIndex++;
-              console.log('Swipe right, index:', currentMobileIndex);
-              updateMobileImageDisplay();
-            } else if (diffX < 0 && currentMobileIndex > 0) {
-              currentMobileIndex--;
-              console.log('Swipe left, index:', currentMobileIndex);
-              updateMobileImageDisplay();
-            }
-          }
-        }
-        
-        // Reset touch state
-        touchMoved = false;
-        isHorizontalSwipe = false;
-      }
-
-      // Remove any previous listeners (defensive)
-      container.removeEventListener('touchstart', touchStartHandler);
-      container.removeEventListener('touchmove', touchMoveHandler);
-      container.removeEventListener('touchend', touchEndHandler);
-
-      container.addEventListener('touchstart', touchStartHandler, { passive: true });
-      container.addEventListener('touchmove', touchMoveHandler, { passive: false }); // passive: false needed for preventDefault()
-      container.addEventListener('touchend', touchEndHandler, { passive: true });
-    }
     
     document.addEventListener('DOMContentLoaded', function() {
       
