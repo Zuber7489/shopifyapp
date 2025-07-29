@@ -499,13 +499,40 @@
               </div>
               <div class="fabric-options" style="display: flex; gap: 19px; flex-wrap: wrap;">
                 {% for value in display_option.values %}
-                  {% assign fabric_variant = product.variants | where: 'option1', value | first %}
+                  {% comment %}Try to find a variant that matches both the current size and this fabric{% endcomment %}
+                  {% assign fabric_variant = null %}
+                  
+                  {% comment %}First, try to find a variant with the current size and this fabric{% endcomment %}
+                  {% if size_option and size_option.selected_value %}
+                    {% assign fabric_variant = product.variants | where: 'option1', size_option.selected_value | where: 'option2', value | first %}
+                    {% unless fabric_variant %}
+                      {% assign fabric_variant = product.variants | where: 'option2', size_option.selected_value | where: 'option1', value | first %}
+                    {% endunless %}
+                    {% unless fabric_variant %}
+                      {% assign fabric_variant = product.variants | where: 'option1', size_option.selected_value | where: 'option3', value | first %}
+                    {% endunless %}
+                    {% unless fabric_variant %}
+                      {% assign fabric_variant = product.variants | where: 'option3', size_option.selected_value | where: 'option1', value | first %}
+                    {% endunless %}
+                    {% unless fabric_variant %}
+                      {% assign fabric_variant = product.variants | where: 'option2', size_option.selected_value | where: 'option3', value | first %}
+                    {% endunless %}
+                    {% unless fabric_variant %}
+                      {% assign fabric_variant = product.variants | where: 'option3', size_option.selected_value | where: 'option2', value | first %}
+                    {% endunless %}
+                  {% endif %}
+                  
+                  {% comment %}If no size-specific variant found, fall back to any variant with this fabric{% endcomment %}
+                  {% unless fabric_variant %}
+                    {% assign fabric_variant = product.variants | where: 'option1', value | first %}
+                  {% endunless %}
                   {% unless fabric_variant %}
                     {% assign fabric_variant = product.variants | where: 'option2', value | first %}
                   {% endunless %}
                   {% unless fabric_variant %}
                     {% assign fabric_variant = product.variants | where: 'option3', value | first %}
                   {% endunless %}
+                  
                   <div class="fabric-option{% if display_option.selected_value == value or forloop.first and display_option.selected_value == blank %} active{% endif %}"
                         data-value="{{ value | escape }}"
                         data-variant-id="{{ fabric_variant.id }}"
@@ -3174,7 +3201,128 @@ let globalTouchManager = {
   }
 }
     
+    // Helper function to debug current selection state
+    function debugCurrentSelection() {
+      const currentSize = document.querySelector(".size-option.active");
+      const currentFabric = document.querySelector(".fabric-option.active");
+      const currentStyle = document.querySelector(".style-option.active");
+      
+      console.log('Current selection state:', {
+        size: currentSize ? currentSize.getAttribute("data-value") : null,
+        fabric: currentFabric ? currentFabric.getAttribute("data-value") : null,
+        style: currentStyle ? currentStyle.getAttribute("data-value") : null,
+        currentVariant: currentVariant ? { id: currentVariant.id, title: currentVariant.title } : null
+      });
+    }
+
+    // Helper function to update fabric option variant IDs based on current size
+    function updateFabricOptionVariantIds() {
+      const currentSize = document.querySelector(".size-option.active");
+      const currentSizeValue = currentSize ? currentSize.getAttribute("data-value") : null;
+      const fabricOptions = document.querySelectorAll(".fabric-option");
+      
+      if (!currentSizeValue) return;
+      
+      console.log('Updating fabric option variant IDs for size:', currentSizeValue);
+      
+      fabricOptions.forEach(fabricOption => {
+        const fabricValue = fabricOption.getAttribute("data-value");
+        const oldVariantId = fabricOption.getAttribute("data-variant-id");
+        
+        // Find the best matching variant for this fabric and current size
+        const selectedOptions = { fabric: fabricValue, size: currentSizeValue };
+        const matchingVariant = findBestMatchingVariant(selectedOptions);
+        
+        if (matchingVariant) {
+          fabricOption.setAttribute("data-variant-id", matchingVariant.id);
+          console.log(`Updated fabric option "${fabricValue}" from variant ${oldVariantId} to variant:`, matchingVariant.id, matchingVariant.title);
+        } else {
+          console.warn(`Could not find matching variant for fabric "${fabricValue}" and size "${currentSizeValue}"`);
+        }
+      });
+    }
+
+    // Helper function to find the best matching variant
+    function findBestMatchingVariant(selectedOptions = {}) {
+      const variants = Object.values(productVariants);
+      console.log('Finding best match for options:', selectedOptions);
+      console.log('Available variants:', variants.map(v => ({ id: v.id, title: v.title, option1: v.option1, option2: v.option2, option3: v.option3 })));
+      
+      // First, try to find exact match with all selected options
+      let exactMatch = variants.find(variant => {
+        const hasAllOptions = Object.entries(selectedOptions).every(([optionType, value]) => {
+          const hasOption = variant.option1 === value || variant.option2 === value || variant.option3 === value;
+          console.log(`Checking ${optionType}: ${value} against variant ${variant.id} (${variant.option1}, ${variant.option2}, ${variant.option3}) - ${hasOption}`);
+          return hasOption;
+        });
+        console.log(`Variant ${variant.id} (${variant.title}) has all options: ${hasAllOptions}`);
+        return hasAllOptions;
+      });
+      
+      if (exactMatch) {
+        console.log('Found exact match:', exactMatch.id, exactMatch.title);
+        return exactMatch;
+      }
+      
+      // If no exact match, try to find variants that match the most important option first
+      // For size + fabric combinations, prioritize size matches
+      let bestMatch = null;
+      let bestScore = 0;
+      
+      variants.forEach(variant => {
+        let score = 0;
+        let hasSize = false;
+        let hasFabric = false;
+        
+        // Check each selected option
+        Object.entries(selectedOptions).forEach(([optionType, value]) => {
+          if (variant.option1 === value || variant.option2 === value || variant.option3 === value) {
+            score += 1;
+            if (optionType === 'size') hasSize = true;
+            if (optionType === 'fabric') hasFabric = true;
+          }
+        });
+        
+        // Prioritize variants that have the size match (if size is selected)
+        if (selectedOptions.size && hasSize) {
+          score += 10; // Give extra weight to size matches
+        }
+        
+        // Prioritize variants that have the fabric match (if fabric is selected)
+        if (selectedOptions.fabric && hasFabric) {
+          score += 5; // Give some weight to fabric matches
+        }
+        
+        console.log(`Variant ${variant.id} (${variant.title}) score: ${score}, hasSize: ${hasSize}, hasFabric: ${hasFabric}`);
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = variant;
+        }
+      });
+      
+      if (bestMatch) {
+        console.log('Found best match:', bestMatch.id, bestMatch.title, 'with score:', bestScore);
+        return bestMatch;
+      }
+      
+      // If no matches at all, return the first available variant
+      const firstAvailable = variants.find(v => v.available) || variants[0];
+      console.log('No matches found, using first available variant:', firstAvailable.id, firstAvailable.title);
+      return firstAvailable;
+    }
+
     function initVariantSelector() {
+      console.log('Initializing variant selector...');
+      console.log('Available variants:', Object.values(productVariants).map(v => ({
+        id: v.id,
+        title: v.title,
+        option1: v.option1,
+        option2: v.option2,
+        option3: v.option3,
+        price: v.formatted_price
+      })));
+      
       const fabricOptions = document.querySelectorAll(".fabric-option");
       const sizeOptions = document.querySelectorAll(".size-option");
       const styleOptions = document.querySelectorAll(".style-option");
@@ -3183,15 +3331,48 @@ let globalTouchManager = {
         option.addEventListener("click", () => {
           const value = option.getAttribute("data-value");
           const variantId = option.getAttribute("data-variant-id");
+          console.log('Fabric option clicked:', value, 'variantId:', variantId);
           fabricOptions.forEach(opt => { opt.classList.remove("active"); opt.style.border = "3px solid lightgray"; });
           option.classList.add("active"); option.style.border = "3px solid #000";
           const fabricName = document.getElementById("selectedFabricName");
           if (fabricName) fabricName.textContent = value;
           
-          if (variantId && productVariants[variantId]) switchToVariant(productVariants[variantId]);
-          else if (variantId) {
-            const fallbackVariant = Object.values(productVariants).find(v => v.option1 === value || v.option2 === value || v.option3 === value);
-            if (fallbackVariant) switchToVariant(fallbackVariant);
+          debugCurrentSelection();
+          
+          // Get current size selection
+          const currentSizeOption = document.querySelector(".size-option.active");
+          const currentSize = currentSizeOption ? currentSizeOption.getAttribute("data-value") : null;
+          
+          // First try to use the specific variant ID if available, but only if no size is selected
+          // This prevents the fabric's data-variant-id from overriding the size selection
+          if (variantId && productVariants[variantId] && !currentSize) {
+            console.log('Using specific variant ID (no size selected):', variantId);
+            switchToVariant(productVariants[variantId]);
+            return;
+          }
+          
+          // If we have both fabric and size selected, try to find exact match
+          if (currentSize) {
+            console.log('Fabric selection with size:', { fabric: value, size: currentSize });
+            const selectedOptions = { fabric: value, size: currentSize };
+            const matchingVariant = findBestMatchingVariant(selectedOptions);
+            if (matchingVariant) {
+              console.log('Switching to variant from fabric selection:', matchingVariant.id, matchingVariant.title);
+              switchToVariant(matchingVariant);
+            } else {
+              console.warn('No matching variant found for fabric:', value, 'and size:', currentSize);
+            }
+          } else {
+            // No size selected, just find by fabric
+            console.log('Fabric selection without size:', { fabric: value });
+            const selectedOptions = { fabric: value };
+            const matchingVariant = findBestMatchingVariant(selectedOptions);
+            if (matchingVariant) {
+              console.log('Switching to variant from fabric-only selection:', matchingVariant.id, matchingVariant.title);
+              switchToVariant(matchingVariant);
+            } else {
+              console.warn('No matching variant found for fabric:', value);
+            }
           }
         });
       });
@@ -3199,11 +3380,14 @@ let globalTouchManager = {
       sizeOptions.forEach(option => {
         option.addEventListener("click", () => {
           const value = option.getAttribute("data-value");
+          console.log('Size option clicked:', value);
           sizeOptions.forEach(opt => { opt.classList.remove("active"); opt.style.backgroundColor = "#d8e2e2"; opt.style.color = "#2f6f6f"; });
           option.classList.add("active"); option.style.backgroundColor = "#2f6f6f"; option.style.color = "white";
           
+          debugCurrentSelection();
+          
           const currentFabricOption = document.querySelector(".fabric-option.active");
-          const currentFabric = currentFabricOption ? currentFabricOption.getAttribute("data-value") : (currentVariant ? (currentVariant.option1 || currentVariant.option2 || currentVariant.option3) : null);
+          const currentFabric = currentFabricOption ? currentFabricOption.getAttribute("data-value") : null;
           
           // Handle products with only size options (no fabric)
           if (!currentFabricOption) {
@@ -3220,12 +3404,30 @@ let globalTouchManager = {
           
           // Handle products with both fabric and size options
           if (currentFabric) {
-            const matchingVariant = Object.values(productVariants).find(v => 
-              (v.option1 === currentFabric || v.option2 === currentFabric || v.option3 === currentFabric) &&
-              (v.option1 === value || v.option2 === value || v.option3 === value)
-            );
-            if (matchingVariant) switchToVariant(matchingVariant);
+            console.log('Size selection with fabric:', { size: value, fabric: currentFabric });
+            const selectedOptions = { fabric: currentFabric, size: value };
+            const matchingVariant = findBestMatchingVariant(selectedOptions);
+            if (matchingVariant) {
+              console.log('Switching to variant from size selection:', matchingVariant.id, matchingVariant.title);
+              switchToVariant(matchingVariant);
+            } else {
+              console.warn('No matching variant found for size:', value, 'and fabric:', currentFabric);
+            }
+          } else {
+            // No fabric selected, just find by size
+            console.log('Size selection without fabric:', { size: value });
+            const selectedOptions = { size: value };
+            const matchingVariant = findBestMatchingVariant(selectedOptions);
+            if (matchingVariant) {
+              console.log('Switching to variant from size-only selection:', matchingVariant.id, matchingVariant.title);
+              switchToVariant(matchingVariant);
+            } else {
+              console.warn('No matching variant found for size:', value);
+            }
           }
+          
+          // Update fabric option variant IDs to match the new size
+          updateFabricOptionVariantIds();
         });
       });
 
@@ -3254,19 +3456,31 @@ let globalTouchManager = {
           
           // Handle products with both fabric and style options
           if (currentFabric) {
-            const matchingVariant = Object.values(productVariants).find(v => 
-              (v.option1 === currentFabric || v.option2 === currentFabric || v.option3 === currentFabric) &&
-              (v.option1 === value || v.option2 === value || v.option3 === value)
-            );
-            if (matchingVariant) switchToVariant(matchingVariant);
+            const selectedOptions = { fabric: currentFabric, style: value };
+            const matchingVariant = findBestMatchingVariant(selectedOptions);
+            if (matchingVariant) {
+              switchToVariant(matchingVariant);
+            }
+          } else {
+            // No fabric selected, just find by style
+            const selectedOptions = { style: value };
+            const matchingVariant = findBestMatchingVariant(selectedOptions);
+            if (matchingVariant) {
+              switchToVariant(matchingVariant);
+            }
           }
         });
       });
     }
     
     function switchToVariant(variant) {
-  if (!variant || !productVariants[variant.id]) return; 
+  console.log('switchToVariant called with:', variant);
+  if (!variant || !productVariants[variant.id]) {
+    console.warn('Invalid variant or variant not found in productVariants:', variant);
+    return;
+  } 
   currentVariant = productVariants[variant.id]; 
+  console.log('Switched to variant:', currentVariant.id, 'with title:', currentVariant.title);
   
   const productSelect = document.getElementById("ProductSelect");
   if (productSelect) productSelect.value = currentVariant.id;
@@ -3292,6 +3506,7 @@ let globalTouchManager = {
     syncMobileAddToCartState();
   }
   
+  console.log('About to update content for variant:', currentVariant.id);
   updateContentForVariant(currentVariant); 
   currentColorImages = getImagesByVariant(currentVariant);
   updateGalleryImages(currentColorImages);
@@ -3313,7 +3528,11 @@ let globalTouchManager = {
 }
     
     function updateContentForVariant(variant) {
-      if (!variant || !variantContent || !variantContent[variant.id]) return;
+      console.log('updateContentForVariant called with variant:', variant.id, variant.title);
+      if (!variant || !variantContent) {
+        console.warn('Missing variant or variantContent:', { variant, variantContent: !!variantContent });
+        return;
+      }
       
       // Get parent content (first variant is always the parent/default)
       const parentContent = variantContent[Object.keys(variantContent)[0]];
@@ -3321,27 +3540,35 @@ let globalTouchManager = {
       // Get current variant content with inheritance from parent
       const content = {
         ...parentContent, // Start with all parent content
-        ...variantContent[variant.id] // Override with variant-specific content if it exists
+        ...(variantContent[variant.id] || {}) // Override with variant-specific content if it exists
       };
       
       // Ensure arrays and objects inherit properly
-      content.features = (variantContent[variant.id].features && variantContent[variant.id].features.length > 0) 
-        ? variantContent[variant.id].features 
+      const variantSpecificContent = variantContent[variant.id] || {};
+      content.features = (variantSpecificContent.features && variantSpecificContent.features.length > 0) 
+        ? variantSpecificContent.features 
         : parentContent.features;
         
-      content.functions = (variantContent[variant.id].functions && variantContent[variant.id].functions.length > 0)
-        ? variantContent[variant.id].functions
+      content.functions = (variantSpecificContent.functions && variantSpecificContent.functions.length > 0)
+        ? variantSpecificContent.functions
         : parentContent.functions;
         
-      content.function_image_urls = (variantContent[variant.id].function_image_urls && variantContent[variant.id].function_image_urls.length > 0)
-        ? variantContent[variant.id].function_image_urls
+      content.function_image_urls = (variantSpecificContent.function_image_urls && variantSpecificContent.function_image_urls.length > 0)
+        ? variantSpecificContent.function_image_urls
         : parentContent.function_image_urls;
         
       // Ensure scalar fields inherit properly
-      content.material = variantContent[variant.id].material || parentContent.material;
-      content.product_video_url = variantContent[variant.id].product_video_url || parentContent.product_video_url;
+      content.material = variantSpecificContent.material || parentContent.material;
+      content.product_video_url = variantSpecificContent.product_video_url || parentContent.product_video_url;
       
       // Update all content sections
+      console.log('Content to be applied:', {
+        title: content.title,
+        tagline: content.tagline,
+        featuresCount: content.features ? content.features.length : 0,
+        functionsCount: content.functions ? content.functions.length : 0
+      });
+      
       const titleElement = document.getElementById("dynamicProductTitle");
       if (titleElement) {
         console.log('Updating product title to:', content.title);
