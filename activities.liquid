@@ -150,7 +150,7 @@
   line-height: 1.2;
   font-family: sans-serif;
   transition: all 0.3s ease;
-  cursor: default; /* Default cursor for desktop */
+  cursor: pointer; /* Changed to pointer to indicate clickable */
 }
 
 .activity-name {
@@ -259,7 +259,16 @@
     }
     
     .activity-name {
-      cursor: default; /* Not clickable on desktop */
+      cursor: pointer; /* Make clickable on desktop */
+      transition: color 0.3s ease;
+    }
+    
+    .activity-item:hover .activity-name {
+      color: #666; /* Subtle hover effect */
+    }
+    
+    .activity-item:active .activity-name {
+      color: #999; /* Press effect */
     }
   }
   
@@ -455,6 +464,18 @@
         const image = document.getElementById(`activity-image-${activityId}`);
         if (image) {
           image.classList.add('active');
+        }
+      });
+    });
+
+    // Handle click events for desktop navigation
+    activityItems.forEach(item => {
+      item.addEventListener('click', function(e) {
+        if (!isMobile()) {
+          const link = this.getAttribute('data-link');
+          if (link && link.trim() !== '') {
+            window.location.href = link;
+          }
         }
       });
     });
