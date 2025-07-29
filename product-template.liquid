@@ -2839,6 +2839,10 @@ let globalTouchManager = {
       const dotsContainer = document.getElementById('desktopGalleryDots');
     
       if (!desktopGrid || !dotsContainer) return;
+      
+      // Clear cached elements when gallery is updated
+      cachedDesktopNavElements = null;
+      
       desktopGrid.innerHTML = '';
       dotsContainer.innerHTML = '';
       dotsContainer.style.display = 'none';
@@ -2873,13 +2877,39 @@ let globalTouchManager = {
       }
     }
     
+    // Cache DOM elements for better performance
+    let cachedDesktopNavElements = null;
+    
+    function getDesktopNavElements() {
+      if (!cachedDesktopNavElements) {
+        cachedDesktopNavElements = {
+          navImg: document.getElementById('desktopNavigableImage'),
+          navVideo: document.getElementById('desktopNavigableVideo'),
+          navVideoSource: document.getElementById('desktopNavigableVideoSource'),
+          counter: document.getElementById('desktopNavigableCounter'),
+          prevBtn: document.querySelector('.desktop-navigable-cell .individual-prev'),
+          nextBtn: document.querySelector('.desktop-navigable-cell .individual-next')
+        };
+      }
+      return cachedDesktopNavElements;
+    }
+    
+    // Debounce function to prevent rapid clicks
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+    
     function updateDesktopNavigableCellContent(allVariantImages) {
-      const navImg = document.getElementById('desktopNavigableImage');
-      const navVideo = document.getElementById('desktopNavigableVideo');
-      const navVideoSource = document.getElementById('desktopNavigableVideoSource');
-      const counter = document.getElementById('desktopNavigableCounter');
-      const prevBtn = document.querySelector('.desktop-navigable-cell .individual-prev');
-      const nextBtn = document.querySelector('.desktop-navigable-cell .individual-next');
+      const elements = getDesktopNavElements();
+      const { navImg, navVideo, navVideoSource, counter, prevBtn, nextBtn } = elements;
     
       if (!navImg || !navVideo || !navVideoSource || !counter || !prevBtn || !nextBtn) return;
     
@@ -2892,7 +2922,13 @@ let globalTouchManager = {
           navImg.style.display = 'none';
           navVideo.style.display = 'block';
           navVideoSource.src = currentItem.src;
-          navVideo.load();
+          // Use requestAnimationFrame to defer video loading and prevent UI blocking
+          requestAnimationFrame(() => {
+            // Further defer video loading to ensure UI responsiveness
+            setTimeout(() => {
+              navVideo.load();
+            }, 0);
+          });
           navVideo.onclick = () => openVideoModal(navVideo);
       } else {
           navVideo.style.display = 'none';
@@ -2945,8 +2981,11 @@ let globalTouchManager = {
           dot.setAttribute('aria-label', `Go to image ${DESKTOP_NAVIGABLE_START_INDEX + index + 1}`);
           dot.addEventListener('click', () => {
             currentDesktopNavigableDisplayIndex = index;
-            updateDesktopNavigableCellContent(allVariantImages);
-            updateDesktopNavigableDots(allVariantImages);
+            // Use debounced update for dots as well
+            debounce(() => {
+              updateDesktopNavigableCellContent(allVariantImages);
+              updateDesktopNavigableDots(allVariantImages);
+            }, 50)();
           });
           dotsContainer.appendChild(dot);
         });
@@ -2960,9 +2999,18 @@ let globalTouchManager = {
       const desktopGrid = document.getElementById('desktopGrid');
       if (!desktopGrid) return;
 
+      // Create debounced update function to prevent rapid successive calls
+      const debouncedUpdate = debounce(() => {
+        updateDesktopNavigableCellContent(currentColorImages);
+        updateDesktopNavigableDots(currentColorImages);
+      }, 50); // 50ms debounce
+
       desktopGrid.addEventListener('click', (event) => {
         const target = event.target.closest('button.desktop-nav-arrow');
         if (!target) return;
+
+        // Prevent rapid successive clicks
+        if (target.disabled) return;
 
         const navigableCell = target.closest('.desktop-navigable-cell');
         if (!navigableCell) return;
@@ -2972,25 +3020,23 @@ let globalTouchManager = {
         if (target.classList.contains('individual-prev')) {
           if (currentDesktopNavigableDisplayIndex > 0) {
             currentDesktopNavigableDisplayIndex--;
-            updateDesktopNavigableCellContent(currentColorImages);
-            updateDesktopNavigableDots(currentColorImages);
+            debouncedUpdate();
           }
         } else if (target.classList.contains('individual-next')) {
           if (currentDesktopNavigableDisplayIndex < navigableMediaItems.length - 1) {
             currentDesktopNavigableDisplayIndex++;
-            updateDesktopNavigableCellContent(currentColorImages);
-            updateDesktopNavigableDots(currentColorImages);
+            debouncedUpdate();
           }
         }
       });
       
       // Handle window resize to re-evaluate visibility of navigation elements
-      window.addEventListener('resize', () => {
+      window.addEventListener('resize', debounce(() => {
         if (currentColorImages && currentColorImages.length > 0) {
           updateDesktopNavigableCellContent(currentColorImages);
           updateDesktopNavigableDots(currentColorImages);
         }
-      });
+      }, 100)); // Debounce resize events
     }
     
     function updateMobileGallery(images) {
@@ -3812,7 +3858,10 @@ let globalTouchManager = {
         modalImage.style.display = 'none';
         modalVideo.style.display = 'block';
         modalVideoSource.src = item.fullSrc || item.src; 
-        modalVideo.load();
+        // Defer video loading to prevent UI blocking
+        requestAnimationFrame(() => {
+          modalVideo.load();
+        });
         zoomControls.style.display = 'none';
       } else { 
         modalVideo.style.display = 'none';
