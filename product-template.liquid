@@ -1550,11 +1550,13 @@
         </svg>
       </button>
       <div style="position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center;">
-        <img id="modalImage" style="max-width: 90vw; max-height: 100vh; width: auto; height: auto; object-fit: contain; display: none; border-radius: 0; background: #fff; transform-origin: center center; transition: transform 0.2s ease-out; cursor: grab;" draggable="false">
+        <img id="modalImage" style="max-width: 90vw; max-height: 100vh; width: auto; height: auto; object-fit: contain; display: none; border-radius: 0; background: #fff; transform-origin: center center; transition: transform 0.2s ease-out; cursor: zoom-in;" draggable="false">
         <video id="modalVideo" style="max-width: 100vw; max-height: 100vh; width: auto; height: auto; object-fit: contain; display: none; border-radius: 0; background: #fff;" controls>
           <source id="modalVideoSource" type="video/mp4">
         </video>
       </div>
+      
+
     </div>
     
     <style>
@@ -3766,7 +3768,25 @@ let globalTouchManager = {
     
     function openImageModal(src) {
       currentModalMediaSet = currentColorImages;
-      const initialIndex = currentModalMediaSet.findIndex(item => item.type === 'image' && item.fullSrc === src);
+      
+      // Try exact match first
+      let initialIndex = currentModalMediaSet.findIndex(item => item.type === 'image' && item.fullSrc === src);
+      
+      // If no exact match, try matching with src property
+      if (initialIndex === -1) {
+        initialIndex = currentModalMediaSet.findIndex(item => item.type === 'image' && item.src === src);
+      }
+      
+      // If still no match, try matching with normalized URLs
+      if (initialIndex === -1) {
+        const normalizedSrc = src.replace(/_[0-9]+x[0-9]+|_600x600|_1200x1200|_400x400|_300x300|_100x100|_crop_center|_crop_center/gi, '');
+        initialIndex = currentModalMediaSet.findIndex(item => {
+          if (item.type !== 'image') return false;
+          const normalizedItemSrc = item.src.replace(/_[0-9]+x[0-9]+|_600x600|_1200x1200|_400x400|_300x300|_100x100|_crop_center|_crop_center/gi, '');
+          const normalizedItemFullSrc = item.fullSrc ? item.fullSrc.replace(/_[0-9]+x[0-9]+|_600x600|_1200x1200|_400x400|_300x300|_100x100|_crop_center|_crop_center/gi, '') : '';
+          return normalizedItemSrc === normalizedSrc || normalizedItemFullSrc === normalizedSrc;
+        });
+      }
       
       if (initialIndex !== -1) {
         currentModalMediaIndex = initialIndex;
@@ -3775,6 +3795,17 @@ let globalTouchManager = {
         if (modal) {
           modal.style.display = 'block';
           document.body.style.overflow = 'hidden';
+        }
+      } else {
+        // Fallback: open the first image
+        if (currentModalMediaSet.length > 0) {
+          currentModalMediaIndex = 0;
+          displayModalMedia(currentModalMediaIndex);
+          const modal = document.getElementById('mediaModal');
+          if (modal) {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+          }
         }
       }
     }
@@ -3823,14 +3854,19 @@ let globalTouchManager = {
       const modalVideoSource = document.getElementById('modalVideoSource');
       const modalPrevBtn = document.getElementById('modalPrev');
       const modalNextBtn = document.getElementById('modalNext');
-      const zoomControls = document.getElementById('modalZoomControls');
-      const zoomInBtn = document.getElementById('modalZoomIn');
-      const zoomOutBtn = document.getElementById('modalZoomOut');
     
-      if (!modalImage || !modalVideo || !modalVideoSource || !modalPrevBtn || !modalNextBtn || !zoomControls || !zoomInBtn || !zoomOutBtn) return;
+      if (!modalImage || !modalVideo || !modalVideoSource || !modalPrevBtn || !modalNextBtn) {
+        return;
+      }
     
-      currentZoomLevel = 1; // Reset zoom
-      modalImage.style.transform = 'scale(1)';
+      // Reset zoom and pan for new image
+      currentZoomLevel = 1;
+      zoomLevel = 1;
+      panX = 0;
+      panY = 0;
+      isZoomed = false;
+      modalImage.style.transform = 'scale(1) translate(0px,0px)';
+      modalImage.style.cursor = 'zoom-in';
     
       if (item.type === 'video') {
         modalImage.style.display = 'none';
@@ -3840,14 +3876,12 @@ let globalTouchManager = {
         requestAnimationFrame(() => {
           modalVideo.load();
         });
-        zoomControls.style.display = 'none';
       } else { 
         modalVideo.style.display = 'none';
         modalVideo.pause();
         modalImage.style.display = 'block';
-        modalImage.src = item.fullSrc; 
-        zoomControls.style.display = 'flex';
-        updateZoomButtons();
+        // Use original image (no compression) - same logic as the removed duplicate function
+        modalImage.src = item.src.replace(/_[0-9]+x[0-9]+|_600x600|_1200x1200|_400x400|_300x300|_100x100|_crop_center|_crop_center/gi, '');
       }
     
       modalPrevBtn.disabled = currentModalMediaIndex === 0;
@@ -3859,21 +3893,13 @@ let globalTouchManager = {
       modalNextBtn.style.cursor = modalNextBtn.disabled ? 'default' : 'pointer';
     }
     
-    function updateZoomButtons() {
-      const zoomInBtn = document.getElementById('modalZoomIn');
-      const zoomOutBtn = document.getElementById('modalZoomOut');
-      if (!zoomInBtn || !zoomOutBtn) return;
-    
-      zoomInBtn.disabled = currentZoomLevel >= MAX_ZOOM_LEVEL;
-      zoomOutBtn.disabled = currentZoomLevel <= MIN_ZOOM_LEVEL;
-    }
+
     
     function zoomInModal() {
       if (currentZoomLevel < MAX_ZOOM_LEVEL) {
         currentZoomLevel += ZOOM_STEP;
         currentZoomLevel = Math.min(currentZoomLevel, MAX_ZOOM_LEVEL); // Ensure it doesn't exceed max
         document.getElementById('modalImage').style.transform = `scale(${currentZoomLevel})`;
-        updateZoomButtons();
       }
     }
     
@@ -3882,7 +3908,6 @@ let globalTouchManager = {
         currentZoomLevel -= ZOOM_STEP;
         currentZoomLevel = Math.max(currentZoomLevel, MIN_ZOOM_LEVEL); // Ensure it doesn't go below min
         document.getElementById('modalImage').style.transform = `scale(${currentZoomLevel})`;
-        updateZoomButtons();
       }
     }
     
@@ -3911,8 +3936,6 @@ let globalTouchManager = {
     function initModalNavigationAndZoom() {
       const modalPrevBtn = document.getElementById('modalPrev');
       const modalNextBtn = document.getElementById('modalNext');
-      const zoomInBtn = document.getElementById('modalZoomIn');
-      const zoomOutBtn = document.getElementById('modalZoomOut');
     
       if (modalPrevBtn) {
         modalPrevBtn.addEventListener('click', (e) => {
@@ -3931,18 +3954,7 @@ let globalTouchManager = {
           }
         });
       }
-      if (zoomInBtn) {
-        zoomInBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            zoomInModal();
-        });
-      }
-      if (zoomOutBtn) {
-        zoomOutBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            zoomOutModal();
-        });
-      }
+
     }
     
     
@@ -4482,42 +4494,6 @@ let globalTouchManager = {
       const maxPanY = Math.max(0, (scaledH - vh) / 2);
       return { maxPanX, maxPanY };
     }
-    function displayModalMedia(index) {
-      if (index < 0 || index >= currentModalMediaSet.length) return;
-      currentModalMediaIndex = index;
-      const item = currentModalMediaSet[index];
-      const modalImage = document.getElementById('modalImage');
-      const modalVideo = document.getElementById('modalVideo');
-      const modalVideoSource = document.getElementById('modalVideoSource');
-      isZoomed = false; zoomLevel = 1; panX = 0; panY = 0;
-      if (item.type === 'video') {
-        modalImage.style.display = 'none';
-        modalVideo.style.display = 'block';
-        modalVideoSource.src = item.fullSrc || item.src;
-        modalVideo.load();
-      } else {
-        modalVideo.style.display = 'none';
-        modalVideo.pause();
-        modalImage.style.display = 'block';
-        // Use original image (no compression)
-        modalImage.src = item.src.replace(/_[0-9]+x[0-9]+|_600x600|_1200x1200|_400x400|_300x300|_100x100|_crop_center|_crop_center/gi, '');
-        modalImage.style.transform = 'scale(1) translate(0px,0px)';
-        modalImage.style.cursor = 'grab';
-      }
-      // Update arrow states
-      const modalPrevBtn = document.getElementById('modalPrev');
-      const modalNextBtn = document.getElementById('modalNext');
-      if (modalPrevBtn) {
-        modalPrevBtn.disabled = (index === 0);
-        modalPrevBtn.style.opacity = (index === 0) ? '0.3' : '1';
-        modalPrevBtn.style.cursor = (index === 0) ? 'default' : 'pointer';
-      }
-      if (modalNextBtn) {
-        modalNextBtn.disabled = (index === currentModalMediaSet.length - 1);
-        modalNextBtn.style.opacity = (index === currentModalMediaSet.length - 1) ? '0.3' : '1';
-        modalNextBtn.style.cursor = (index === currentModalMediaSet.length - 1) ? 'default' : 'pointer';
-      }
-    }
     const modalImage = document.getElementById('modalImage');
     if (modalImage) {
       // Remove click-to-zoom
@@ -4550,7 +4526,7 @@ let globalTouchManager = {
         dragStartY = e.clientY;
         dragOriginPanX = panX;
         dragOriginPanY = panY;
-        modalImage.style.cursor = (zoomLevel > 1) ? 'grabbing' : 'grab';
+        modalImage.style.cursor = (zoomLevel > 1) ? 'grabbing' : 'zoom-in';
         e.preventDefault();
       });
     
@@ -4572,7 +4548,7 @@ let globalTouchManager = {
     
       window.addEventListener('mouseup', function(e) {
         if (!mouseDown) return;
-        modalImage.style.cursor = 'grab';
+        modalImage.style.cursor = zoomLevel > 1 ? 'grabbing' : 'zoom-in';
         mouseDown = false;
         // If not dragged, treat as click-to-zoom
         if (!dragStarted && e.button === 0) {
@@ -4580,12 +4556,12 @@ let globalTouchManager = {
             zoomLevel = CLICK_ZOOM_LEVEL;
             panX = 0; panY = 0;
             modalImage.style.transform = `scale(${zoomLevel}) translate(0px,0px)`;
-            modalImage.style.cursor = 'grab';
+            modalImage.style.cursor = 'grabbing';
           } else {
             zoomLevel = 1;
             panX = 0; panY = 0;
             modalImage.style.transform = `scale(1) translate(0px,0px)`;
-            modalImage.style.cursor = 'grab';
+            modalImage.style.cursor = 'zoom-in';
           }
         }
         dragStarted = false;
@@ -4618,28 +4594,10 @@ let globalTouchManager = {
       }, { passive: false });
       modalImage.addEventListener('touchend', function(e) {
         isDragging = false;
-        modalImage.style.cursor = 'grab';
+        modalImage.style.cursor = zoomLevel > 1 ? 'grabbing' : 'zoom-in';
       });
     }
-    // Modal navigation arrow events
-    const modalPrevBtn = document.getElementById('modalPrev');
-    const modalNextBtn = document.getElementById('modalNext');
-    if (modalPrevBtn) {
-      modalPrevBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (currentModalMediaIndex > 0) {
-          displayModalMedia(currentModalMediaIndex - 1);
-        }
-      });
-    }
-    if (modalNextBtn) {
-      modalNextBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (currentModalMediaIndex < currentModalMediaSet.length - 1) {
-          displayModalMedia(currentModalMediaIndex + 1);
-        }
-      });
-    }
+
     window.addEventListener('keydown', function(e) {
       const modal = document.getElementById('mediaModal');
       if (modal && modal.style.display === 'block') {
