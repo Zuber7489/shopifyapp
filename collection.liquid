@@ -540,8 +540,13 @@
                         class="product-image"
                         loading="lazy"
                         data-first-image="{{ product.featured_image | img_url: '2000x2000' }}"
-                        {% if product.images[1] %}
-                        data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
+                        {% comment %}Get variant gallery images for second image{% endcomment %}
+                        {% if size_variant.metafields.custom.variant_gallery.value != blank %}
+                          {% assign first_gallery_image = size_variant.metafields.custom.variant_gallery.value | first %}
+                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
+                        {% elsif product.images[1] %}
+                          data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
                         {% endif %}
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
@@ -627,6 +632,21 @@
                         <div 
                           class="color-swatch-variant" 
                           data-image="{% if matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
+                          {% comment %}Get variant gallery images for second image{% endcomment %}
+                          {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
+                            {% assign first_gallery_image = matched_variant.metafields.custom.variant_gallery.value | first %}
+                            {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
+                            data-second-image="{{ second_image_url }}"
+                            data-debug-gallery="true"
+                            data-debug-gallery-size="{{ matched_variant.metafields.custom.variant_gallery.value.size }}"
+                            data-debug-first-image="{{ first_gallery_image }}"
+                          {% else %}
+                            data-debug-gallery="false"
+                            data-debug-variant="{{ matched_variant.id }}"
+                            data-debug-gallery-size="0"
+                            data-debug-metafield-exists="false"
+                            data-debug-metafield-value="null"
+                          {% endif %}
                           data-product-id="{{ product.id }}-{{ size_variant.id }}"
                           data-variant-index="{{ forloop.index0 }}"
                           title="{{ value | capitalize }}"
@@ -747,8 +767,13 @@
                         class="product-image"
                         loading="lazy"
                         data-first-image="{{ product.featured_image | img_url: '2000x2000' }}"
-                        {% if product.images[1] %}
-                        data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
+                        {% comment %}Get variant gallery images for second image{% endcomment %}
+                        {% assign variant_gallery_images = style_variant.metafields.custom.variant_gallery.value %}
+                        {% if variant_gallery_images != blank and variant_gallery_images.size > 0 %}
+                          {% assign second_image_url = variant_gallery_images[0] | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
+                        {% elsif product.images[1] %}
+                          data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
                         {% endif %}
                       >
                     {% else %}
@@ -833,6 +858,12 @@
                         <div 
                           class="color-swatch-variant" 
                           data-image="{% if matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
+                          {% comment %}Get variant gallery images for second image{% endcomment %}
+                          {% assign variant_gallery_images = matched_variant.metafields.custom.variant_gallery.value %}
+                          {% if variant_gallery_images != blank and variant_gallery_images.size > 0 %}
+                            {% assign second_image_url = variant_gallery_images[0] | img_url: '2000x2000' %}
+                            data-second-image="{{ second_image_url }}"
+                          {% endif %}
                           data-product-id="{{ product.id }}-{{ style_variant.id }}"
                           data-variant-index="{{ forloop.index0 }}"
                           title="{{ value | capitalize }}"
@@ -912,8 +943,14 @@
                     class="product-image"
                     loading="lazy"
                     data-first-image="{{ product.featured_image | img_url: '2000x2000' }}"
-                    {% if product.images[1] %}
-                    data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
+                    {% comment %}Get variant gallery images for second image{% endcomment %}
+                    {% assign first_variant = product.selected_or_first_available_variant %}
+                    {% assign variant_gallery_images = first_variant.metafields.custom.variant_gallery.value %}
+                    {% if variant_gallery_images != blank and variant_gallery_images.size > 0 %}
+                      {% assign second_image_url = variant_gallery_images[0] | img_url: '2000x2000' %}
+                      data-second-image="{{ second_image_url }}"
+                    {% elsif product.images[1] %}
+                      data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
                     {% endif %}
                     onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                   >
@@ -972,6 +1009,12 @@
                     <div 
                       class="color-swatch-variant" 
                       data-image="{% if matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
+                      {% comment %}Get variant gallery images for second image{% endcomment %}
+                      {% assign variant_gallery_images = matched_variant.metafields.custom.variant_gallery.value %}
+                      {% if variant_gallery_images != blank and variant_gallery_images.size > 0 %}
+                        {% assign second_image_url = variant_gallery_images[0] | img_url: '2000x2000' %}
+                        data-second-image="{{ second_image_url }}"
+                      {% endif %}
                       data-product-id="{{ product.id }}"
                       data-variant-index="{{ forloop.index0 }}"
                       title="{{ value | capitalize }}"
@@ -1158,7 +1201,14 @@ const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.
 // Product image hover functionality with Safari fixes
 function showSecondImage(productId) {
   const img = document.getElementById('main-image-product-' + productId);
+  console.log('showSecondImage called for productId:', productId);
+  console.log('Image element:', img);
+  if (img) {
+    console.log('Current second image:', img.dataset.secondImage);
+  }
+  
   if (img && img.dataset.secondImage) {
+    console.log('Switching to second image:', img.dataset.secondImage);
     // Safari-specific image loading
     if (isSafari) {
       const newImg = new Image();
@@ -1172,6 +1222,8 @@ function showSecondImage(productId) {
     } else {
       img.src = img.dataset.secondImage;
     }
+  } else {
+    console.log('No second image available for productId:', productId, '- staying on first image');
   }
 }
 
@@ -1205,16 +1257,36 @@ function updateProductLink(element, productUrl, variantId) {
   // Update variant image with Safari compatibility
   const productId = element.getAttribute('data-product-id');
   const imageUrl = element.getAttribute('data-image');
+  const secondImageUrl = element.getAttribute('data-second-image');
+  
+  console.log('Updating product link:', {
+    productId: productId,
+    imageUrl: imageUrl,
+    secondImageUrl: secondImageUrl,
+    variantId: variantId,
+    debugGallery: element.getAttribute('data-debug-gallery'),
+    debugVariant: element.getAttribute('data-debug-variant'),
+    debugGallerySize: element.getAttribute('data-debug-gallery-size'),
+    debugMetafieldExists: element.getAttribute('data-debug-metafield-exists'),
+    debugMetafieldValue: element.getAttribute('data-debug-metafield-value'),
+    debugFirstImage: element.getAttribute('data-debug-first-image')
+  });
   
   if (imageUrl) {
     const img = document.getElementById('main-image-product-' + productId);
     if (img) {
+      console.log('Found image element, updating...');
       // Safari-specific image loading
       if (isSafari) {
         const newImg = new Image();
         newImg.onload = function() {
           img.src = imageUrl;
           img.dataset.firstImage = imageUrl;
+          // Update second image if available
+          if (secondImageUrl) {
+            img.dataset.secondImage = secondImageUrl;
+            console.log('Updated second image to:', secondImageUrl);
+          }
         };
         newImg.onerror = function() {
           console.warn('Failed to load variant image for Safari:', imageUrl);
@@ -1227,7 +1299,18 @@ function updateProductLink(element, productUrl, variantId) {
       } else {
         img.src = imageUrl;
         img.dataset.firstImage = imageUrl;
+        // Update second image if available
+        if (secondImageUrl) {
+          img.dataset.secondImage = secondImageUrl;
+          console.log('Updated second image to:', secondImageUrl);
+        } else {
+          // Clear second image if no gallery available
+          delete img.dataset.secondImage;
+          console.log('Cleared second image - no gallery available');
+        }
       }
+    } else {
+      console.warn('Image element not found for productId:', productId);
     }
   }
   
