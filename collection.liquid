@@ -530,6 +530,7 @@
                         {% if product.images[1] %}
                         data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
                         {% endif %}
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
                     {% elsif product.featured_image %}
                       <img 
@@ -542,6 +543,7 @@
                         {% if product.images[1] %}
                         data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
                         {% endif %}
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
                     {% else %}
                       <div class="product-image-placeholder">
@@ -633,7 +635,12 @@
                         >
                           <div class="variant-thumbnail" style="width: 48px; height: 48px; overflow: hidden; box-sizing: border-box; background: #f6f6f6; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;">
                             {% if matched_variant.featured_image %}
-                              <img src="{{ matched_variant.featured_image | img_url: '100x100', crop: 'center' }}" alt="{{ value }}" style="width: 100%; height: 100%; object-fit: contain;" />
+                              <img src="{{ matched_variant.featured_image | img_url: '100x100', crop: 'center' }}" 
+                                   alt="{{ value }}" 
+                                   style="width: 100%; height: 100%; object-fit: contain;" 
+                                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                   onload="this.style.display='block'; this.nextElementSibling.style.display='none';" />
+                              <div style="width: 100%; height: 100%; background-color: #eee; display: none; align-items: center; justify-content: center; color: #888; font-size: 10px; font-weight: bold;">{{ value | slice: 0, 2 | upcase }}</div>
                             {% else %}
                               <div style="width: 100%; height: 100%; background-color: #eee; display: flex; align-items: center; justify-content: center; color: #888; font-size: 10px; font-weight: bold;">{{ value | slice: 0, 2 | upcase }}</div>
                             {% endif %}
@@ -730,6 +737,7 @@
                         {% if product.images[1] %}
                         data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
                         {% endif %}
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
                     {% elsif product.featured_image %}
                       <img 
@@ -833,7 +841,12 @@
                         >
                           <div class="variant-thumbnail" style="width: 48px; height: 48px; overflow: hidden; box-sizing: border-box; background: #f6f6f6; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;">
                             {% if matched_variant.featured_image %}
-                              <img src="{{ matched_variant.featured_image | img_url: '100x100', crop: 'center' }}" alt="{{ value }}" style="width: 100%; height: 100%; object-fit: contain;" />
+                              <img src="{{ matched_variant.featured_image | img_url: '100x100', crop: 'center' }}" 
+                                   alt="{{ value }}" 
+                                   style="width: 100%; height: 100%; object-fit: contain;" 
+                                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                   onload="this.style.display='block'; this.nextElementSibling.style.display='none';" />
+                              <div style="width: 100%; height: 100%; background-color: #eee; display: none; align-items: center; justify-content: center; color: #888; font-size: 10px; font-weight: bold;">{{ value | slice: 0, 2 | upcase }}</div>
                             {% else %}
                               <div style="width: 100%; height: 100%; background-color: #eee; display: flex; align-items: center; justify-content: center; color: #888; font-size: 10px; font-weight: bold;">{{ value | slice: 0, 2 | upcase }}</div>
                             {% endif %}
@@ -902,6 +915,7 @@
                     {% if product.images[1] %}
                     data-second-image="{{ product.images[1] | img_url: '2000x2000' }}"
                     {% endif %}
+                    onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                   >
                 {% else %}
                   <div class="product-image-placeholder">
@@ -966,7 +980,12 @@
                     >
                       <div class="variant-thumbnail" style="width: 48px; height: 48px; overflow: hidden; box-sizing: border-box; background: #f6f6f6; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;">
                         {% if matched_variant.featured_image %}
-                          <img src="{{ matched_variant.featured_image | img_url: '100x100', crop: 'center' }}" alt="{{ value }}" style="width: 100%; height: 100%; object-fit: contain;" />
+                          <img src="{{ matched_variant.featured_image | img_url: '100x100', crop: 'center' }}" 
+                               alt="{{ value }}" 
+                               style="width: 100%; height: 100%; object-fit: contain;" 
+                               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                               onload="this.style.display='block'; this.nextElementSibling.style.display='none';" />
+                          <div style="width: 100%; height: 100%; background-color: #eee; display: none; align-items: center; justify-content: center; color: #888; font-size: 10px; font-weight: bold;">{{ value | slice: 0, 2 | upcase }}</div>
                         {% else %}
                           <div style="width: 100%; height: 100%; background-color: #eee; display: flex; align-items: center; justify-content: center; color: #888; font-size: 10px; font-weight: bold;">{{ value | slice: 0, 2 | upcase }}</div>
                         {% endif %}
@@ -1133,22 +1152,49 @@ document.addEventListener('click', function(event) {
   });
 });
 
-// Product image hover functionality
+// Safari detection
+const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+// Product image hover functionality with Safari fixes
 function showSecondImage(productId) {
   const img = document.getElementById('main-image-product-' + productId);
   if (img && img.dataset.secondImage) {
-    img.src = img.dataset.secondImage;
+    // Safari-specific image loading
+    if (isSafari) {
+      const newImg = new Image();
+      newImg.onload = function() {
+        img.src = img.dataset.secondImage;
+      };
+      newImg.onerror = function() {
+        console.warn('Failed to load second image for Safari:', img.dataset.secondImage);
+      };
+      newImg.src = img.dataset.secondImage;
+    } else {
+      img.src = img.dataset.secondImage;
+    }
   }
 }
 
 function showFirstImage(productId) {
   const img = document.getElementById('main-image-product-' + productId);
   if (img && img.dataset.firstImage) {
-    img.src = img.dataset.firstImage;
+    // Safari-specific image loading
+    if (isSafari) {
+      const newImg = new Image();
+      newImg.onload = function() {
+        img.src = img.dataset.firstImage;
+      };
+      newImg.onerror = function() {
+        console.warn('Failed to load first image for Safari:', img.dataset.firstImage);
+      };
+      newImg.src = img.dataset.firstImage;
+    } else {
+      img.src = img.dataset.firstImage;
+    }
   }
 }
 
-// Variant image change and link update functionality
+// Variant image change and link update functionality with Safari fixes
 function updateProductLink(element, productUrl, variantId) {
   // Update the product card link
   const productCard = element.closest('.product-card');
@@ -1156,15 +1202,32 @@ function updateProductLink(element, productUrl, variantId) {
   const newUrl = `${productUrl}?variant=${variantId}`;
   productLink.href = newUrl;
 
-  // Update variant image
+  // Update variant image with Safari compatibility
   const productId = element.getAttribute('data-product-id');
   const imageUrl = element.getAttribute('data-image');
   
   if (imageUrl) {
     const img = document.getElementById('main-image-product-' + productId);
     if (img) {
-      img.src = imageUrl;
-      img.dataset.firstImage = imageUrl;
+      // Safari-specific image loading
+      if (isSafari) {
+        const newImg = new Image();
+        newImg.onload = function() {
+          img.src = imageUrl;
+          img.dataset.firstImage = imageUrl;
+        };
+        newImg.onerror = function() {
+          console.warn('Failed to load variant image for Safari:', imageUrl);
+          // Fallback to original image
+          if (img.dataset.firstImage) {
+            img.src = img.dataset.firstImage;
+          }
+        };
+        newImg.src = imageUrl;
+      } else {
+        img.src = imageUrl;
+        img.dataset.firstImage = imageUrl;
+      }
     }
   }
   
@@ -1180,11 +1243,87 @@ function updateProductLink(element, productUrl, variantId) {
   }
 }
 
+// Safari image loading and caching fixes
+if (isSafari) {
+  // Preload images for Safari to prevent question marks
+  document.addEventListener('DOMContentLoaded', function() {
+    const images = document.querySelectorAll('.product-image');
+    images.forEach(function(img) {
+      if (img.src && !img.complete) {
+        const newImg = new Image();
+        newImg.onload = function() {
+          // Image loaded successfully
+        };
+        newImg.onerror = function() {
+          console.warn('Failed to preload image for Safari:', img.src);
+        };
+        newImg.src = img.src;
+      }
+    });
+  });
+
+  // Fix for Safari back button cache issues
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+      // Page was loaded from cache (back button)
+      const images = document.querySelectorAll('.product-image');
+      images.forEach(function(img) {
+        if (img.src) {
+          // Force reload image by adding timestamp
+          const timestamp = new Date().getTime();
+          const separator = img.src.includes('?') ? '&' : '?';
+          img.src = img.src + separator + '_t=' + timestamp;
+          
+          // Also reload data attributes
+          if (img.dataset.firstImage) {
+            img.dataset.firstImage = img.dataset.firstImage + separator + '_t=' + timestamp;
+          }
+          if (img.dataset.secondImage) {
+            img.dataset.secondImage = img.dataset.secondImage + separator + '_t=' + timestamp;
+          }
+        }
+      });
+    }
+  });
+
+  // Additional Safari image error handling
+  document.addEventListener('error', function(e) {
+    if (e.target.tagName === 'IMG') {
+      console.warn('Image failed to load in Safari:', e.target.src);
+      // Try to reload the image
+      const img = e.target;
+      if (img.dataset.firstImage) {
+        img.src = img.dataset.firstImage;
+      }
+    }
+  }, true);
+}
+
 // Fixed variant matching logic ensures correct size + color combinations
 
 </script>
 
 <style>
+/* Safari-specific image fixes */
+@supports (-webkit-appearance: none) {
+  .product-image {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
+  .product-image[src*="question"] {
+    display: none;
+  }
+  
+  .product-image:not([src]) {
+    display: none;
+  }
+}
+
 /* Reset and Base Styles */
 * {
   box-sizing: border-box;

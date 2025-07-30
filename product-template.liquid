@@ -1,13 +1,4 @@
-    {% comment %}
-    The user provided a .tsx file, but the content is Shopify Liquid, HTML, CSS, and JavaScript.
-    This is the updated version with:
-    - Touch swipe for carousels
-    - Price formatting handled by Shopify
-    - Updated bundle button styles
-    - Video support in the 5-Star Functions section (now including .mov attempt)
-    - Added Left/Right arrow navigation to the image/video modal.
-    - Added Zoom In (+) and Zoom Out (-) buttons to the image modal.
-    {% endcomment %}
+    {% comment %}Product template with video autoplay support{% endcomment %}
     
     <style>
     @font-face {
@@ -50,6 +41,55 @@
       src: url('{{ "NeueHaasDisplayThin.ttf" | asset_url }}') format('truetype');
       font-weight: 100;
       font-style: normal;
+    }
+    
+    /* Video optimizations */
+    video {
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+
+    .video-container {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .video-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .video-overlay:hover {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    @supports (-webkit-touch-callout: none) {
+      video, .video-container, .video-overlay {
+        -webkit-transform: translate3d(0, 0, 0) !important;
+        transform: translate3d(0, 0, 0) !important;
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+      }
+      video {
+        -webkit-perspective: 1000px !important;
+        perspective: 1000px !important;
+        will-change: transform !important;
+      }
     }
     
     /* Global font styles */
@@ -289,16 +329,12 @@
     <div class="gallery-container" style="position: relative; overflow: hidden; width: 100%;">
       
       <!-- Mobile Single Image View -->
-      <div class="mobile-single-image" style="display: none; width: 100%;">
+      <div class="mobile-single-image" style="width: 100%;">
         <div class="single-image-container" style="background-color: #f6f6f6; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1.4; position: relative; margin-bottom: 15px; width: 100%;">
-          <img id="mobileMainImage" src="{{ featured_image | img_url: '600x600', crop: 'center' }}" alt="{{ featured_image.alt | escape }}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6; cursor: pointer; display: block;" onclick="openImageModal('{{ featured_image | img_url: '1200x1200' }}')">
+          <img id="mobileMainImage" alt="{{ featured_image.alt | escape }}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6; cursor: pointer; display: none;">
           
-          <video id="mobileMainVideo" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block;" controls muted autoplay playsinline onclick="openVideoModal(this)">
-            {% if current_variant.metafields.custom.product_video_url %}
-              <source src="{{ current_variant.metafields.custom.product_video_url }}" type="video/mp4">
-            {% elsif product.metafields.custom.product_video_url %}
-              <source src="{{ product.metafields.custom.product_video_url }}" type="video/mp4">
-            {% endif %}
+          <video id="mobileMainVideo" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: none;" controls muted autoplay playsinline preload="metadata" onclick="openVideoModal(this)">
+            <!-- Video source will be set by JavaScript -->
           </video>
           
           <!-- Navigation arrows and image counter removed for mobile -->
@@ -1551,7 +1587,7 @@
       </button>
       <div style="position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center;">
         <img id="modalImage" style="max-width: 90vw; max-height: 100vh; width: auto; height: auto; object-fit: contain; display: none; border-radius: 0; background: #fff; transform-origin: center center; transition: transform 0.2s ease-out; cursor: zoom-in;" draggable="false">
-        <video id="modalVideo" style="max-width: 100vw; max-height: 100vh; width: auto; height: auto; object-fit: contain; display: none; border-radius: 0; background: #fff;" controls>
+        <video id="modalVideo" style="max-width: 100vw; max-height: 100vh; width: auto; height: auto; object-fit: contain; display: none; border-radius: 0; background: #fff;" controls playsinline webkit-playsinline preload="metadata">
           <source id="modalVideoSource" type="video/mp4">
         </video>
       </div>
@@ -1589,16 +1625,81 @@
     display: none !important;
     }
     
-    /* Show mobile single image view */
-    .mobile-single-image {
+    /* Show mobile single image view - only when initialized */
+    .mobile-single-image.mobile-initialized {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     }
     
+    /* Hybrid approach: Minimal placeholder with proper aspect ratio */
+    .mobile-single-image:not(.mobile-initialized) .single-image-container {
+    background: #f6f6f6;
+    position: relative;
+    transition: background 0.3s ease-out;
+    }
+    
+    /* Subtle loading indicator - only show when no media is visible */
+    .mobile-single-image:not(.mobile-initialized) .single-image-container::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #2f6f6f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1;
+    }
+    
+    /* Hide loading spinner when media is loaded */
+    .mobile-single-image.mobile-initialized .single-image-container::after {
+    display: none;
+    }
+    
+    /* Hide loading spinner when video is visible */
+    .mobile-single-image .single-image-container:has(#mobileMainVideo[style*="display: block"])::after {
+    display: none !important;
+    }
+    
+    /* Alternative: Hide loading spinner when video container has video-visible class */
+    .mobile-single-image.video-visible .single-image-container::after {
+    display: none !important;
+    }
+    
+    @keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    
+    /* Smooth fade-in for loaded images */
+    #mobileMainImage {
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+    }
+    
+    #mobileMainImage[style*="display: block"] {
+    opacity: 1;
+    }
+    
+    /* Ensure video controls are above loading spinner */
+    #mobileMainVideo {
+    z-index: 2;
+    }
+    
     /* Hide desktop-only elements */
     .desktop-only {
     display: none !important;
+    }
+    
+    /* Hide mobile gallery on desktop */
+    @media (min-width: 901px) {
+      .mobile-single-image {
+        display: none !important;
+      }
     }
     
 
@@ -2631,9 +2732,15 @@ let globalTouchManager = {
       if (currentVariant && productVariants[currentVariant.id]) {
         currentVariant = productVariants[currentVariant.id];
         updateContentForVariant(currentVariant);
-      } else       if (Object.keys(productVariants).length > 0) {
+      } else if (Object.keys(productVariants).length > 0) {
         currentVariant = Object.values(productVariants)[0];
         updateContentForVariant(currentVariant);
+      }
+      
+      // Ensure 5-star functions section is always initialized
+      const functionsCarousel = document.getElementById("functionsCarousel");
+      if (functionsCarousel && functionsCarousel.children.length === 0) {
+        updateFunctionsSection([], []);
       }
       
       // Initialize mobile navigation after everything is set up
@@ -2781,13 +2888,43 @@ let globalTouchManager = {
         video.loop = true;
         video.muted = true;
         video.playsInline = true;
+        video.webkitPlaysinline = true; // Safari-specific attribute
+        video.preload = 'metadata';
         video.style.cssText = 'width: 100%; height: 100%; object-fit: cover; cursor: pointer;';
         video.onclick = () => openVideoModal(video);
+        
+        // Safari video handling
+        video.addEventListener('canplay', function() {
+          console.log('Video ready');
+        });
+        
+        video.addEventListener('error', function(e) {
+          console.warn('Video error:', e);
+        });
     
         const source = document.createElement('source');
         source.src = itemData.src;
         source.type = 'video/mp4';
         video.appendChild(source);
+        
+        // Add WebM fallback for better Safari support
+        if (itemData.src.includes('.mp4')) {
+          const webmSource = document.createElement('source');
+          webmSource.src = itemData.src.replace('.mp4', '.webm');
+          webmSource.type = 'video/webm';
+          video.appendChild(webmSource);
+        }
+        
+        // Add MOV fallback for Safari
+        if (itemData.src.includes('.mp4')) {
+          const movSource = document.createElement('source');
+          movSource.src = itemData.src.replace('.mp4', '.mov');
+          movSource.type = 'video/quicktime';
+          video.appendChild(movSource);
+        }
+        
+        optimizeVideoForSafari(video);
+        video.load();
     
         gridCell.appendChild(video);
     }  else {
@@ -2816,9 +2953,26 @@ let globalTouchManager = {
         const navVideo = document.createElement('video');
         navVideo.id = 'desktopNavigableVideo';
         navVideo.style.cssText = 'width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: none;';
-        navVideo.controls = false; navVideo.muted = true; navVideo.loop = true; navVideo.autoplay = true;
+        navVideo.controls = false; 
+        navVideo.muted = true; 
+        navVideo.loop = true; 
+        navVideo.autoplay = true;
+        navVideo.playsInline = true;
+        navVideo.webkitPlaysinline = true; // Safari-specific attribute
+        navVideo.preload = 'metadata';
+        
+        // Safari event listeners
+        navVideo.addEventListener('canplay', function() {
+          console.log('Navigable video ready');
+        });
+        
+        navVideo.addEventListener('error', function(e) {
+          console.warn('Navigable video error:', e);
+        });
+        
         const navVideoSource = document.createElement('source');
-        navVideoSource.id = 'desktopNavigableVideoSource'; navVideoSource.type = 'video/mp4';
+        navVideoSource.id = 'desktopNavigableVideoSource'; 
+        navVideoSource.type = 'video/mp4';
         navVideo.appendChild(navVideoSource);
         mediaContainer.appendChild(navVideo);
         navigableCell.appendChild(mediaContainer);
@@ -3053,6 +3207,7 @@ let globalTouchManager = {
     function updateMobileGallery(images) {
       const mobileMainImage = document.getElementById('mobileMainImage');
       const mobileMainVideo = document.getElementById('mobileMainVideo');
+      const mobileContainer = document.querySelector('.mobile-single-image');
     
       if (!mobileMainImage || !mobileMainVideo) return;
     
@@ -3062,23 +3217,100 @@ let globalTouchManager = {
       if (images.length > 0) {
         const firstItem = images[0];
         if (firstItem.type === 'video') {
+          console.log('Initial video loading:', firstItem.src);
           mobileMainImage.style.display = 'none';
-          mobileMainVideo.style.display = 'block';
-          const source = mobileMainVideo.querySelector('source');
-          if (source) source.src = firstItem.src;
+          mobileMainVideo.style.display = 'none'; // Hide video initially
+          
+          // Show loading state immediately
+          if (mobileContainer) {
+            mobileContainer.classList.remove('mobile-initialized');
+          }
+          
+          // Set video source and load it
+          let source = mobileMainVideo.querySelector('source');
+          if (!source) {
+            // Create source element if it doesn't exist
+            source = document.createElement('source');
+            source.type = 'video/mp4';
+            mobileMainVideo.appendChild(source);
+          }
+          source.src = firstItem.src;
+          
+          // Safari video loading
+          mobileMainVideo.addEventListener('canplay', function() {
+            console.log('Mobile video ready');
+            mobileMainVideo.style.display = 'block';
+            mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
+            
+            if (mobileContainer) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          });
+          
+          mobileMainVideo.addEventListener('error', function(e) {
+            console.warn('Mobile video error:', e);
+            if (mobileContainer) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          });
+          
+          optimizeVideoForSafari(mobileMainVideo);
           mobileMainVideo.load();
-          mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
+          
+          // Set a timeout to remove loading state if video takes too long
+          setTimeout(() => {
+            if (mobileContainer && !mobileContainer.classList.contains('mobile-initialized')) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          }, 5000); // 5 second timeout
         } else {
           mobileMainVideo.style.display = 'none';
-          mobileMainImage.style.display = 'block';
-          mobileMainImage.src = firstItem.src;
-          mobileMainImage.alt = firstItem.alt;
-          mobileMainImage.onclick = () => openImageModal(firstItem.fullSrc);
+          
+          // Hybrid approach: Preload image and show with smooth transition
+          const img = new Image();
+          
+          // Set a timeout to remove loading state if image takes too long
+          const loadingTimeout = setTimeout(() => {
+            if (mobileContainer && !mobileContainer.classList.contains('mobile-initialized')) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          }, 5000); // 5 second timeout
+          
+          img.onload = () => {
+            clearTimeout(loadingTimeout);
+            // Set image source and show it
+            mobileMainImage.src = firstItem.src;
+            mobileMainImage.alt = firstItem.alt;
+            mobileMainImage.style.display = 'block';
+            mobileMainImage.onclick = () => openImageModal(firstItem.fullSrc);
+            
+            // Remove loading state after image is loaded
+            if (mobileContainer) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          };
+          
+          // Handle image load errors gracefully
+          img.onerror = () => {
+            clearTimeout(loadingTimeout);
+            console.warn('Failed to load image:', firstItem.src);
+            // Still remove loading state even if image fails
+            if (mobileContainer) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          };
+          
+          img.src = firstItem.src;
         }
       } else {
-          mobileMainImage.src = PLACEHOLDER_IMAGE_URL;
-          mobileMainImage.alt = "No image available";
+          // Hide both image and video when no images are available
+          mobileMainImage.style.display = 'none';
           mobileMainVideo.style.display = 'none';
+          
+          // Remove loading state even if no images
+          if (mobileContainer) {
+            mobileContainer.classList.add('mobile-initialized');
+          }
       }
     }
     
@@ -3183,30 +3415,105 @@ let globalTouchManager = {
       container.addEventListener('touchend', touchEndHandler, { passive: true });
     }
     
-    function updateMobileImageDisplay() {
+        function updateMobileImageDisplay() {
       const mobileMainImage = document.getElementById('mobileMainImage');
       const mobileMainVideo = document.getElementById('mobileMainVideo');
-
+      const mobileContainer = document.querySelector('.mobile-single-image');
+  
       if (!mobileMainImage || !mobileMainVideo) return;
-
+  
       // Ensure currentMobileIndex is within bounds
       if (currentColorImages && currentColorImages.length > 0) {
         currentMobileIndex = Math.max(0, Math.min(currentMobileIndex, currentColorImages.length - 1));
         
         const currentItem = currentColorImages[currentMobileIndex];
         if (currentItem && currentItem.type === 'video') {
+          console.log('Switching to video at index:', currentMobileIndex, 'Video URL:', currentItem.src);
           mobileMainImage.style.display = 'none'; 
-          mobileMainVideo.style.display = 'block';
-          const source = mobileMainVideo.querySelector('source');
-          if (source) source.src = currentItem.src;
+          mobileMainVideo.style.display = 'none'; // Hide video initially
+          
+          // Show loading state immediately
+          if (mobileContainer) {
+            mobileContainer.classList.remove('mobile-initialized');
+          }
+          
+          // Set video source and load it
+          let source = mobileMainVideo.querySelector('source');
+          if (!source) {
+            // Create source element if it doesn't exist
+            source = document.createElement('source');
+            source.type = 'video/mp4';
+            mobileMainVideo.appendChild(source);
+          }
+          source.src = currentItem.src;
           mobileMainVideo.load();
-          mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
+          console.log('Video loading started');
+          
+          // Show video when it's ready to play
+          mobileMainVideo.oncanplay = () => {
+            console.log('Video can play, showing video');
+            mobileMainVideo.style.display = 'block';
+            mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
+            
+            // Remove loading state when video is ready
+            if (mobileContainer) {
+              mobileContainer.classList.add('mobile-initialized');
+              mobileContainer.classList.add('video-visible');
+            }
+          };
+          
+          // Handle video load errors
+          mobileMainVideo.onerror = () => {
+            console.warn('Failed to load video:', currentItem.src);
+            // Still remove loading state even if video fails
+            if (mobileContainer) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          };
+          
+          // Set a timeout to remove loading state if video takes too long
+          setTimeout(() => {
+            if (mobileContainer && !mobileContainer.classList.contains('mobile-initialized')) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          }, 5000); // 5 second timeout
         } else if (currentItem) {
           mobileMainVideo.style.display = 'none'; 
-          mobileMainImage.style.display = 'block';
-          mobileMainImage.src = currentItem.src; 
-          mobileMainImage.alt = currentItem.alt;
-          mobileMainImage.onclick = () => openImageModal(currentItem.fullSrc);
+          
+          // Hybrid approach: Preload image for smooth transition
+          const img = new Image();
+          
+          // Set a timeout to remove loading state if image takes too long
+          const loadingTimeout = setTimeout(() => {
+            if (mobileContainer && !mobileContainer.classList.contains('mobile-initialized')) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          }, 5000); // 5 second timeout
+          
+          img.onload = () => {
+            clearTimeout(loadingTimeout);
+            mobileMainImage.src = currentItem.src; 
+            mobileMainImage.alt = currentItem.alt;
+            mobileMainImage.style.display = 'block';
+            mobileMainImage.onclick = () => openImageModal(currentItem.fullSrc);
+            
+            // Ensure loading state is removed
+            if (mobileContainer) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          };
+          
+          // Handle image load errors gracefully
+          img.onerror = () => {
+            clearTimeout(loadingTimeout);
+            console.warn('Failed to load image:', currentItem.src);
+            // Still remove loading state even if image fails
+            if (mobileContainer) {
+              mobileContainer.classList.add('mobile-initialized');
+            }
+          };
+          
+          img.src = currentItem.src;
         }
         
         // Preload next image for smoother swiping
@@ -3219,11 +3526,14 @@ let globalTouchManager = {
           }
         }
       } else {
-        // No images available
-        mobileMainImage.src = PLACEHOLDER_IMAGE_URL; 
-        mobileMainImage.alt = "No images available";
+        // No images available - hide both image and video
+        mobileMainImage.style.display = 'none';
         mobileMainVideo.style.display = 'none';
-        mobileMainImage.style.display = 'block';
+        
+        // Remove loading state even if no images
+        if (mobileContainer) {
+          mobileContainer.classList.add('mobile-initialized');
+        }
       }
     }
     
@@ -3487,20 +3797,13 @@ let globalTouchManager = {
 }
     
     function updateContentForVariant(variant) {
-      if (!variant || !variantContent) {
-        return;
-      }
+      if (!variant || !variantContent) return;
       
-      // Get parent content (first variant is always the parent/default)
       const parentContent = variantContent[Object.keys(variantContent)[0]];
-      
-      // Get current variant content with inheritance from parent
       const content = {
-        ...parentContent, // Start with all parent content
-        ...(variantContent[variant.id] || {}) // Override with variant-specific content if it exists
+        ...parentContent,
+        ...(variantContent[variant.id] || {})
       };
-      
-      // Ensure arrays and objects inherit properly
       const variantSpecificContent = variantContent[variant.id] || {};
       content.features = (variantSpecificContent.features && variantSpecificContent.features.length > 0) 
         ? variantSpecificContent.features 
@@ -3518,11 +3821,8 @@ let globalTouchManager = {
       content.material = variantSpecificContent.material || parentContent.material;
       content.product_video_url = variantSpecificContent.product_video_url || parentContent.product_video_url;
       
-      // Update all content sections
       const titleElement = document.getElementById("dynamicProductTitle");
-      if (titleElement) {
-        titleElement.textContent = content.title;
-      }
+      if (titleElement) titleElement.textContent = content.title;
       
       const taglineElement = document.getElementById("dynamicTagline");
       if (taglineElement) taglineElement.textContent = content.tagline;
@@ -3669,10 +3969,10 @@ let globalTouchManager = {
     }
     
     function updateFunctionsSection(functions, functionImageUrls = []) {
-  const functionsCarousel = document.getElementById("functionsCarousel");
-  if (!functionsCarousel) return;
-  
-  functionsCarousel.innerHTML = ''; 
+      const functionsCarousel = document.getElementById("functionsCarousel");
+      if (!functionsCarousel) return;
+      
+      functionsCarousel.innerHTML = ''; 
   
   if (functions && functions.length > 0) {
     functions.forEach((func, index) => {
@@ -3716,11 +4016,40 @@ let globalTouchManager = {
       const isVideoElement = lowerMediaUrl.includes('.mp4') || lowerMediaUrl.includes('.webm') || lowerMediaUrl.includes('.ogg') || lowerMediaUrl.includes('.mov') || lowerMediaUrl.includes('video');
       
       if (isVideoElement) {
-        // Create video element with better error handling
-        mediaElementHtml = `<video src="${mediaUrl}" loop muted playsinline webkit-playsinline preload="metadata" style="width: 100%; height: 100%; object-fit: cover;" oncanplay="this.style.display='block'; this.play().catch(e => console.log('Autoplay prevented for ${escapedTitle}:', e));" onerror="console.error('Video failed to load for ${escapedTitle}:', this.src); this.style.display='none';" onloadstart="console.log('Loading video for ${escapedTitle}:', this.src);" onclick="this.paused ? this.play() : this.pause();">
-          <source src="${mediaUrl}" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>`;
+        // Create video element with comprehensive Safari autoplay support
+        const videoId = `function-video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        mediaElementHtml = `
+          <div class="video-container" style="position: relative; width: 100%; height: 100%;">
+            <video 
+              id="${videoId}"
+              src="${mediaUrl}" 
+              loop 
+              muted 
+              playsinline 
+              webkit-playsinline 
+              autoplay
+              preload="auto" 
+              style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;" 
+              oncanplay="videoHandlers.canPlay(this, '${escapedTitle}')"
+              onloadeddata="videoHandlers.loadedData(this)"
+              onerror="videoHandlers.error(this)"
+              onclick="videoHandlers.click(this)"
+              onplay="videoHandlers.play(this)"
+              onpause="videoHandlers.pause(this)"
+              onloadedmetadata="videoHandlers.loadedMetadata(this)">
+              <source src="${mediaUrl}" type="video/mp4">
+              <source src="${mediaUrl.replace('.mp4', '.webm')}" type="video/webm">
+              <source src="${mediaUrl.replace('.mp4', '.mov')}" type="video/quicktime">
+              Your browser does not support the video tag.
+            </video>
+            <div class="video-overlay" id="overlay-${videoId}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;" onclick="videoHandlers.overlayClick('${videoId}')">
+              <div style="background: rgba(0,0,0,0.7); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>`;
       } else {
         // Create image element with fallback
         mediaElementHtml = `<img src="${mediaUrl}" alt="${escapedTitle}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6;" onerror="console.error('Image failed to load for ${escapedTitle}:', this.src); this.onerror=null; this.src='${DEFAULT_FUNCTION_IMAGE_URL}';" onload="console.log('Successfully loaded image for ${escapedTitle}:', this.src);">`;
@@ -3760,6 +4089,10 @@ let globalTouchManager = {
       setTimeout(() => {
         try {
           initFunctionsCarousel();
+          // Reinitialize Safari video support for new videos
+          if (isSafari) {
+            initSafariVideoSupport();
+          }
         } catch (error) {
           // Silent error handling for production
         }
@@ -3872,6 +4205,16 @@ let globalTouchManager = {
         modalImage.style.display = 'none';
         modalVideo.style.display = 'block';
         modalVideoSource.src = item.fullSrc || item.src; 
+        
+        // Safari modal video handling
+        modalVideo.addEventListener('canplay', function() {
+          console.log('Modal video ready');
+        });
+        
+        modalVideo.addEventListener('error', function(e) {
+          console.warn('Modal video error:', e);
+        });
+        
         // Defer video loading to prevent UI blocking
         requestAnimationFrame(() => {
           modalVideo.load();
@@ -3932,6 +4275,166 @@ let globalTouchManager = {
         closeModal();
       }
     }
+    
+    // Safari video compatibility
+    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    
+    function optimizeVideoForSafari(video) {
+      if (!isSafari) return;
+      
+      video.webkitPlaysinline = video.playsInline = true;
+      video.muted = true;
+      video.preload = 'metadata';
+      
+      video.addEventListener('canplay', () => {
+        video.play().catch(e => console.log('Safari autoplay prevented:', e));
+      });
+      
+      video.addEventListener('error', e => console.warn('Safari video error:', e));
+      video.load();
+      
+      video.addEventListener('click', () => {
+        if (video.paused) video.play().catch(e => console.log('Safari play failed:', e));
+      });
+    }
+    
+    // Safari video initialization
+    if (isSafari) {
+      const enableVideos = () => {
+        document.querySelectorAll('video').forEach(v => {
+          if (v.paused && v.readyState >= 2) v.play().catch(e => console.log('Safari play failed:', e));
+        });
+      };
+      
+      ['click', 'touchstart', 'touchend'].forEach(e => 
+        document.addEventListener(e, enableVideos, { once: true })
+      );
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('Safari video ready');
+      });
+    }
+
+    // Consolidated video handling functions
+    const videoHandlers = {
+      canPlay: (video, title) => {
+        video.style.display = 'block';
+        video.play().then(() => hideVideoOverlay(video)).catch(() => showVideoOverlay(video));
+      },
+      loadedData: (video) => video.paused && video.play().catch(() => {}),
+      loadedMetadata: (video) => video.paused && video.play().catch(() => {}),
+      error: (video) => video.style.display = 'none',
+      click: (video) => video.paused ? video.play().catch(() => {}) : video.pause(),
+      play: () => hideVideoOverlay(video),
+      pause: (video) => !video.loop && showVideoOverlay(video),
+      overlayClick: (videoId) => {
+        const video = document.getElementById(videoId);
+        video?.paused && video.play().catch(() => {});
+      }
+    };
+
+    function showVideoOverlay(video) {
+      const overlay = document.getElementById(`overlay-${video.id}`);
+      if (overlay) {
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'auto';
+      }
+    }
+
+    function hideVideoOverlay(video) {
+      const overlay = document.getElementById(`overlay-${video.id}`);
+      if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+      }
+    }
+
+    function initSafariVideoSupport() {
+      let userHasInteracted = false;
+      let videosEnabled = false;
+      
+      const enableAllVideos = () => {
+        if (videosEnabled) return;
+        videosEnabled = true;
+        document.querySelectorAll('video').forEach(video => {
+          if (video.paused && video.readyState >= 2) {
+            video.play().then(() => hideVideoOverlay(video)).catch(() => showVideoOverlay(video));
+          }
+        });
+      };
+      
+      const markUserInteraction = () => {
+        if (!userHasInteracted) {
+          userHasInteracted = true;
+          enableAllVideos();
+        }
+      };
+
+      ['click', 'touchstart', 'touchend', 'scroll', 'mousemove'].forEach(eventType => {
+        document.addEventListener(eventType, markUserInteraction, { passive: true });
+      });
+
+      setTimeout(enableAllVideos, 100);
+      setTimeout(enableAllVideos, 1000);
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const video = entry.target;
+            if (video.paused && video.readyState >= 2) {
+              video.play().catch(() => !userHasInteracted && showVideoOverlay(video));
+            }
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('video').forEach(video => observer.observe(video));
+
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        document.querySelectorAll('video').forEach(video => {
+          ['webkit-playsinline', 'playsinline', 'muted', 'autoplay', 'loop', 'preload'].forEach(attr => 
+            video.setAttribute(attr, attr === 'preload' ? 'metadata' : 'true')
+          );
+          video.load();
+          setTimeout(() => video.play().catch(() => {}), 50);
+        });
+      }
+    }
+
+    // Initialize enhanced Safari support when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSafariVideoSupport);
+    } else {
+      initSafariVideoSupport();
+    }
+
+    // Also initialize when new videos are added
+    const originalUpdateFunctionsSection = updateFunctionsSection;
+    updateFunctionsSection = function(functions, functionImageUrls = []) {
+      originalUpdateFunctionsSection.call(this, functions, functionImageUrls);
+      setTimeout(initSafariVideoSupport, 100);
+    };
+
+    // iOS video force play
+    const forcePlayVideosOnIOS = () => {
+      if (!/iPad|iPhone|iPod/.test(navigator.userAgent)) return;
+      document.querySelectorAll('video').forEach(video => {
+        ['webkit-playsinline', 'playsinline', 'muted', 'autoplay', 'loop', 'preload'].forEach(attr => 
+          video.setAttribute(attr, attr === 'preload' ? 'auto' : 'true')
+        );
+        video.load();
+        [0, 100, 500, 1000].forEach(delay => 
+          setTimeout(() => video.play().catch(() => {}), delay)
+        );
+      });
+    };
+
+    ['DOMContentLoaded', 'load', 'pageshow'].forEach(event => 
+      window.addEventListener(event, forcePlayVideosOnIOS)
+    );
+    ['click', 'touchstart', 'touchend'].forEach(event => 
+      document.addEventListener(event, forcePlayVideosOnIOS, { once: true })
+    );
     
     function initModalNavigationAndZoom() {
       const modalPrevBtn = document.getElementById('modalPrev');
@@ -4377,16 +4880,21 @@ let globalTouchManager = {
   if (window.innerWidth < 768) {
     const mobileView = document.querySelector('.mobile-single-image');
     const desktopView = document.querySelector('.desktop-grid');
-    if (mobileView) mobileView.style.display = 'block';
-    if (desktopView) desktopView.style.display = 'none';
     
-    // Ensure mobile carousels are properly initialized
+    // Ensure mobile carousels are properly initialized before showing mobile view
     setTimeout(() => {
       try {
         initMobileImageNavigation();
         initFunctionsCarousel();
         initBundleCarousel();
         initRelatedProductsCarousel();
+        
+        // Only show mobile view after initialization is complete
+        if (mobileView) {
+          mobileView.classList.add('mobile-initialized');
+        }
+        if (desktopView) desktopView.style.display = 'none';
+        
         console.log('Mobile carousels reinitialized on DOM ready');
       } catch (error) {
         console.error('Error initializing mobile carousels:', error);
