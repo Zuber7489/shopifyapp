@@ -532,6 +532,10 @@
                           {% assign first_gallery_image = size_variant.metafields.custom.variant_gallery.value | first %}
                           {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
                           data-second-image="{{ second_image_url }}"
+                        {% elsif product.images.size > 1 %}
+                          {% comment %}Fallback to product gallery second image{% endcomment %}
+                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
                         {% endif %}
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
@@ -547,6 +551,10 @@
                         {% if size_variant.metafields.custom.variant_gallery.value != blank %}
                           {% assign first_gallery_image = size_variant.metafields.custom.variant_gallery.value | first %}
                           {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
+                        {% elsif product.images.size > 1 %}
+                          {% comment %}Fallback to product gallery second image{% endcomment %}
+                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
                           data-second-image="{{ second_image_url }}"
                         {% endif %}
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
@@ -641,6 +649,12 @@
                             data-debug-gallery="true"
                             data-debug-gallery-size="{{ matched_variant.metafields.custom.variant_gallery.value.size }}"
                             data-debug-first-image="{{ first_gallery_image }}"
+                          {% elsif product.images.size > 1 %}
+                            {% comment %}Fallback to product gallery second image{% endcomment %}
+                            {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                            data-second-image="{{ second_image_url }}"
+                            data-debug-fallback="true"
+                            data-debug-variant="{{ matched_variant.id }}"
                           {% else %}
                             data-debug-gallery="false"
                             data-debug-variant="{{ matched_variant.id }}"
@@ -760,6 +774,10 @@
                           {% assign first_gallery_image = style_variant.metafields.custom.variant_gallery.value | first %}
                           {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
                           data-second-image="{{ second_image_url }}"
+                        {% elsif product.images.size > 1 %}
+                          {% comment %}Fallback to product gallery second image{% endcomment %}
+                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
                         {% endif %}
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
@@ -779,6 +797,13 @@
                           data-debug-style-variant-id="{{ style_variant.id }}"
                           data-debug-style-variant-title="{{ style_variant.title }}"
                           data-debug-has-gallery="true"
+                        {% elsif product.images.size > 1 %}
+                          {% comment %}Fallback to product gallery second image{% endcomment %}
+                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
+                          data-debug-style-variant-id="{{ style_variant.id }}"
+                          data-debug-style-variant-title="{{ style_variant.title }}"
+                          data-debug-fallback="true"
                         {% else %}
                           data-debug-style-variant-id="{{ style_variant.id }}"
                           data-debug-style-variant-title="{{ style_variant.title }}"
@@ -874,6 +899,13 @@
                             data-second-image="{{ second_image_url }}"
                             data-debug-variant-id="{{ matched_variant.id }}"
                             data-debug-variant-title="{{ matched_variant.title }}"
+                          {% elsif product.images.size > 1 %}
+                            {% comment %}Fallback to product gallery second image{% endcomment %}
+                            {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                            data-second-image="{{ second_image_url }}"
+                            data-debug-variant-id="{{ matched_variant.id }}"
+                            data-debug-variant-title="{{ matched_variant.title }}"
+                            data-debug-fallback="true"
                           {% else %}
                             data-debug-variant-id="{{ matched_variant.id }}"
                             data-debug-variant-title="{{ matched_variant.title }}"
@@ -964,6 +996,10 @@
                       {% assign first_gallery_image = first_variant.metafields.custom.variant_gallery.value | first %}
                       {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
                       data-second-image="{{ second_image_url }}"
+                    {% elsif product.images.size > 1 %}
+                      {% comment %}Fallback to product gallery second image{% endcomment %}
+                      {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                      data-second-image="{{ second_image_url }}"
                     {% endif %}
                     onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                   >
@@ -1026,6 +1062,10 @@
                       {% assign variant_gallery_images = matched_variant.metafields.custom.variant_gallery.value %}
                       {% if variant_gallery_images != blank and variant_gallery_images.size > 0 %}
                         {% assign second_image_url = variant_gallery_images[0] | img_url: '2000x2000' %}
+                        data-second-image="{{ second_image_url }}"
+                      {% elsif product.images.size > 1 %}
+                        {% comment %}Fallback to product gallery second image{% endcomment %}
+                        {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
                         data-second-image="{{ second_image_url }}"
                       {% endif %}
                       data-product-id="{{ product.id }}"
