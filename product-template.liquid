@@ -2,38 +2,23 @@
     
     <style>
     @font-face {
-      font-family: 'Neue Haas Display';
-      src: url('{{ "NeueHaasDisplayBlack.ttf" | asset_url }}') format('truetype');
-      font-weight: 900;
-      font-style: normal;
+      font-family: 'Neue Haas Display';   src: url('{{ "NeueHaasDisplayBlack.ttf" | asset_url }}') format('truetype'); font-weight: 900; font-style: normal;
     }
     
     @font-face {
-      font-family: 'Neue Haas Display';
-      src: url('{{ "NeueHaasDisplayBold.ttf" | asset_url }}') format('truetype');
-      font-weight: 700;
-      font-style: normal;
+      font-family: 'Neue Haas Display';      src: url('{{ "NeueHaasDisplayBold.ttf" | asset_url }}') format('truetype');      font-weight: 700;      font-style: normal;
     }
     
     @font-face {
-      font-family: 'Neue Haas Display';
-      src: url('{{ "NeueHaasDisplayMedium.ttf" | asset_url }}') format('truetype');
-      font-weight: 500;
-      font-style: normal;
+      font-family: 'Neue Haas Display';      src: url('{{ "NeueHaasDisplayMedium.ttf" | asset_url }}') format('truetype');      font-weight: 500;      font-style: normal;
     }
     
     @font-face {
-      font-family: 'Neue Haas Display';
-      src: url('{{ "NeueHaasDisplayRoman.ttf" | asset_url }}') format('truetype');
-      font-weight: 400;
-      font-style: normal;
+      font-family: 'Neue Haas Display';      src: url('{{ "NeueHaasDisplayRoman.ttf" | asset_url }}') format('truetype');      font-weight: 400;      font-style: normal;
     }
     
     @font-face {
-      font-family: 'Neue Haas Display';
-      src: url('{{ "NeueHaasDisplayLight.ttf" | asset_url }}') format('truetype');
-      font-weight: 300;
-      font-style: normal;
+      font-family: 'Neue Haas Display';      src: url('{{ "NeueHaasDisplayLight.ttf" | asset_url }}') format('truetype');      font-weight: 300;      font-style: normal;
     }
     
     @font-face {
@@ -2827,10 +2812,22 @@ let globalTouchManager = {
             alt: "Product Video for " + variant.title,
             type: 'video'
           };
-          const videoInsertPosition = Math.min(4, images.length);
-          images.splice(videoInsertPosition, 0, videoItem);
+          
+          // Create separate arrays for mobile and desktop
+          const mobileImages = [...images];
+          const desktopImages = [...images];
+          
+          // Mobile: video at 3rd position (index 2)
+          const mobileVideoPosition = Math.min(2, mobileImages.length);
+          mobileImages.splice(mobileVideoPosition, 0, videoItem);
+          
+          // Desktop: video at 5th position (index 4)
+          const desktopVideoPosition = Math.min(4, desktopImages.length);
+          desktopImages.splice(desktopVideoPosition, 0, videoItem);
+          
+          return { mobile: mobileImages, desktop: desktopImages };
         }
-        return images;
+        return { mobile: images, desktop: images };
       }
 
       // Fallback to the original logic if no variant_gallery is found
@@ -2853,10 +2850,22 @@ let globalTouchManager = {
           alt: "Product Video for " + variant.title,
           type: 'video'
         };
-        const videoInsertPosition = Math.min(4, imagesForVariant.length);
-        imagesForVariant.splice(videoInsertPosition, 0, videoItem);
+        
+        // Create separate arrays for mobile and desktop
+        const mobileImages = [...imagesForVariant];
+        const desktopImages = [...imagesForVariant];
+        
+        // Mobile: video at 3rd position (index 2)
+        const mobileVideoPosition = Math.min(2, mobileImages.length);
+        mobileImages.splice(mobileVideoPosition, 0, videoItem);
+        
+        // Desktop: video at 5th position (index 4)
+        const desktopVideoPosition = Math.min(4, desktopImages.length);
+        desktopImages.splice(desktopVideoPosition, 0, videoItem);
+        
+        return { mobile: mobileImages, desktop: desktopImages };
       }
-      return imagesForVariant;
+      return { mobile: imagesForVariant, desktop: imagesForVariant };
     }
     
     function initImageGallery() {
@@ -2865,14 +2874,21 @@ let globalTouchManager = {
       } else if (currentVariant && productVariants[currentVariant.id]) {
         currentVariant = productVariants[currentVariant.id]; 
       }
-      currentColorImages = currentVariant ? getImagesByVariant(currentVariant) : [...productImages];
-      updateGalleryImages(currentColorImages);
+      const imagesData = currentVariant ? getImagesByVariant(currentVariant) : { mobile: [...productImages], desktop: [...productImages] };
+      updateGalleryImages(imagesData);
     }
     
-    function updateGalleryImages(images) {
-      currentColorImages = images;
-      updateMobileGallery(images);
-      updateDesktopGallery(images);
+    function updateGalleryImages(imagesData) {
+      // Handle both old format (array) and new format (object with mobile/desktop)
+      if (Array.isArray(imagesData)) {
+        currentColorImages = imagesData;
+        updateMobileGallery(imagesData);
+        updateDesktopGallery(imagesData);
+      } else {
+        currentColorImages = imagesData.mobile; // Use mobile as default for compatibility
+        updateMobileGallery(imagesData.mobile);
+        updateDesktopGallery(imagesData.desktop);
+      }
       currentMobileIndex = 0;
       updateMobileImageDisplay();
     }
@@ -2895,11 +2911,11 @@ let globalTouchManager = {
         
         // Safari video handling
         video.addEventListener('canplay', function() {
-          console.log('Video ready');
+  
         });
         
         video.addEventListener('error', function(e) {
-          console.warn('Video error:', e);
+  
         });
     
         const source = document.createElement('source');
@@ -2963,11 +2979,11 @@ let globalTouchManager = {
         
         // Safari event listeners
         navVideo.addEventListener('canplay', function() {
-          console.log('Navigable video ready');
+  
         });
         
         navVideo.addEventListener('error', function(e) {
-          console.warn('Navigable video error:', e);
+  
         });
         
         const navVideoSource = document.createElement('source');
@@ -3217,7 +3233,7 @@ let globalTouchManager = {
       if (images.length > 0) {
         const firstItem = images[0];
         if (firstItem.type === 'video') {
-          console.log('Initial video loading:', firstItem.src);
+
           mobileMainImage.style.display = 'none';
           mobileMainVideo.style.display = 'none'; // Hide video initially
           
@@ -3238,7 +3254,7 @@ let globalTouchManager = {
           
           // Safari video loading
           mobileMainVideo.addEventListener('canplay', function() {
-            console.log('Mobile video ready');
+
             mobileMainVideo.style.display = 'block';
             mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
             
@@ -3248,7 +3264,7 @@ let globalTouchManager = {
           });
           
           mobileMainVideo.addEventListener('error', function(e) {
-            console.warn('Mobile video error:', e);
+
             if (mobileContainer) {
               mobileContainer.classList.add('mobile-initialized');
             }
@@ -3293,7 +3309,7 @@ let globalTouchManager = {
           // Handle image load errors gracefully
           img.onerror = () => {
             clearTimeout(loadingTimeout);
-            console.warn('Failed to load image:', firstItem.src);
+
             // Still remove loading state even if image fails
             if (mobileContainer) {
               mobileContainer.classList.add('mobile-initialized');
@@ -3428,7 +3444,7 @@ let globalTouchManager = {
         
         const currentItem = currentColorImages[currentMobileIndex];
         if (currentItem && currentItem.type === 'video') {
-          console.log('Switching to video at index:', currentMobileIndex, 'Video URL:', currentItem.src);
+  
           mobileMainImage.style.display = 'none'; 
           mobileMainVideo.style.display = 'none'; // Hide video initially
           
@@ -3447,11 +3463,11 @@ let globalTouchManager = {
           }
           source.src = currentItem.src;
           mobileMainVideo.load();
-          console.log('Video loading started');
+          
           
           // Show video when it's ready to play
           mobileMainVideo.oncanplay = () => {
-            console.log('Video can play, showing video');
+            
             mobileMainVideo.style.display = 'block';
             mobileMainVideo.onclick = () => openVideoModal(mobileMainVideo);
             
@@ -3464,7 +3480,7 @@ let globalTouchManager = {
           
           // Handle video load errors
           mobileMainVideo.onerror = () => {
-            console.warn('Failed to load video:', currentItem.src);
+
             // Still remove loading state even if video fails
             if (mobileContainer) {
               mobileContainer.classList.add('mobile-initialized');
@@ -3506,7 +3522,7 @@ let globalTouchManager = {
           // Handle image load errors gracefully
           img.onerror = () => {
             clearTimeout(loadingTimeout);
-            console.warn('Failed to load image:', currentItem.src);
+
             // Still remove loading state even if image fails
             if (mobileContainer) {
               mobileContainer.classList.add('mobile-initialized');
@@ -3678,7 +3694,7 @@ let globalTouchManager = {
               v.option1 === value || v.option2 === value || v.option3 === value
             );
             if (matchingVariant) {
-              console.log('Size-only product: Switching to variant', matchingVariant.id, 'with title:', matchingVariant.title);
+      
               switchToVariant(matchingVariant);
               return;
             }
@@ -3722,7 +3738,7 @@ let globalTouchManager = {
               v.option1 === value || v.option2 === value || v.option3 === value
             );
             if (matchingVariant) {
-              console.log('Style-only product: Switching to variant', matchingVariant.id, 'with title:', matchingVariant.title);
+      
               switchToVariant(matchingVariant);
               return;
             }
@@ -3960,10 +3976,10 @@ let globalTouchManager = {
         
         try {
             new URL(processedUrl); 
-            console.log('URL processed successfully:', input, '->', processedUrl);
+    
             return processedUrl;
         } catch (error) {
-            console.error('Invalid URL:', input, error);
+    
             return DEFAULT_FUNCTION_IMAGE_URL;
         }
     }
@@ -4052,7 +4068,7 @@ let globalTouchManager = {
           </div>`;
       } else {
         // Create image element with fallback
-        mediaElementHtml = `<img src="${mediaUrl}" alt="${escapedTitle}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6;" onerror="console.error('Image failed to load for ${escapedTitle}:', this.src); this.onerror=null; this.src='${DEFAULT_FUNCTION_IMAGE_URL}';" onload="console.log('Successfully loaded image for ${escapedTitle}:', this.src);">`;
+        mediaElementHtml = `<img src="${mediaUrl}" alt="${escapedTitle}" style="width: 100%; height: 100%; object-fit: cover; background: #f6f6f6;" onerror="this.onerror=null; this.src='${DEFAULT_FUNCTION_IMAGE_URL}';">`;
       }
           functionItem.innerHTML = `
             <div class="function-media-container" style="background-color: #f6f6f6; border-radius: 12px; overflow: hidden; margin-bottom: 20px; aspect-ratio: 0.7; position: relative; height:525px; max-width:400px; min-width:400px;">${mediaElementHtml}</div>
@@ -4075,7 +4091,7 @@ let globalTouchManager = {
           functionItem.style.cssText = 'min-width: 400px; flex: 0 0 400px; text-align: left; max-width: 400px;'; 
           functionItem.innerHTML = `
             <div class="function-media-container" style="background-color: #f6f6f6; border-radius: 12px; overflow: hidden; margin-bottom: 20px; aspect-ratio: 0.7; position: relative; height:525px; max-width:400px; min-width:400px;">
-              <img src="${DEFAULT_FUNCTION_IMAGE_URL}" alt="${func.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="console.error('Default image failed to load for ${func.title}');" onload="console.log('Default image loaded for ${func.title}');">
+              <img src="${DEFAULT_FUNCTION_IMAGE_URL}" alt="${func.title}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div class="function-content">
               <h3 style="font-size: 24px; margin-bottom: 12px; color: #000; letter-spacing: 0.5px; line-height: 1.2;">${func.title}</h3>
@@ -4208,11 +4224,11 @@ let globalTouchManager = {
         
         // Safari modal video handling
         modalVideo.addEventListener('canplay', function() {
-          console.log('Modal video ready');
+  
         });
         
         modalVideo.addEventListener('error', function(e) {
-          console.warn('Modal video error:', e);
+  
         });
         
         // Defer video loading to prevent UI blocking
@@ -4287,14 +4303,14 @@ let globalTouchManager = {
       video.preload = 'metadata';
       
       video.addEventListener('canplay', () => {
-        video.play().catch(e => console.log('Safari autoplay prevented:', e));
+        video.play().catch(e => {});
       });
       
-      video.addEventListener('error', e => console.warn('Safari video error:', e));
+              video.addEventListener('error', e => {});
       video.load();
       
       video.addEventListener('click', () => {
-        if (video.paused) video.play().catch(e => console.log('Safari play failed:', e));
+        if (video.paused) video.play().catch(e => {});
       });
     }
     
@@ -4302,7 +4318,7 @@ let globalTouchManager = {
     if (isSafari) {
       const enableVideos = () => {
         document.querySelectorAll('video').forEach(v => {
-          if (v.paused && v.readyState >= 2) v.play().catch(e => console.log('Safari play failed:', e));
+          if (v.paused && v.readyState >= 2) v.play().catch(e => {});
         });
       };
       
