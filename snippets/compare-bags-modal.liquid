@@ -179,7 +179,6 @@
 }
 
 .compare-modal-features {
-  list-style: none;
   padding: 0;
   margin: 0;
   text-align: left;
@@ -187,6 +186,12 @@
   color: #666;
   min-height: 120px;
   order: 3;
+}
+
+.compare-modal-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .compare-modal-features li {
@@ -199,6 +204,22 @@
   content: '-'; 
   position: absolute; 
   left: 0;
+}
+
+.compare-modal-features p {
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.compare-modal-features strong,
+.compare-modal-features b {
+  font-weight: 600;
+  color: #333;
+}
+
+.compare-modal-features em,
+.compare-modal-features i {
+  font-style: italic;
 }
 
 .compare-modal-capacity {
@@ -277,6 +298,17 @@
   margin: 0;
   text-align: left;
   order: 3;
+  line-height: 1.4;
+}
+
+.compare-modal-tech-specs p {
+  margin: 0 0 8px 0;
+}
+
+.compare-modal-tech-specs strong,
+.compare-modal-tech-specs b {
+  font-weight: 600;
+  color: #333;
 }
 
 .compare-modal-overview {
@@ -285,6 +317,17 @@
   margin: 0;
   text-align: left;
   order: 4;
+  line-height: 1.4;
+}
+
+.compare-modal-overview p {
+  margin: 0 0 8px 0;
+}
+
+.compare-modal-overview strong,
+.compare-modal-overview b {
+  font-weight: 600;
+  color: #333;
 }
 
 @media (max-width: 480px) {
@@ -477,7 +520,7 @@
 <script>
 console.log('Compare modal script starting to load...');
 
-// Simple product data to avoid Liquid template errors
+// Dynamic product data from Shopify with metafields
 const compareProductsData = {
   currentProduct: {
     id: {{ product.id | default: 0 }},
@@ -486,21 +529,94 @@ const compareProductsData = {
     price: "{{ product.price | money | default: '$0.00' }}",
     url: "{{ product.url | default: '#' }}",
     isCurrentProduct: true,
-    capacity: "20L",
-    dimensions: "19\" x 18\" x 4\"",
-    weight: "2.5lbs",
-    fabric: "420D Cordura Polycarbonate Nylon",
-    features: "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
-    techSpecs: "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
-    overview: "Premium quality bag designed for modern lifestyle.",
-    colors: ["Black", "Navy", "Gray"]
+    // Dynamic specs from metafields with fallbacks
+    capacity: "{{ product.metafields.custom.comparebag_capacity | strip_html | default: '20L' }}",
+    dimensions: "{{ product.metafields.custom.comparebag_dimensions | strip_html | default: '19\" x 18\" x 4\"' }}",
+    weight: "{{ product.metafields.custom.comparebag_weight | strip_html | default: '2.5lbs' }}",
+    fabric: "{{ product.metafields.custom.comparebag_fabric | strip_html | default: '420D Cordura Polycarbonate Nylon' }}",
+    // Features from metafields
+    features: "{{ product.metafields.custom.comparebag_features | default: 'Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy' }}",
+    // Tech specs from metafields
+    techSpecs: "{{ product.metafields.custom.comparebag_tech_specs | default: 'Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}",
+    // Overview from metafields
+    overview: "{{ product.metafields.custom.comparebag_overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
+    // Available colors/variants
+    colors: [
+      {% for variant in product.variants %}
+        {% if variant.option1 contains 'Color' or variant.option1 contains 'color' %}
+          "{{ variant.option1 }}",
+        {% endif %}
+      {% endfor %}
+    ]
   },
   
-  sizeVariants: [],
-  fabricVariants: []
+  // Get size variants for comparison
+  sizeVariants: [
+    {% for variant in product.variants %}
+      {% if variant.option1 contains 'L' or variant.option1 contains 'l' or variant.option1 contains 'Size' or variant.option1 contains 'size' %}
+        {
+          id: {{ variant.id }},
+          title: "{{ product.title | escape }} {{ variant.option1 }}",
+          image: "{{ variant.image | default: product.featured_image | img_url: '300x300' }}",
+          price: "{{ variant.price | money }}",
+          url: "{{ product.url }}?variant={{ variant.id }}",
+          isCurrentProduct: {{ variant.id == current_variant.id }},
+          variantTitle: "{{ variant.option1 }}",
+          capacity: "{{ variant.option1 }}",
+          dimensions: "{{ variant.metafields.custom.comparebag_dimensions | strip_html | default: product.metafields.custom.comparebag_dimensions | strip_html | default: '19\" x 18\" x 4\"' }}",
+          weight: "{{ variant.metafields.custom.comparebag_weight | strip_html | default: product.metafields.custom.comparebag_weight | strip_html | default: '2.5lbs' }}",
+          fabric: "{{ variant.metafields.custom.comparebag_fabric | strip_html | default: product.metafields.custom.comparebag_fabric | strip_html | default: '420D Cordura Polycarbonate Nylon' }}",
+          features: "{{ variant.metafields.custom.comparebag_features | default: product.metafields.custom.comparebag_features | default: 'Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy' }}",
+          techSpecs: "{{ variant.metafields.custom.comparebag_tech_specs | default: product.metafields.custom.comparebag_tech_specs | default: 'Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}",
+          overview: "{{ variant.metafields.custom.comparebag_overview | default: product.metafields.custom.comparebag_overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
+          colors: [
+            {% for color_variant in product.variants %}
+              {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
+                "{{ color_variant.option1 }}",
+              {% endif %}
+            {% endfor %}
+          ]
+        },
+      {% endif %}
+    {% endfor %}
+  ],
+  
+  // Get fabric variants for comparison
+  fabricVariants: [
+    {% for variant in product.variants %}
+      {% if variant.option2 contains 'Fabric' or variant.option2 contains 'fabric' or variant.option2 contains 'Carbonate' or variant.option2 contains 'Ballistic' or variant.option2 contains 'Nylon' or variant.option2 contains 'Cordura' %}
+        {
+          id: {{ variant.id }},
+          title: "{{ product.title | escape }} {{ variant.option2 }}",
+          image: "{{ variant.image | default: product.featured_image | img_url: '300x300' }}",
+          price: "{{ variant.price | money }}",
+          url: "{{ product.url }}?variant={{ variant.id }}",
+          isCurrentProduct: {{ variant.id == current_variant.id }},
+          variantTitle: "{{ variant.option2 }}",
+          capacity: "{{ variant.option1 }}",
+          dimensions: "{{ variant.metafields.custom.comparebag_dimensions | strip_html | default: product.metafields.custom.comparebag_dimensions | strip_html | default: '19\" x 18\" x 4\"' }}",
+          weight: "{{ variant.metafields.custom.comparebag_weight | strip_html | default: product.metafields.custom.comparebag_weight | strip_html | default: '2.5lbs' }}",
+          fabric: "{{ variant.option2 }}",
+          features: "{{ variant.metafields.custom.comparebag_features | default: product.metafields.custom.comparebag_features | default: 'Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy' }}",
+          techSpecs: "{{ variant.metafields.custom.comparebag_tech_specs | default: product.metafields.custom.comparebag_tech_specs | default: 'Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}",
+          overview: "{{ variant.metafields.custom.comparebag_overview | default: product.metafields.custom.comparebag_overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
+          colors: [
+            {% for color_variant in product.variants %}
+              {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
+                "{{ color_variant.option1 }}",
+              {% endif %}
+            {% endfor %}
+          ]
+        },
+      {% endif %}
+    {% endfor %}
+  ]
 };
 
 console.log('Product data initialized');
+console.log('Size variants found:', compareProductsData.sizeVariants.length);
+console.log('Fabric variants found:', compareProductsData.fabricVariants.length);
+console.log('Current product:', compareProductsData.currentProduct.title);
 
 // Define the modal functions immediately
 window.openCompareBagsModalV2 = function() {
@@ -580,7 +696,7 @@ function switchCompareTab(tab) {
   renderCompareBagsTable(tab);
 }
 
-// Simple rendering function
+// Dynamic rendering function for variants
 function renderCompareBagsTable(tab) {
   console.log('renderCompareBagsTable called with tab:', tab);
   
@@ -591,39 +707,137 @@ function renderCompareBagsTable(tab) {
       return;
     }
     
-    // Simple content for now
-    const html = `
-      <div class="compare-modal-product">
-        <div class="compare-modal-img-wrap">
-          <img class="compare-modal-img" src="${compareProductsData.currentProduct.image}" alt="${compareProductsData.currentProduct.title}">
-        </div>
-        
-        <h3 class="compare-modal-product-title">${compareProductsData.currentProduct.title}</h3>
-        <div class="compare-modal-specs">
-          Capacity: ${compareProductsData.currentProduct.capacity}<br>
-          Dimensions: ${compareProductsData.currentProduct.dimensions}<br>
-          Weight: ${compareProductsData.currentProduct.weight}
-        </div>
-        <ul class="compare-modal-features">
-          <li>Water bottle pocket</li>
-          <li>Luggage pass through</li>
-          <li>Laptop compartment</li>
-        </ul>
-        <div class="compare-modal-colors">
-          <div class="compare-modal-color" style="background-color: #000000"></div>
-          <div class="compare-modal-color" style="background-color: #808080"></div>
-        </div>
-        <div class="compare-modal-price">${compareProductsData.currentProduct.price}</div>
-        <a href="${compareProductsData.currentProduct.url}" class="compare-modal-button primary">
-          Add to Bag
-        </a>
-      </div>
-    `;
+    // Choose variants based on selected tab
+    let variants = [];
+    if (tab === 'size') {
+      variants = compareProductsData.sizeVariants || [];
+    } else if (tab === 'fabric') {
+      variants = compareProductsData.fabricVariants || [];
+    }
     
-    gridWrap.innerHTML = html;
-    console.log('Modal content rendered successfully');
+    // If no variants found, show only current product with a message
+    if (variants.length === 0) {
+      const products = [compareProductsData.currentProduct];
+      renderProducts(products, tab);
+      
+      // Show a message that no variants are available
+      if (gridWrap.children.length === 1) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'compare-modal-product';
+        messageDiv.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: #666;">
+            <p>No ${tab === 'size' ? 'size' : 'fabric'} variants available for comparison.</p>
+            <p style="font-size: 12px; margin-top: 10px;">Please check back later or contact support.</p>
+          </div>
+        `;
+        gridWrap.appendChild(messageDiv);
+      }
+      return;
+    }
+    
+    // Combine current product with appropriate variants (limit to 2 total)
+    const products = [compareProductsData.currentProduct, ...variants].slice(0, 2);
+    
+    renderProducts(products, tab);
   } catch (error) {
     console.error('Error rendering compare table:', error);
+  }
+}
+
+function renderProducts(products, tab) {
+  console.log('renderProducts called with', products.length, 'products for tab:', tab);
+  
+  try {
+    const gridWrap = document.getElementById('compareBagsGridWrap');
+    if (!gridWrap) {
+      console.error('compareBagsGridWrap element not found');
+      return;
+    }
+    
+    // Render products in grid layout
+    let html = '';
+    products.forEach(prod => {
+      if (tab === 'size') {
+        // Size tab content
+        const specs = [];
+        if (prod.capacity) specs.push(`Capacity: ${prod.capacity}`);
+        if (prod.dimensions) specs.push(`Dimensions: ${prod.dimensions}`);
+        if (prod.weight) specs.push(`Weight: ${prod.weight}`);
+        const specsString = specs.join('<br>');
+        
+        // Generate features HTML from richtext
+        const featuresHtml = prod.features ? 
+          prod.features : // Rich text already contains HTML
+          '<li>Water bottle pocket</li><li>Luggage pass through</li><li>Laptop compartment</li>';
+        
+        // Generate colors HTML
+        const colorsHtml = prod.colors && prod.colors.length > 0
+          ? prod.colors.map(color => `<div class="compare-modal-color" title="${color}" style="background-color: ${color.toLowerCase() === 'black' ? '#000000' : '#808080'}"></div>`).join('')
+          : '<div class="compare-modal-color" style="background-color: #000000"></div><div class="compare-modal-color" style="background-color: #808080"></div>';
+        
+        html += `
+          <div class="compare-modal-product">
+            <div class="compare-modal-img-wrap">
+              <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
+            </div>
+            
+            <h3 class="compare-modal-product-title">${prod.title}</h3>
+            <div class="compare-modal-specs">
+              ${specsString}
+            </div>
+            <div class="compare-modal-features">
+              ${featuresHtml}
+            </div>
+            <div class="compare-modal-colors">
+              ${colorsHtml}
+            </div>
+            <div class="compare-modal-price">${prod.price}</div>
+            <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
+              ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
+            </a>
+          </div>
+        `;
+      } else if (tab === 'fabric') {
+        // Fabric tab content
+        const fabricHtml = prod.fabric ? prod.fabric : 'Premium fabric';
+        
+        // Generate colors HTML
+        const colorsHtml = prod.colors && prod.colors.length > 0
+          ? prod.colors.map(color => `<div class="compare-modal-color" title="${color}" style="background-color: ${color.toLowerCase() === 'black' ? '#000000' : '#808080'}"></div>`).join('')
+          : '<div class="compare-modal-color" style="background-color: #000000"></div><div class="compare-modal-color" style="background-color: #808080"></div>';
+        
+        html += `
+          <div class="compare-modal-product">
+            <div class="compare-modal-img-wrap">
+              <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
+            </div>
+            
+            <h3 class="compare-modal-product-title">${prod.title}</h3>
+            <div class="compare-modal-fabric">
+              ${fabricHtml}
+            </div>
+            <div class="compare-modal-tech-specs">
+              ${prod.techSpecs || 'Premium technical specifications'}
+            </div>
+            <div class="compare-modal-overview">
+              ${prod.overview || 'Premium quality bag designed for modern lifestyle.'}
+            </div>
+            <div class="compare-modal-colors">
+              ${colorsHtml}
+            </div>
+            <div class="compare-modal-price">${prod.price}</div>
+            <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
+              ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
+            </a>
+          </div>
+        `;
+      }
+    });
+    
+    gridWrap.innerHTML = html;
+    console.log('Modal content rendered successfully with', products.length, 'products');
+  } catch (error) {
+    console.error('Error rendering products:', error);
   }
 }
 
