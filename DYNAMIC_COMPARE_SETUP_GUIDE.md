@@ -1,267 +1,185 @@
-# Dynamic Compare Bags Setup Guide
+# 🎯 Dynamic Compare Bags Setup Guide (Updated for New UI)
 
-## Overview
-This guide explains how to set up dynamic product data for the compare bags functionality using Shopify metafields and product tags.
+## 📋 **New UI Features:**
+- **Two Tabs**: "Size" and "Fabric" comparison views
+- **Clean Layout**: 2-column grid comparing current product with variants
+- **Rich Content**: Support for formatted text from richtext editors
+- **Combined Tech Specs**: Single metafield for all technical specifications
+- **Size Comparison**: Compare different sizes of the same product
+- **Fabric Comparison**: Compare different fabric options of the same product
 
-## 🎯 **What's Now Dynamic**
+---
 
-### ✅ **Specs (Specifications)**
-- **Capacity**: Product capacity (e.g., "20L", "24L")
-- **Dimensions**: Product dimensions (e.g., "19\" x 15\" x 4\"")
-- **Weight**: Product weight (e.g., "2.5lbs")
+## 🔧 **Shopify Metafields Setup**
 
-### ✅ **Features**
-- Water bottle pocket
-- Laptop pocket
-- Trolley sleeve
-- Carry-on size
-- Phone pocket
-- Hidden passport pocket
-- Waterproof
-- Zippers
-- Tech caddy
+### **1. Required Metafields (All Rich Text Editor Type)**
 
-### ✅ **Fabric & Tech Specs**
-- **Fabric Type**: Material description
-- **Silicon Face Coating**: Technical specifications
-- **Coal PU Backside**: Waterproofing details
+Go to **Settings > Custom data > Products > Add definition** and create these metafields:
 
-### ✅ **Overview**
-- Product description and aesthetic details
+| **Metafield Name** | **Type** | **Description** | **Example Content** |
+|-------------------|----------|-----------------|-------------------|
+| `capacity` | Rich text editor | Product capacity/size | `20L` |
+| `dimensions` | Rich text editor | Product dimensions | `19" x 18" x 4"` |
+| `weight` | Rich text editor | Product weight | `2.5lbs` |
+| `fabric` | Rich text editor | Fabric/material description | `420D Cordura Polycarbonate Nylon` |
+| `features` | Rich text editor | Product features (comma-separated) | `Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy` |
+| `tech_specs` | Rich text editor | **Combined tech specs** (both silicon coating & coal PU) | `Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.` |
+| `overview` | Rich text editor | Product overview/description | `Modern technical aesthetic with a smooth supple feel. More structure than our ballistic version, ideal for adventure enthusiasts that want a hybrid option to transition between office and outdoors.` |
 
-### ✅ **Colors**
-- Available color variants
-- Dynamic color display
+### **2. Variant-Specific Metafields (Optional)**
 
-## 🛠 **Setup Instructions**
+For more detailed size-specific information, you can also create variant-level metafields:
 
-### **Option 1: Using Metafields (Recommended)**
+| **Metafield Name** | **Type** | **Scope** | **Description** |
+|-------------------|----------|-----------|-----------------|
+| `dimensions` | Rich text editor | Variant | Size-specific dimensions |
+| `weight` | Rich text editor | Variant | Size-specific weight |
+| `features` | Rich text editor | Variant | Size-specific features |
+| `tech_specs` | Rich text editor | Variant | Size-specific tech specs |
+| `overview` | Rich text editor | Variant | Size-specific overview |
 
-#### **Step 1: Create Metafields in Shopify Admin**
+**Note**: If variant-level metafields are not set, the system will fall back to product-level metafields.
 
-Go to **Settings > Custom data > Metafields** and create these metafields:
+### **3. Fabric Variants Setup**
 
-**For Products:**
+For fabric comparison to work, create product variants with fabric options:
+
+**Variant Structure:**
+- **Option 1**: Size (20L, 24L, 30L, etc.)
+- **Option 2**: Fabric (Carbonate, Ballistic Nylon, Cordura, etc.)
+
+**Example Variants:**
+- Commuter Pack 20L Carbonate
+- Commuter Pack 20L Ballistic Nylon
+- Commuter Pack 24L Carbonate
+- Commuter Pack 24L Ballistic Nylon
+
+**Fabric Detection**: The system automatically detects fabric variants by looking for:
+- `option2` containing "Fabric", "fabric", "Carbonate", "Ballistic", "Nylon", "Cordura"
+
+---
+
+## 🎨 **UI Tab Structure**
+
+### **Size Tab Content:**
+- Product image
+- Product title (with size variant)
+- **Specs**: Capacity, Dimensions, Weight
+- **Features**: List of product features
+- **Available in**: Color swatches
+- **Price**: Product price
+- **Add to Bag/Select Size**: Action buttons
+
+### **Fabric Tab Content:**
+- Product image
+- Product title (with fabric variant)
+- **Fabric**: Material description
+- **Tech Specs**: Combined technical specifications
+- **Overview**: Product overview/description
+- **Available in**: Color swatches
+- **Price**: Product price
+- **Add to Bag/Select Fabric**: Action buttons
+
+---
+
+## 📝 **Content Examples**
+
+### **Example: Commuter Pack Size Variants**
+
+**Current Product (20L):**
 ```
-Namespace: custom
-Key: capacity
-Type: Single line text
-Description: Product capacity (e.g., "20L", "24L")
-
-Namespace: custom
-Key: dimensions
-Type: Single line text
-Description: Product dimensions (e.g., "19\" x 15\" x 4\"")
-
-Namespace: custom
-Key: weight
-Type: Single line text
-Description: Product weight (e.g., "2.5lbs")
-
-Namespace: custom
-Key: fabric
-Type: Single line text
-Description: Fabric type (e.g., "420D Cordura Polycarbonate Nylon")
-
-Namespace: custom
-Key: features
-Type: List of single line text
-Description: Product features (comma-separated)
-
-Namespace: custom
-Key: silicon_coating
-Type: Multi-line text
-Description: Silicon face coating description
-
-Namespace: custom
-Key: coal_pu_coating
-Type: Multi-line text
-Description: Coal PU backside description
-
-Namespace: custom
-Key: overview
-Type: Multi-line text
-Description: Product overview and aesthetic description
-```
-
-#### **Step 2: Fill Metafields for Each Product**
-
-For each product, add the metafield values:
-
-**Example for Commuter Pack 20L:**
-```
-Capacity: 20L
-Dimensions: 19" x 15" x 4"
-Weight: 2.5lbs
-Fabric: 420D Cordura Polycarbonate Nylon
-Features: Water Bottle Pocket, Laptop Pocket, Trolley Sleeve, Carry-On Size, Phone Pocket, Waterproof, Zippers, Tech Caddy
-Silicon Coating: Provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric.
-Coal PU Coating: Makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.
-Overview: Has a modern technical aesthetic with a smooth supple feel. Has slightly more structure than our ballistic version, without being stiff and rigid like many PU and TPU coated fabrics. It's the ideal choice for adventure enthusiast that want a hybrid option to transition between office and outdoors.
+capacity: 20L
+dimensions: 19" x 18" x 4"
+weight: 2.5lbs
+fabric: 420D Cordura Polycarbonate Nylon
+features: Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy
+tech_specs: Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.
+overview: Modern technical aesthetic with a smooth supple feel. More structure than our ballistic version, ideal for adventure enthusiasts that want a hybrid option to transition between office and outdoors.
 ```
 
-**Example for Commuter Pack 24L:**
+**Size Variant (24L):**
 ```
-Capacity: 24L
-Dimensions: 19" x 15" x 4"
-Weight: 2.5lbs
-Fabric: 840D Cordura Ballistic Nylon
-Features: Water Bottle Pocket, Laptop Pocket, Trolley Sleeve, Carry-On Size, Phone Pocket, Hidden Passport Pocket, Waterproof, Zippers, Tech Caddy
-Silicon Coating: Provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric.
-Coal PU Coating: Makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.
-Overview: A timeless aesthetic and classic ballistic hand feel that has a fine grid-like texture that's subtly slick to the touch. It strikes the perfect balance to maintain some structure to prevent that floppy saggin look, while not being stiff and rigid. It's the ideal choice for purists seeking a refined, ultra-lux look that's office appropriate.
-```
-
-### **Option 2: Using Product Tags (Alternative)**
-
-If you prefer using tags, add these tags to your products:
-
-**For Features:**
-- `water-bottle-pocket`
-- `laptop-pocket`
-- `trolley-sleeve`
-- `carry-on`
-- `phone-pocket`
-- `passport-pocket`
-- `waterproof`
-- `zippers`
-- `tech-caddy`
-
-**For Specs:**
-- `capacity-20L`
-- `capacity-24L`
-- `dimensions-19x15x4`
-- `weight-2.5lbs`
-- `fabric-420d-cordura`
-- `fabric-840d-ballistic`
-
-## 🔧 **Advanced Configuration**
-
-### **Custom Collection for Comparison**
-
-Create a specific collection for products that should appear in the compare modal:
-
-1. Go to **Products > Collections**
-2. Create a new collection called "Compare Bags"
-3. Add the products you want to compare
-4. Update the snippet to use this collection:
-
-```liquid
-{% assign compare_collection = collections['compare-bags'] %}
+capacity: 24L
+dimensions: 19" x 15" x 4"
+weight: 2.5lbs
+fabric: 420D Cordura Polycarbonate Nylon
+features: Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy, Hidden passport pocket
+tech_specs: Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.
+overview: Modern technical aesthetic with a smooth supple feel. More structure than our ballistic version, ideal for adventure enthusiasts that want a hybrid option to transition between office and outdoors.
 ```
 
-### **Dynamic Color Mapping**
+**Note**: The compare modal will show:
+- **Size Tab**: Current product (e.g., 20L) compared with its size variants (e.g., 24L, 30L, etc.)
+- **Fabric Tab**: Current product compared with its fabric variants (e.g., Carbonate, Ballistic Nylon, etc.)
 
-To show actual color swatches, create a color mapping metafield:
+---
 
-```
-Namespace: custom
-Key: color_swatches
-Type: List of single line text
-Description: Color hex codes (e.g., "#000000,#1a2c2c,#666666")
-```
+## 🎯 **Benefits of New Structure**
 
-Then update the JavaScript to use these colors:
+### **✅ Rich Text Editor Advantages:**
+- **Formatting Control**: Admins can use bold, italic, lists, etc.
+- **Better Content**: More professional and readable content
+- **Flexibility**: Easy to update and maintain
+- **HTML Support**: Can include links, formatting, etc.
 
-```javascript
-// In the colors generation section
-const colorSwatches = prod.colorSwatches ? prod.colorSwatches.split(',') : ['#000000'];
-const colorsHtml = colorSwatches.map(color => 
-  `<div class="compare-modal-color" style="background-color: ${color.trim()}"></div>`
-).join('');
-```
+### **✅ Combined Tech Specs:**
+- **Simplified Management**: One field instead of two
+- **Better Organization**: All tech specs in one place
+- **Easier Updates**: Single field to maintain
+- **Consistent Formatting**: Uniform presentation
 
-### **Fabric-Specific Comparison**
+### **✅ New UI Benefits:**
+- **Cleaner Design**: Better visual hierarchy
+- **Tabbed Interface**: Organized content presentation
+- **Responsive**: Works well on all devices
+- **Professional Look**: Matches modern design standards
 
-For fabric comparison, you can create separate tabs or sections:
+---
 
-```javascript
-function renderFabricComparison() {
-  const fabricData = products.map(prod => ({
-    fabric: prod.fabric,
-    techSpecs: prod.techSpecs,
-    overview: prod.overview
-  }));
-  
-  // Render fabric-specific comparison
-}
-```
+## 🚀 **Implementation Steps**
 
-## 📊 **Data Structure Examples**
+1. **Create Metafields**: Set up all 7 metafields as rich text editors
+2. **Add Content**: Populate metafields for each product
+3. **Test Functionality**: Verify compare modal works correctly
+4. **Style Adjustments**: Fine-tune CSS if needed
+5. **Content Review**: Ensure all content displays properly
 
-### **Complete Product Data Example**
+---
 
-```json
-{
-  "id": 123456789,
-  "title": "Commuter Pack 20L",
-  "image": "https://cdn.shopify.com/...",
-  "price": "$229.00",
-  "url": "/products/commuter-pack-20l",
-  "isCurrentProduct": true,
-  "capacity": "20L",
-  "dimensions": "19\" x 15\" x 4\"",
-  "weight": "2.5lbs",
-  "fabric": "420D Cordura Polycarbonate Nylon",
-  "features": [
-    "Water Bottle Pocket",
-    "Laptop Pocket", 
-    "Trolley Sleeve",
-    "Carry-On Size",
-    "Phone Pocket",
-    "Waterproof",
-    "Zippers",
-    "Tech Caddy"
-  ],
-  "techSpecs": {
-    "siliconCoating": "Provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric.",
-    "coalPUCoating": "Makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance."
-  },
-  "overview": "Has a modern technical aesthetic with a smooth supple feel...",
-  "colors": ["Black", "Navy", "Grey"]
-}
-```
+## 🔍 **Testing Checklist**
 
-## 🧪 **Testing Checklist**
+- [ ] Compare button appears on product page
+- [ ] Modal opens correctly
+- [ ] Size tab shows specs and features
+- [ ] Fabric tab shows fabric, tech specs, and overview
+- [ ] Content displays with proper formatting
+- [ ] Mobile responsiveness works
+- [ ] Tab switching functions properly
+- [ ] Close button and escape key work
+- [ ] Add to Bag/Shop Now buttons function
 
-After setup, test these scenarios:
+---
 
-- [ ] Compare modal opens correctly
-- [ ] All product data displays properly
-- [ ] Specs show correct values
-- [ ] Features list is accurate
-- [ ] Fabric information is correct
-- [ ] Tech specs are displayed
-- [ ] Overview text is shown
-- [ ] Colors/variants are accurate
-- [ ] Related products load correctly
-- [ ] Tab switching works (Product vs On model)
-- [ ] Mobile responsiveness is maintained
-- [ ] Modal closes properly
+## 💡 **Pro Tips**
 
-## 🔄 **Maintenance**
+1. **Content Strategy**: Use consistent formatting across all products
+2. **Feature Lists**: Keep feature lists concise and scannable
+3. **Tech Specs**: Use clear, technical language for specifications
+4. **Overview**: Write compelling, benefit-focused descriptions
+5. **Regular Updates**: Keep content fresh and accurate
 
-### **Adding New Products**
-1. Add the product to your compare collection
-2. Fill in all required metafields
-3. Add appropriate tags if using tag-based system
-4. Test the comparison functionality
+---
 
-### **Updating Product Data**
-1. Update metafields in Shopify admin
-2. Changes will automatically reflect in the compare modal
-3. No code changes required
+## 🆘 **Troubleshooting**
 
-### **Adding New Features**
-1. Add new metafield or tag
-2. Update the JavaScript to handle the new data
-3. Test with existing products
+**Issue**: Content not displaying
+- **Solution**: Check metafield names match exactly (case-sensitive)
 
-## 🚀 **Performance Optimization**
+**Issue**: Formatting not showing
+- **Solution**: Ensure metafields are set to "Rich text editor" type
 
-- The snippet uses efficient Liquid loops
-- Product data is loaded once and cached
-- Images are optimized with Shopify's CDN
-- Minimal DOM manipulation for better performance
+**Issue**: Modal not opening
+- **Solution**: Check browser console for JavaScript errors
 
-This setup provides a fully dynamic, maintainable compare bags functionality that automatically updates when you modify product data in Shopify! 
+**Issue**: Mobile layout issues
+- **Solution**: Test on actual mobile devices, not just browser dev tools 

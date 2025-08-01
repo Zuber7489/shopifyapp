@@ -9,7 +9,7 @@
   Usage: {% render 'compare-bags-modal' %}
 {% endcomment %}
 
-<!-- Enhanced Compare Bags Modal (Exact UI) -->
+<!-- Enhanced Compare Bags Modal (New UI Design) -->
 <style>
 #compareBagsModalV2 {
   display: none; 
@@ -27,7 +27,7 @@
 
 .compare-modal-content {
   background: #fff; 
-  max-width: 800px; 
+  max-width: 900px; 
   width: 95vw; 
   margin: 20px auto; 
   border-radius: 12px;
@@ -55,7 +55,7 @@
 }
 
 .compare-modal-title {
-  font-size: 16px; 
+  font-size: 18px; 
   font-weight: 500; 
   color: #333; 
   margin: 0;
@@ -96,8 +96,8 @@
 
 #compareBagsGridWrap {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px !important;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px !important;
   flex-grow: 1;
 }
 
@@ -113,6 +113,11 @@
   top: 0;
   width: 20px;
   flex-shrink: 0;
+}
+
+/* Fabric tab has more labels, so adjust gap */
+.compare-modal-labels.fabric-tab {
+  gap: 25px;
 }
 
 .compare-modal-label {
@@ -258,6 +263,30 @@
   align-items: stretch; 
 }
 
+/* Fabric tab specific styles */
+.compare-modal-fabric {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+  order: 2;
+}
+
+.compare-modal-tech-specs {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+  text-align: left;
+  order: 3;
+}
+
+.compare-modal-overview {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+  text-align: left;
+  order: 4;
+}
+
 @media (max-width: 480px) {
   .compare-modal-content { 
     margin: 12px; 
@@ -281,13 +310,9 @@
     max-width: 99vw; 
     padding: 0 0 18px 0; 
   }
-  .compare-modal-table { 
-    grid-template-columns: 80px repeat(3, 1fr); 
-    padding: 0 4px; 
-  }
-  .compare-modal-label-cell, .compare-modal-cell { 
-    font-size: 11px; 
-    padding: 10px 2px; 
+  #compareBagsGridWrap { 
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 12px !important; 
   }
   .compare-modal-img { 
     width: 55px; 
@@ -380,8 +405,17 @@
   
   .mobile-compare-review {
     display: flex !important;
-    margin-top: 24px !important;
+    margin-top: 10px !important;
+    margin-bottom: 15px !important;
     min-width: 129px !important;
+    justify-content: flex-end !important;
+  }
+  
+  /* Ensure mobile button is visible in mobile-single-image section */
+  .mobile-single-image .mobile-compare-review {
+    display: flex !important;
+    width: 100% !important;
+    justify-content: flex-end !important;
   }
 }
 
@@ -417,22 +451,22 @@
 <!-- Compare Bags Modal HTML -->
 <div id="compareBagsModalV2">
   <div class="compare-modal-content">
-    <button class="compare-modal-close" onclick="closeCompareBagsModalV2()">&times;</button>
+    <button class="compare-modal-close" id="compareModalClose">&times;</button>
     <div class="compare-modal-header">
-      <h2 class="compare-modal-title">Compare</h2>
+      <h2 class="compare-modal-title">Compare Bags</h2>
     </div>
     <div class="compare-modal-tabs">
-      <button class="compare-modal-tab active" id="compareTabProduct" onclick="switchCompareTab('product')">Product</button>
-      <button class="compare-modal-tab" id="compareTabModel" onclick="switchCompareTab('model')">On model</button>
+      <button class="compare-modal-tab active" id="compareTabSize" data-tab="size">Size</button>
+      <button class="compare-modal-tab" id="compareTabFabric" data-tab="fabric">Fabric</button>
     </div>
     <div class="compare-modal-grid">
-      <div class="compare-modal-labels">
-        <div class="compare-modal-label">Size</div>
+      <div class="compare-modal-labels" id="compareModalLabels">
+        <div class="compare-modal-label">Specs</div>
         <div class="compare-modal-label">Features</div>
-        <div class="compare-modal-label">Color</div>
+        <div class="compare-modal-label">Available in</div>
         <div class="compare-modal-label">Price</div>
       </div>
-      <div id="compareBagsGridWrap" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+      <div id="compareBagsGridWrap" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
         <!-- Grid will be rendered here -->
       </div>
     </div>
@@ -441,7 +475,7 @@
 
 <!-- Compare Bags JavaScript -->
 <script>
-// Dynamic product data from Shopify
+// Dynamic product data from Shopify (Updated for new UI and metafields)
 const compareProductsData = {
   currentProduct: {
     id: {{ product.id }},
@@ -450,37 +484,16 @@ const compareProductsData = {
     price: "{{ product.price | money }}",
     url: "{{ product.url }}",
     isCurrentProduct: true,
-    // Dynamic specs from metafields or product tags
-    capacity: "{{ product.metafields.custom.capacity | default: product.tags | where: 'capacity' | first | remove: 'capacity-' }}",
-    dimensions: "{{ product.metafields.custom.dimensions | default: product.tags | where: 'dimensions' | first | remove: 'dimensions-' }}",
-    weight: "{{ product.metafields.custom.weight | default: product.tags | where: 'weight' | first | remove: 'weight-' }}",
-    fabric: "{{ product.metafields.custom.fabric | default: product.tags | where: 'fabric' | first | remove: 'fabric-' }}",
-    // Features from metafields or product description
-    features: [
-      {% if product.metafields.custom.features %}
-        {% assign features = product.metafields.custom.features | split: ',' %}
-        {% for feature in features %}
-          "{{ feature | strip }}",
-        {% endfor %}
-      {% else %}
-        // Fallback features based on product type or tags
-        {% if product.tags contains 'water-bottle-pocket' %}"Water Bottle Pocket",{% endif %}
-        {% if product.tags contains 'laptop-pocket' %}"Laptop Pocket",{% endif %}
-        {% if product.tags contains 'trolley-sleeve' %}"Trolley Sleeve",{% endif %}
-        {% if product.tags contains 'carry-on' %}"Carry-On Size",{% endif %}
-        {% if product.tags contains 'phone-pocket' %}"Phone Pocket",{% endif %}
-        {% if product.tags contains 'passport-pocket' %}"Hidden Passport Pocket",{% endif %}
-        {% if product.tags contains 'waterproof' %}"Waterproof",{% endif %}
-        {% if product.tags contains 'zippers' %}"Zippers",{% endif %}
-        {% if product.tags contains 'tech-caddy' %}"Tech Caddy",{% endif %}
-      {% endif %}
-    ],
-    // Tech specs from metafields
-    techSpecs: {
-      siliconCoating: "{{ product.metafields.custom.silicon_coating | default: 'Provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric.' }}",
-      coalPUCoating: "{{ product.metafields.custom.coal_pu_coating | default: 'Makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}"
-    },
-    // Overview from metafields
+    // Dynamic specs from metafields (richtext editor) - with better fallbacks
+    capacity: "{{ product.metafields.custom.capacity | strip_html | default: '20L' }}",
+    dimensions: "{{ product.metafields.custom.dimensions | strip_html | default: '19" x 18" x 4"' }}",
+    weight: "{{ product.metafields.custom.weight | strip_html | default: '2.5lbs' }}",
+    fabric: "{{ product.metafields.custom.fabric | strip_html | default: '420D Cordura Polycarbonate Nylon' }}",
+    // Features from metafields (richtext editor)
+    features: "{{ product.metafields.custom.features | default: 'Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy' }}",
+    // Tech specs from metafields (richtext editor - combined)
+    techSpecs: "{{ product.metafields.custom.tech_specs | default: 'Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}",
+    // Overview from metafields (richtext editor)
     overview: "{{ product.metafields.custom.overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
     // Available colors/variants
     colors: [
@@ -492,63 +505,83 @@ const compareProductsData = {
     ]
   },
   
-  // Get related products for comparison
-  relatedProducts: [
-    {% assign compare_collection = collections.all %}
-    {% for product in compare_collection.products limit: 3 %}
-      {% unless product.id == current_product.id %}
+  // Get size variants for comparison
+  sizeVariants: [
+    {% for variant in product.variants %}
+      {% if variant.option1 contains 'L' or variant.option1 contains 'l' or variant.option1 contains 'Size' or variant.option1 contains 'size' %}
         {
-          id: {{ product.id }},
-          title: "{{ product.title | escape }}",
-          image: "{{ product.featured_image | img_url: '300x300' }}",
-          price: "{{ product.price | money }}",
-          url: "{{ product.url }}",
-          isCurrentProduct: false,
-          capacity: "{{ product.metafields.custom.capacity | default: product.tags | where: 'capacity' | first | remove: 'capacity-' }}",
-          dimensions: "{{ product.metafields.custom.dimensions | default: product.tags | where: 'dimensions' | first | remove: 'dimensions-' }}",
-          weight: "{{ product.metafields.custom.weight | default: product.tags | where: 'weight' | first | remove: 'weight-' }}",
-          fabric: "{{ product.metafields.custom.fabric | default: product.tags | where: 'fabric' | first | remove: 'fabric-' }}",
-          features: [
-            {% if product.metafields.custom.features %}
-              {% assign features = product.metafields.custom.features | split: ',' %}
-              {% for feature in features %}
-                "{{ feature | strip }}",
-              {% endfor %}
-            {% else %}
-              {% if product.tags contains 'water-bottle-pocket' %}"Water Bottle Pocket",{% endif %}
-              {% if product.tags contains 'laptop-pocket' %}"Laptop Pocket",{% endif %}
-              {% if product.tags contains 'trolley-sleeve' %}"Trolley Sleeve",{% endif %}
-              {% if product.tags contains 'carry-on' %}"Carry-On Size",{% endif %}
-              {% if product.tags contains 'phone-pocket' %}"Phone Pocket",{% endif %}
-              {% if product.tags contains 'passport-pocket' %}"Hidden Passport Pocket",{% endif %}
-              {% if product.tags contains 'waterproof' %}"Waterproof",{% endif %}
-              {% if product.tags contains 'zippers' %}"Zippers",{% endif %}
-              {% if product.tags contains 'tech-caddy' %}"Tech Caddy",{% endif %}
-            {% endif %}
-          ],
-          techSpecs: {
-            siliconCoating: "{{ product.metafields.custom.silicon_coating | default: 'Provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric.' }}",
-            coalPUCoating: "{{ product.metafields.custom.coal_pu_coating | default: 'Makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}"
-          },
-          overview: "{{ product.metafields.custom.overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
+          id: {{ variant.id }},
+          title: "{{ product.title | escape }} {{ variant.option1 }}",
+          image: "{{ variant.image | default: product.featured_image | img_url: '300x300' }}",
+          price: "{{ variant.price | money }}",
+          url: "{{ product.url }}?variant={{ variant.id }}",
+          isCurrentProduct: {{ variant.id == current_variant.id }},
+          variantTitle: "{{ variant.option1 }}",
+          capacity: "{{ variant.option1 }}",
+          dimensions: "{{ variant.metafields.custom.dimensions | strip_html | default: product.metafields.custom.dimensions | strip_html | default: '19" x 18" x 4"' }}",
+          weight: "{{ variant.metafields.custom.weight | strip_html | default: product.metafields.custom.weight | strip_html | default: '2.5lbs' }}",
+          fabric: "{{ variant.metafields.custom.fabric | strip_html | default: product.metafields.custom.fabric | strip_html | default: '420D Cordura Polycarbonate Nylon' }}",
+          features: "{{ variant.metafields.custom.features | default: product.metafields.custom.features | default: 'Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy' }}",
+          techSpecs: "{{ variant.metafields.custom.tech_specs | default: product.metafields.custom.tech_specs | default: 'Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}",
+          overview: "{{ variant.metafields.custom.overview | default: product.metafields.custom.overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
           colors: [
-            {% for variant in product.variants %}
-              {% if variant.option1 contains 'Color' or variant.option1 contains 'color' %}
-                "{{ variant.option1 }}",
+            {% for color_variant in product.variants %}
+              {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
+                "{{ color_variant.option1 }}",
               {% endif %}
             {% endfor %}
           ]
         },
-      {% endunless %}
+      {% endif %}
+    {% endfor %}
+  ],
+  
+  // Get fabric variants for comparison
+  fabricVariants: [
+    {% for variant in product.variants %}
+      {% if variant.option2 contains 'Fabric' or variant.option2 contains 'fabric' or variant.option2 contains 'Carbonate' or variant.option2 contains 'Ballistic' or variant.option2 contains 'Nylon' or variant.option2 contains 'Cordura' %}
+        {
+          id: {{ variant.id }},
+          title: "{{ product.title | escape }} {{ variant.option2 }}",
+          image: "{{ variant.image | default: product.featured_image | img_url: '300x300' }}",
+          price: "{{ variant.price | money }}",
+          url: "{{ product.url }}?variant={{ variant.id }}",
+          isCurrentProduct: {{ variant.id == current_variant.id }},
+          variantTitle: "{{ variant.option2 }}",
+          capacity: "{{ variant.option1 }}",
+          dimensions: "{{ variant.metafields.custom.dimensions | strip_html | default: product.metafields.custom.dimensions | strip_html | default: '19" x 18" x 4"' }}",
+          weight: "{{ variant.metafields.custom.weight | strip_html | default: product.metafields.custom.weight | strip_html | default: '2.5lbs' }}",
+          fabric: "{{ variant.option2 }}",
+          features: "{{ variant.metafields.custom.features | default: product.metafields.custom.features | default: 'Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy' }}",
+          techSpecs: "{{ variant.metafields.custom.tech_specs | default: product.metafields.custom.tech_specs | default: 'Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}",
+          overview: "{{ variant.metafields.custom.overview | default: product.metafields.custom.overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
+          colors: [
+            {% for color_variant in product.variants %}
+              {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
+                "{{ color_variant.option1 }}",
+              {% endif %}
+            {% endfor %}
+          ]
+        },
+      {% endif %}
     {% endfor %}
   ]
 };
 
 // Compare Bags Modal Functions
 function openCompareBagsModalV2() {
+  console.log('openCompareBagsModalV2 called');
   const modal = document.getElementById('compareBagsModalV2');
+  console.log('Modal element:', modal);
+  
+  if (!modal) {
+    console.error('Modal element not found!');
+    return;
+  }
+  
   const content = modal.querySelector('.compare-modal-content');
   modal.style.display = 'flex';
+  console.log('Modal displayed');
   
   // Reset animation for mobile
   if (window.innerWidth < 700 && content) {
@@ -557,70 +590,168 @@ function openCompareBagsModalV2() {
     content.style.animation = null;
   }
   
-  renderCompareBagsTable('product');
+  renderCompareBagsTable('size');
   document.body.style.overflow = 'hidden';
   enableCompareModalScrollLock();
 }
 
 function closeCompareBagsModalV2() {
-  document.getElementById('compareBagsModalV2').style.display = 'none';
+  const modal = document.getElementById('compareBagsModalV2');
+  if (modal) {
+    modal.style.display = 'none';
+  }
   document.body.style.overflow = '';
   disableCompareModalScrollLock();
 }
 
 function switchCompareTab(tab) {
-  document.getElementById('compareTabProduct').classList.toggle('active', tab === 'product');
-  document.getElementById('compareTabModel').classList.toggle('active', tab === 'model');
+  // Update tab active states
+  document.querySelectorAll('.compare-modal-tab').forEach(tabBtn => {
+    tabBtn.classList.remove('active');
+  });
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  
+  // Update labels based on selected tab
+  const labels = document.getElementById('compareModalLabels');
+  if (tab === 'size') {
+    labels.classList.remove('fabric-tab');
+    labels.innerHTML = `
+      <div class="compare-modal-label">Specs</div>
+      <div class="compare-modal-label">Features</div>
+      <div class="compare-modal-label">Available in</div>
+      <div class="compare-modal-label">Price</div>
+    `;
+  } else if (tab === 'fabric') {
+    labels.classList.add('fabric-tab');
+    labels.innerHTML = `
+      <div class="compare-modal-label">Fabric</div>
+      <div class="compare-modal-label">Tech Specs</div>
+      <div class="compare-modal-label">Overview</div>
+      <div class="compare-modal-label">Available in</div>
+      <div class="compare-modal-label">Price</div>
+    `;
+  }
+  
   renderCompareBagsTable(tab);
 }
 
-// Dynamic product data and rendering logic
+// Dynamic product data and rendering logic (Updated for new UI)
 function renderCompareBagsTable(tab) {
-  // Combine current product with related products
-  const products = [compareProductsData.currentProduct, ...compareProductsData.relatedProducts];
+  // Choose variants based on selected tab
+  let variants = [];
+  if (tab === 'size') {
+    variants = compareProductsData.sizeVariants || [];
+  } else if (tab === 'fabric') {
+    variants = compareProductsData.fabricVariants || [];
+  }
+  
+  // If no variants found, show only current product with a message
+  if (variants.length === 0) {
+    const products = [compareProductsData.currentProduct];
+    renderProducts(products, tab);
+    
+    // Show a message that no variants are available
+    const gridWrap = document.getElementById('compareBagsGridWrap');
+    if (gridWrap && gridWrap.children.length === 1) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'compare-modal-product';
+      messageDiv.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #666;">
+          <p>No ${tab === 'size' ? 'size' : 'fabric'} variants available for comparison.</p>
+          <p style="font-size: 12px; margin-top: 10px;">Please check back later or contact support.</p>
+        </div>
+      `;
+      gridWrap.appendChild(messageDiv);
+    }
+    return;
+  }
+  
+  // Combine current product with appropriate variants (limit to 2 total)
+  const products = [compareProductsData.currentProduct, ...variants].slice(0, 2);
+  
+  renderProducts(products, tab);
+}
+
+function renderProducts(products, tab) {
   
   // Render products in grid layout
   let html = '';
   products.forEach(prod => {
-    // Generate specs string
-    const specs = [];
-    if (prod.dimensions) specs.push(prod.dimensions);
-    if (prod.weight) specs.push(prod.weight);
-    const specsString = specs.join(', ');
-    
-    // Generate features HTML
-    const featuresHtml = prod.features && prod.features.length > 0 
-      ? prod.features.map(feature => `<li>${feature}</li>`).join('')
-      : '<li>Premium quality construction</li>';
-    
-    // Generate colors HTML
-    const colorsHtml = prod.colors && prod.colors.length > 0
-      ? prod.colors.map(color => `<div class="compare-modal-color" title="${color}"></div>`).join('')
-      : '<div class="compare-modal-color" style="background-color: #000000"></div>';
-    
-    html += `
-      <div class="compare-modal-product">
-        <div class="compare-modal-img-wrap">
-          <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
+    if (tab === 'size') {
+      // Size tab content
+      const specs = [];
+      if (prod.capacity) specs.push(`Capacity: ${prod.capacity}`);
+      if (prod.dimensions) specs.push(`Dimensions: ${prod.dimensions}`);
+      if (prod.weight) specs.push(`Weight: ${prod.weight}`);
+      const specsString = specs.join('<br>');
+      
+      // Generate features HTML from richtext
+      const featuresHtml = prod.features ? 
+        prod.features.split(',').map(feature => `<li>${feature.trim()}</li>`).join('') :
+        '<li>Water bottle pocket</li><li>Luggage pass through</li><li>Laptop compartment</li>';
+      
+      // Generate colors HTML
+      const colorsHtml = prod.colors && prod.colors.length > 0
+        ? prod.colors.map(color => `<div class="compare-modal-color" title="${color}" style="background-color: ${color.toLowerCase() === 'black' ? '#000000' : '#808080'}"></div>`).join('')
+        : '<div class="compare-modal-color" style="background-color: #000000"></div><div class="compare-modal-color" style="background-color: #808080"></div>';
+      
+      html += `
+        <div class="compare-modal-product">
+          <div class="compare-modal-img-wrap">
+            <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
+          </div>
+          
+          <h3 class="compare-modal-product-title">${prod.title}</h3>
+          <div class="compare-modal-specs">
+            ${specsString}
+          </div>
+          <ul class="compare-modal-features">
+            ${featuresHtml}
+          </ul>
+          <div class="compare-modal-colors">
+            ${colorsHtml}
+          </div>
+          <div class="compare-modal-price">${prod.price}</div>
+          <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
+            ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
+          </a>
         </div>
-        
-        <h3 class="compare-modal-product-title">${prod.title}</h3>
-        <div class="compare-modal-specs">
-          ${prod.capacity ? `<span class="compare-modal-capacity">${prod.capacity}</span>` : ''}
-          ${specsString ? `<span>${specsString}</span>` : ''}
+      `;
+    } else if (tab === 'fabric') {
+      // Fabric tab content
+      const fabricHtml = prod.fabric ? prod.fabric : 'Premium fabric';
+      
+      // Generate colors HTML
+      const colorsHtml = prod.colors && prod.colors.length > 0
+        ? prod.colors.map(color => `<div class="compare-modal-color" title="${color}" style="background-color: ${color.toLowerCase() === 'black' ? '#000000' : '#808080'}"></div>`).join('')
+        : '<div class="compare-modal-color" style="background-color: #000000"></div><div class="compare-modal-color" style="background-color: #808080"></div>';
+      
+      html += `
+        <div class="compare-modal-product">
+          <div class="compare-modal-img-wrap">
+            <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
+          </div>
+          
+          <h3 class="compare-modal-product-title">${prod.title}</h3>
+          <div class="compare-modal-fabric">
+            ${fabricHtml}
+          </div>
+          <div class="compare-modal-tech-specs">
+            ${prod.techSpecs}
+          </div>
+          <div class="compare-modal-overview">
+            ${prod.overview}
+          </div>
+          <div class="compare-modal-colors">
+            ${colorsHtml}
+          </div>
+          <div class="compare-modal-price">${prod.price}</div>
+          <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
+            ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
+          </a>
         </div>
-        <ul class="compare-modal-features">
-          ${featuresHtml}
-        </ul>
-        <div class="compare-modal-colors">
-          ${colorsHtml}
-        </div>
-        <div class="compare-modal-price">${prod.price}</div>
-        <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
-          ${prod.isCurrentProduct ? 'Add to Bag' : 'Shop Now'}
-        </a>
-      </div>
-    `;
+      `;
+    }
   });
   
   document.getElementById('compareBagsGridWrap').innerHTML = html;
@@ -664,34 +795,178 @@ function disableCompareModalScrollLock() {
 
 // Initialize event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Attach to Compare Bags buttons
-  document.querySelectorAll('#compareBtnMobile, #compareBtnDesktop, .comparedesktopbtn, .comparemobilebtn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
+  console.log('Compare modal script loaded');
+  attachCompareButtonListeners();
+  attachModalEventListeners();
+});
+
+// Also try to attach listeners immediately
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', attachCompareButtonListeners);
+  document.addEventListener('DOMContentLoaded', attachModalEventListeners);
+} else {
+  attachCompareButtonListeners();
+  attachModalEventListeners();
+}
+
+function attachCompareButtonListeners() {
+  // Check if modal exists
+  const modal = document.getElementById('compareBagsModalV2');
+  console.log('Modal element found:', !!modal);
+  
+  // Attach to Compare Bags buttons - use multiple selectors for better coverage
+  const buttons = document.querySelectorAll('[data-compare-button="true"], #compareBtnMobile, #compareBtnDesktop, .comparedesktopbtn, .comparemobilebtn');
+  console.log('Found compare buttons:', buttons.length);
+  
+  buttons.forEach(btn => {
+    if (!btn) return; // Skip if button is null
+    
+    // Remove any existing listeners to prevent duplicates
+    btn.removeEventListener('click', handleCompareButtonClick);
+    
+    console.log('Adding event listener to button:', btn.id || btn.className);
+    btn.addEventListener('click', handleCompareButtonClick);
+  });
+}
+
+function attachModalEventListeners() {
+  // Close modal button
+  const closeBtn = document.getElementById('compareModalClose');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      openCompareBagsModalV2();
+      closeCompareBagsModalV2();
+    });
+  }
+  
+  // Tab switching
+  const tabs = document.querySelectorAll('.compare-modal-tab');
+  tabs.forEach(tab => {
+    if (!tab) return; // Skip if tab is null
+    
+    tab.addEventListener('click', function(e) {
+      e.preventDefault();
+      const tabName = this.getAttribute('data-tab');
+      if (tabName) {
+        switchCompareTab(tabName);
+      }
     });
   });
   
   // Close modal when clicking outside
-  document.getElementById('compareBagsModalV2').addEventListener('click', function(e) {
-    if (e.target === this) {
-      closeCompareBagsModalV2();
-    }
-  });
+  const modal = document.getElementById('compareBagsModalV2');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeCompareBagsModalV2();
+      }
+    });
+  }
   
   // Close modal with Escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       const modal = document.getElementById('compareBagsModalV2');
-      if (modal.style.display === 'flex') {
+      if (modal && modal.style.display === 'flex') {
         closeCompareBagsModalV2();
       }
     }
   });
-});
+}
 
-// Make functions globally available
+function handleCompareButtonClick(e) {
+  e.preventDefault();
+  console.log('Compare button clicked');
+  if (typeof openCompareBagsModalV2 === 'function') {
+    openCompareBagsModalV2();
+  } else {
+    console.error('openCompareBagsModalV2 function not available');
+  }
+}
+
+// Make functions globally available immediately
 window.openCompareBagsModalV2 = openCompareBagsModalV2;
 window.closeCompareBagsModalV2 = closeCompareBagsModalV2;
 window.switchCompareTab = switchCompareTab;
+
+// Also make them available on document for immediate access
+document.openCompareBagsModalV2 = openCompareBagsModalV2;
+document.closeCompareBagsModalV2 = closeCompareBagsModalV2;
+document.switchCompareTab = switchCompareTab;
+
+// Also make them available on window object for immediate access
+if (typeof window !== 'undefined') {
+  window.openCompareBagsModalV2 = openCompareBagsModalV2;
+  window.closeCompareBagsModalV2 = closeCompareBagsModalV2;
+  window.switchCompareTab = switchCompareTab;
+}
+
+console.log('Compare functions made globally available');
+console.log('window.openCompareBagsModalV2:', typeof window.openCompareBagsModalV2);
+console.log('document.openCompareBagsModalV2:', typeof document.openCompareBagsModalV2);
+
+// Global error handler for compare modal
+window.addEventListener('error', function(e) {
+  if (e.message && e.message.includes('openCompareBagsModalV2')) {
+    console.error('Compare modal error caught:', e.message);
+    // Try to re-initialize the function
+    if (typeof openCompareBagsModalV2 === 'function') {
+      window.openCompareBagsModalV2 = openCompareBagsModalV2;
+      document.openCompareBagsModalV2 = openCompareBagsModalV2;
+    }
+  }
+});
+
+// Test function availability
+setTimeout(() => {
+  console.log('Testing function availability after 1 second...');
+  console.log('window.openCompareBagsModalV2 available:', typeof window.openCompareBagsModalV2 === 'function');
+  console.log('document.openCompareBagsModalV2 available:', typeof document.openCompareBagsModalV2 === 'function');
+}, 1000);
+
+// Fallback for buttons that might be clicked before DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    // Re-attach event listeners in case buttons were added after initial load
+    const buttons = document.querySelectorAll('[data-compare-button="true"], #compareBtnMobile, #compareBtnDesktop, .comparedesktopbtn, .comparemobilebtn');
+    buttons.forEach(btn => {
+      if (!btn) return; // Skip if button is null
+      
+      if (!btn.hasAttribute('data-compare-initialized')) {
+        btn.setAttribute('data-compare-initialized', 'true');
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (typeof openCompareBagsModalV2 === 'function') {
+            openCompareBagsModalV2();
+          } else {
+            console.error('openCompareBagsModalV2 function not available');
+          }
+        });
+      }
+    });
+  });
+}
+
+// Additional safety check - re-attach listeners after a short delay
+setTimeout(() => {
+  attachCompareButtonListeners();
+}, 100);
+
+// Multiple retry attempts to ensure buttons are found
+let retryCount = 0;
+const maxRetries = 5;
+const retryInterval = setInterval(() => {
+  retryCount++;
+  const buttons = document.querySelectorAll('[data-compare-button="true"], #compareBtnMobile, #compareBtnDesktop, .comparedesktopbtn, .comparemobilebtn');
+  
+  if (buttons.length > 0 || retryCount >= maxRetries) {
+    clearInterval(retryInterval);
+    if (buttons.length > 0) {
+      console.log(`Found ${buttons.length} compare buttons after ${retryCount} retries`);
+      attachCompareButtonListeners();
+    } else {
+      console.warn('No compare buttons found after maximum retries');
+    }
+  }
+}, 200);
 </script> 

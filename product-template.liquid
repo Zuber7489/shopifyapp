@@ -91,7 +91,7 @@
     .testimonial-section p,
     .related-products-section h2,
     .reviews-section h2,
-    .comparemobilebtn,
+
     .pricesizeadjust {
       font-family: 'Neue Haas Display', sans-serif !important;
     }
@@ -522,8 +522,8 @@
         {% endfor %}
     
         {% if has_fabric_options or has_color_options %}
-          <!-- Start new flex row for fabric and compare/reviews -->
-          <div class="fabric-compare-row" style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap;">
+          <!-- Start new flex row for fabric and reviews -->
+          <div class="fabric-reviews-row" style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap;">
             <!-- Left: Fabric label, selected color, swatches -->
             <div style="display: flex; flex-direction: column; align-items: flex-start;">
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
@@ -587,11 +587,9 @@
                 {% endfor %}
               </div>
             </div>
-            <!-- Right: Compare Bags button and reviews -->
-            <div class="mobile-compare-review" style="display: flex; flex-direction: column; align-items: flex-end; min-width: 130px; display:none;">
-              <button class="comparemobilebtn" id="compareBtnMobile" style="border: 2px solid #2f7d7d; color: #2f7d7d; background: transparent; padding: 6px 16px; border-radius: 20px; font-size: 18px; cursor: pointer; margin-bottom: 6px; position: relative; z-index: 100;" onclick="openCompareBagsModalV2()">
-      Compare bags
-    </button>
+            <!-- Right: Compare button and reviews -->
+            <div class="mobile-reviews" style="display: flex; flex-direction: column; align-items: flex-end; min-width: 130px; display:none;">
+              {% render 'compare-bags-buttons' %}
             </div>
             <div class="reviewadjust" style="font-size: 16px; color: #2f6f6f; cursor: pointer; margin-top: 0; text-align: right; display:none;" onclick="scrollToReviews()">
               {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
@@ -620,9 +618,7 @@
       
     <!-- Images and Rating -->
     <div class="responsive-flex" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-      <button id="compareBtnDesktop" class="comparedesktopbtn" style="border: 2px solid #2f7d7d; color: #2f7d7d; background: transparent; padding: 6px 16px; border-radius: 20px; font-size: 18px; cursor: pointer; margin: 0; position: relative; z-index: 100; pointer-events: auto; display:none;" onclick="openCompareBagsModalV2()">
-        Compare bags
-      </button>
+      {% render 'compare-bags-buttons' %}
       <div class="review-fix" style="display: flex; align-items: center; gap: 8px; color: #2f6f6f;">
         <div class="reviewadjust" style="font-size: 14px; color: #444; cursor: pointer;" onclick="scrollToReviews()">
           {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
@@ -1209,23 +1205,21 @@
       .related-products-section{
             margin-bottom: 81px !important;
       }
-      .compare-btn-row {
-        display: flex !important;
-        justify-content: flex-end !important;
-        margin-top: 8px !important;
-        margin-right: 0 !important;
-      }
-    
-      .comparemobilebtn{
-        display: none !important;
-        margin-right: 0 !important;
-        font-size: 13px !important;
-            padding: 4px 8px !important;
-      }
-      .mobile-compare-review {
+
+      .mobile-reviews {
         display: flex !important;
                 margin-top: 24px !important;
         min-width: 129px !important;
+      }
+      
+      /* Mobile compare button visibility */
+      .comparedesktopbtn {
+        display: none !important;
+      }
+      .comparemobilebtn {
+        display: block !important;
+        font-size: 13px !important;
+        padding: 4px 8px !important;
       }
       .desktop-review-section {
         /* display: none !important; */
@@ -1234,16 +1228,27 @@
       }
     }  
       @media (max-width: 375px) {
-        .mobile-compare-review {
+        .mobile-reviews {
               display: flex !important;
             margin-top: -96px !important;
             min-width: 305px !important;
       }
-      @media (min-width: 901px) {
-      .comparedesktopbtn {
-        display: block;
+      
+      .comparemobilebtn {
+        font-size: 12px !important;
+        padding: 3px 6px !important;
       }
-      .mobile-compare-review {
+      @media (min-width: 901px) {
+
+      .mobile-reviews {
+        display: none !important;
+      }
+      
+      /* Compare button visibility */
+      .comparedesktopbtn {
+        display: block !important;
+      }
+      .comparemobilebtn {
         display: none !important;
       }
       .desktop-review-section {
@@ -5143,31 +5148,7 @@ let globalTouchManager = {
     
     </script>
     
-    {% schema %}
-    {
-    "name": "Product template",
-    "settings": [
-      {
-        "type": "checkbox",
-        "id": "show_quantity_selector",
-        "label": "Show quantity selector",
-        "default": true
-      },
-      {
-        "type": "checkbox",
-        "id": "show_vendor",
-        "label": "Show vendor",
-        "default": true
-      },
-      {
-        "type": "checkbox",
-        "id": "enable_zoom",
-        "label": "Enable image zoom",
-        "default": true
-      }
-    ]
-    }
-    {% endschema %}
+
     
     <script>
       function toggleMobileFeatureHighlights() {
@@ -5228,382 +5209,10 @@ let globalTouchManager = {
     window.addEventListener('resize', handleMobileHeadings);
     </script>
     
-    <!-- Enhanced Compare Bags Modal (Exact UI) -->
-    <!-- Enhanced Compare Bags Modal (Exact UI) -->
-    <!-- Enhanced Compare Bags Modal (Exact UI) -->
-    <style>
-    #compareBagsModalV2 {
-      display: none; position: fixed; z-index: 10001; left: 0; top: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.45); overflow: auto; align-items: center; justify-content: center;
-    }
-    .compare-modal-content {
-      background: #fff; max-width: 800px; width: 95vw; margin: 20px auto; border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 20px; position: relative;
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-    .compare-modal-close {
-      position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 24px; color: #666; cursor: pointer;
-    }
-    .compare-modal-header {
-      text-align: center; margin-bottom: 16px;
-    }
-    .compare-modal-title {
-      font-size: 16px; font-weight: 500; color: #333; margin: 0;
-    }
-    .compare-modal-tabs {
-      display: flex; margin: 16px 20px; background: #f5f5f5; border-radius: 20px; padding: 3px;
-    }
-    .compare-modal-tab {
-      flex: 1; text-align: center; padding: 8px 16px; font-size: 14px; font-weight: 500; color: #666;
-      background: none; border: none; cursor: pointer; border-radius: 20px;
-      transition: all 0.3s ease;
-    }
-    .compare-modal-tab.active {
-      background: #4a6f64; color: #fff;
-    }
-    .compare-modal-grid {
-      display: flex;
-      gap: 24px;
-      padding: 0;
-    }
+
+
     
-    #compareBagsGridWrap {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px !important;
-      flex-grow: 1;
-    }
-    .compare-modal-labels {
-      text-align: right;
-      font-size: 13px;
-      color: #B8860B;
-      display: flex;
-      flex-direction: column;
-      gap: 30px;
-      padding-top: 140px;
-      position: sticky;
-      top: 0;
-      width: 20px;
-      flex-shrink: 0;
-    }
-    .compare-modal-label {
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      transform: rotate(-90deg);
-      margin-top: 13px;
-    }
-    .compare-modal-divider {
-      height: 1px;
-      background: #e0e0e0;
-      margin: 12px 0;
-      width: 100%;
-    }
-    .compare-modal-product {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .compare-modal-img-wrap {
-      margin-bottom: 0;
-      background: #f8f8f8;
-      border-radius: 6px;
-      padding: 15px;
-      height: 140px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .compare-modal-img {
-      width: 100%; 
-      height: 100%;
-      object-fit: contain;
-    }
-    .compare-modal-product-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: #333;
-      margin: 0;
-      order: 1;
-    }
-    .compare-modal-specs {
-      font-size: 11px;
-      color: #666;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      order: 2;
-    }
-    .compare-modal-features {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      text-align: left;
-      font-size: 11px;
-      color: #666;
-      min-height: 120px;
-      order: 3;
-    }
-    .compare-modal-features li {
-      margin-bottom: 3px; position: relative; padding-left: 10px;
-    }
-    .compare-modal-features li:before {
-      content: '-'; position: absolute; left: 0;
-    }
-    .compare-modal-capacity {
-      font-size: 12px; color: #999; margin: 8px 0;
-    }
-    .compare-modal-colors {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-      margin: 0;
-      order: 4;
-    }
-    .compare-modal-color {
-      width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);
-      cursor: pointer;
-    }
-    .compare-modal-price {
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      margin: 0;
-      order: 5;
-    }
-    .compare-modal-button {
-      order: 6;
-      margin-top: 4px;
-    }
-    .compare-modal-button {
-      display: inline-block; padding: 6px 16px; border-radius: 16px; font-size: 12px;
-      font-weight: 500; text-decoration: none; cursor: pointer; min-width: 80px;
-    }
-    .compare-modal-button.primary {
-      background: #1a2c2c; color: white; border: none;
-    }
-    .compare-modal-button.secondary {
-      background: white; color: #1a2c2c; border: 1px solid #e0e0e0;
-    }
-      .compare-modal-grid { align-items: stretch; }
-    @media (max-width: 480px) {
-      .compare-modal-content { margin: 12px; padding: 12px 0; }
-      .compare-modal-grid { gap: 12px; padding: 0 12px; margin-bottom: 12px; }
-      .compare-modal-product-title { font-size: 9px; }
-      .compare-modal-specs, .compare-modal-features { font-size: 10px; }
-    }
-    @media (max-width: 700px) {
-      .compare-modal-content { max-width: 99vw; padding: 0 0 18px 0; }
-      .compare-modal-table { grid-template-columns: 80px repeat(3, 1fr); padding: 0 4px; }
-      .compare-modal-label-cell, .compare-modal-cell { font-size: 11px; padding: 10px 2px; }
-      .compare-modal-img { width: 55px; height: 65px; }
-      .compare-modal-title { font-size: 12px; margin-top:20px; }
-      .compare-modal-price { font-size: 13px; }
-    }
-    @media (max-width: 700px) {
-      #compareBagsModalV2 {
-        align-items: flex-end !important;
-        justify-content: center !important;
-        background: rgba(0,0,0,0.45);
-        transition: background 0.3s;
-        overflow-y: auto; /* Ensure modal background can scroll if needed */
-      }
-      .compare-modal-content {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        border-radius: 18px 18px 0 0 !important;
-        margin: 0 !important;
-        padding-bottom: env(safe-area-inset-bottom, 16px) !important;
-        position: relative;
-        bottom: 0;
-        left: 0;
-        animation: compareModalSlideUp 0.35s cubic-bezier(0.4,0,0.2,1);
-        box-shadow: 0 -2px 16px rgba(0,0,0,0.12);
-        max-height: 80vh; /* Added for mobile scroll */
-        overflow-y: auto;  /* Added for mobile scroll */
-      }
-      @keyframes compareModalSlideUp {
-        from { transform: translateY(100%); }
-        to   { transform: translateY(0); }
-      }
-    }
-    @media (max-width: 700px) {
-      .compare-modal-content {
-        max-height: 80vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-    }
-    </style>
-    <div id="compareBagsModalV2">
-      <div class="compare-modal-content">
-        <button class="compare-modal-close" onclick="closeCompareBagsModalV2()">&times;</button>
-        <div class="compare-modal-header">
-          <h2 class="compare-modal-title">Compare</h2>
-        </div>
-        <div class="compare-modal-tabs">
-          <button class="compare-modal-tab active" id="compareTabProduct" onclick="switchCompareTab('product')">Product</button>
-          <button class="compare-modal-tab" id="compareTabModel" onclick="switchCompareTab('model')">On model</button>
-        </div>
-        <div class="compare-modal-grid">
-          <div class="compare-modal-labels">
-            <div class="compare-modal-label">Size</div>
-            <!-- <div class="compare-modal-divider"></div> -->
-            <div class="compare-modal-label">Features</div>
-            <!-- <div class="compare-modal-divider"></div> -->
-            <div class="compare-modal-label">Color</div>
-            <!-- <div class="compare-modal-divider"></div> -->
-            <div class="compare-modal-label">Price</div>
-          </div>
-          <div id="compareBagsGridWrap" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
-            <!-- Grid will be rendered here -->
-          </div>
-        </div>
-      </div>
-    </div>
-    <script>
-    function openCompareBagsModalV2() {
-      const modal = document.getElementById('compareBagsModalV2');
-      const content = modal.querySelector('.compare-modal-content');
-      modal.style.display = 'flex';
-      // Reset animation for mobile
-      if (window.innerWidth < 700 && content) {
-        content.style.animation = 'none';
-        void content.offsetWidth; // trigger reflow
-        content.style.animation = null;
-      }
-      renderCompareBagsTable('product');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeCompareBagsModalV2() {
-      document.getElementById('compareBagsModalV2').style.display = 'none';
-      document.body.style.overflow = '';
-    }
-    function switchCompareTab(tab) {
-      document.getElementById('compareTabProduct').classList.toggle('active', tab==='product');
-      document.getElementById('compareTabModel').classList.toggle('active', tab==='model');
-      renderCompareBagsTable(tab);
-    }
-    // Replace this with your actual product data logic
-    function renderCompareBagsTable(tab) {
-      const products = [
-        {
-          image: "{{ product.featured_image | img_url: '300x300' }}",
-          title: "{{ product.title }}",
-          specs: "17.8\" x 12.0\" x 6.7\"",
-          capacity: "23L",
-          features: ['Water Bottle Pocket', 'Laptop Pocket', 'Trolley Sleeve', 'Carry-On Size', 'Phone Pocket'],
-          colors: ['#000000', '#1a2c2c', '#666666'],
-          price: "{{ product.price | money }}",
-          url: '#',
-          isCurrentProduct: true
-        },
-        {
-          image: "{{ collections.all.products[1].featured_image | img_url: '300x300' }}",
-          title: "{{ collections.all.products[1].title }}",
-          specs: "18.9\" x 12.6\" x 5.9\"",
-          capacity: "25L",
-          features: ['Water Bottle Pocket', 'Laptop Pocket', 'Trolley Sleeve', 'Carry-On Size', 'Phone Pocket'],
-          colors: ['#000000', '#1a2c2c', '#666666', '#cccccc'],
-          price: "{{ collections.all.products[1].price | money }}",
-          url: "{{ collections.all.products[1].url }}",
-          isCurrentProduct: false
-        },
-        {
-          image: "{{ collections.all.products[2].featured_image | img_url: '300x300' }}",
-          title: "{{ collections.all.products[2].title }}",
-          specs: "16.1\" x 11.4\" x 5.5\"",
-          capacity: "16L",
-          features: ['Water Bottle Pocket', 'Laptop Pocket', 'Trolley Sleeve', 'Carry-On Size', 'Phone Pocket'],
-          colors: ['#cccccc', '#000000', '#1a2c2c'],
-          price: "{{ collections.all.products[2].price | money }}",
-          url: "{{ collections.all.products[2].url }}",
-          isCurrentProduct: false
-        }
-      ];
-      // Render products in grid layout
-      let html = '';
-      products.forEach(prod => {
-        html += `
-          <div class="compare-modal-product">
-            <div class="compare-modal-img-wrap">
-              <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
-            </div>
-            
-            <h3 class="compare-modal-product-title">${prod.title}</h3>
-            <div class="compare-modal-specs">
-              <span>${prod.specs}</span>
-              <span class="compare-modal-capacity">${prod.capacity}</span>
-            </div>
-            <ul class="compare-modal-features">
-              ${prod.features.map(feature => `<li>${feature}</li>`).join('')}
-            </ul>
-            <div class="compare-modal-colors">
-              ${prod.colors.map(color => `<div class="compare-modal-color" style="background-color: ${color}"></div>`).join('')}
-            </div>
-            <div class="compare-modal-price">${prod.price}</div>
-                          <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
-                ${prod.isCurrentProduct ? 'Add to Bag' : 'Shop Now'}
-              </a>
-          </div>
-        `;
-      });
-      document.getElementById('compareBagsGridWrap').innerHTML = html;
-    }
-    // Attach to your Compare Bags button
-    document.querySelectorAll('#compareBtnMobile, #compareBtnDesktop, .comparedesktopbtn, .comparemobilebtn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        openCompareBagsModalV2();
-      });
-    });
-    </script>
-    
-    <script>
-    // --- Improved Modal Scroll Lock for Mobile ---
-    let compareModalTouchLock = false;
-    function preventBodyScroll(e) {
-      if (!compareModalTouchLock) return;
-      const modalContent = document.querySelector('.compare-modal-content');
-      if (!modalContent) return;
-      if (!modalContent.contains(e.target)) {
-        e.preventDefault();
-        return;
-      }
-      // Allow scroll inside modal content if scrollable
-      if (modalContent.scrollHeight > modalContent.clientHeight) {
-        return;
-      }
-      // If not scrollable, prevent
-      e.preventDefault();
-    }
-    function enableCompareModalScrollLock() {
-      compareModalTouchLock = true;
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('touchmove', preventBodyScroll, { passive: false });
-      document.addEventListener('wheel', preventBodyScroll, { passive: false });
-    }
-    function disableCompareModalScrollLock() {
-      compareModalTouchLock = false;
-      document.body.style.overflow = '';
-      document.removeEventListener('touchmove', preventBodyScroll, { passive: false });
-      document.removeEventListener('wheel', preventBodyScroll, { passive: false });
-    }
-    const origOpenCompareBagsModalV2 = window.openCompareBagsModalV2;
-    window.openCompareBagsModalV2 = function() {
-      if (typeof origOpenCompareBagsModalV2 === 'function') origOpenCompareBagsModalV2();
-      enableCompareModalScrollLock();
-    };
-    const origCloseCompareBagsModalV2 = window.closeCompareBagsModalV2;
-    window.closeCompareBagsModalV2 = function() {
-      if (typeof origCloseCompareBagsModalV2 === 'function') origCloseCompareBagsModalV2();
-      disableCompareModalScrollLock();
-    };
-    </script>
+
     
     <style>
     /* ===================== DESKTOP PRODUCT PAGE FONT & STYLE CHANGES ===================== */
@@ -5621,15 +5230,7 @@ let globalTouchManager = {
         font-size: 16px !important;
         font-weight: 400 !important;
       }
-      /* Compare Bags button */
-      .comparedesktopbtn, #compareBtnDesktop {
-        font-size: 15px !important;
-        padding: 5px 14px !important;
-        font-weight: 400 !important;
-        position: relative !important;
-        z-index: 100 !important;
-        pointer-events: auto !important;
-      }
+
       /* Add to bag button */
       #AddToCart, #MobileAddToCart {
         font-size: 16px !important;
@@ -6140,3 +5741,6 @@ function adjustMobileReviewMargin() {
 window.addEventListener('DOMContentLoaded', adjustMobileReviewMargin);
 window.addEventListener('resize', adjustMobileReviewMargin);
 </script>
+
+<!-- Compare Bags Modal -->
+{% render 'compare-bags-modal' %}
