@@ -1585,6 +1585,9 @@
 
     </div>
     
+    <!-- Compare Bags Modal - Load immediately after main content -->
+    {% render 'compare-bags-modal' %}
+    
     <style>
     /* Styles remain largely the same, ensure .desktop-grid adapts if fewer than 6 items */
     /* For example, if only one child */
@@ -5741,6 +5744,3 @@ function adjustMobileReviewMargin() {
 window.addEventListener('DOMContentLoaded', adjustMobileReviewMargin);
 window.addEventListener('resize', adjustMobileReviewMargin);
 </script>
-
-<!-- Compare Bags Modal -->
-{% render 'compare-bags-modal' %}
