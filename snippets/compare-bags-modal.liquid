@@ -529,17 +529,17 @@ const compareProductsData = {
     price: "{{ product.price | money | default: '$0.00' }}",
     url: "{{ product.url | default: '#' }}",
     isCurrentProduct: true,
-    // Dynamic specs from metafields with fallbacks
-    capacity: "{{ product.metafields.custom.comparebag_capacity | strip_html | default: '20L' }}",
-    dimensions: "{{ product.metafields.custom.comparebag_dimensions | strip_html | default: '19\" x 18\" x 4\"' }}",
-    weight: "{{ product.metafields.custom.comparebag_weight | strip_html | default: '2.5lbs' }}",
-    fabric: "{{ product.metafields.custom.comparebag_fabric | strip_html | default: '420D Cordura Polycarbonate Nylon' }}",
-    // Features from metafields
-    features: "{{ product.metafields.custom.comparebag_features | default: 'Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy' }}",
-    // Tech specs from metafields
-    techSpecs: "{{ product.metafields.custom.comparebag_tech_specs | default: 'Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}",
-    // Overview from metafields
-    overview: "{{ product.metafields.custom.comparebag_overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
+    // Dynamic specs from current variant metafields with fallbacks
+    capacity: "{{ current_variant.metafields.custom.comparebag_capacity | strip_html | default: '20L' }}",
+    dimensions: "{{ current_variant.metafields.custom.comparebag_dimensions | strip_html | default: '19\" x 18\" x 4\"' }}",
+    weight: "{{ current_variant.metafields.custom.comparebag_weight | strip_html | default: '2.5lbs' }}",
+    fabric: "{{ current_variant.metafields.custom.comparebag_fabric | strip_html | default: '420D Cordura Polycarbonate Nylon' }}",
+    // Features from current variant metafields
+    features: "{{ current_variant.metafields.custom.comparebag_features | default: 'Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy' }}",
+    // Tech specs from current variant metafields
+    techSpecs: "{{ current_variant.metafields.custom.comparebag_tech_specs | default: 'Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}",
+    // Overview from current variant metafields
+    overview: "{{ current_variant.metafields.custom.comparebag_overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
     // Available colors/variants
     colors: [
       {% for variant in product.variants %}
