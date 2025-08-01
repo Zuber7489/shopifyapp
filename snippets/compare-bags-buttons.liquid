@@ -1,0 +1,18 @@
+{% comment %}
+  Compare Bags Buttons Snippet
+  This snippet contains the compare bags buttons for both mobile and desktop
+  
+  Usage: {% render 'compare-bags-buttons' %}
+{% endcomment %}
+
+<!-- Mobile Compare Bags Button -->
+<div class="mobile-compare-review" style="display: flex; flex-direction: column; align-items: flex-end; min-width: 130px; display:none;">
+  <button class="comparemobilebtn" id="compareBtnMobile" style="border: 2px solid #2f7d7d; color: #2f7d7d; background: transparent; padding: 6px 16px; border-radius: 20px; font-size: 18px; cursor: pointer; margin-bottom: 6px; position: relative; z-index: 100;" onclick="openCompareBagsModalV2()">
+    Compare bags
+  </button>
+</div>
+
+<!-- Desktop Compare Bags Button -->
+<button id="compareBtnDesktop" class="comparedesktopbtn" style="border: 2px solid #2f7d7d; color: #2f7d7d; background: transparent; padding: 6px 16px; border-radius: 20px; font-size: 18px; cursor: pointer; margin: 0; position: relative; z-index: 100; pointer-events: auto; display:none;" onclick="openCompareBagsModalV2()">
+  Compare bags
+</button> 

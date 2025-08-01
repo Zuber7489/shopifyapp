@@ -1,0 +1,697 @@
+{% comment %}
+  Compare Bags Modal Snippet
+  This snippet contains all the compare bags functionality including:
+  - Modal HTML structure
+  - CSS styles
+  - JavaScript functionality
+  - Event handlers
+  
+  Usage: {% render 'compare-bags-modal' %}
+{% endcomment %}
+
+<!-- Enhanced Compare Bags Modal (Exact UI) -->
+<style>
+#compareBagsModalV2 {
+  display: none; 
+  position: fixed; 
+  z-index: 10001; 
+  left: 0; 
+  top: 0; 
+  width: 100vw; 
+  height: 100vh;
+  background: rgba(0,0,0,0.45); 
+  overflow: auto; 
+  align-items: center; 
+  justify-content: center;
+}
+
+.compare-modal-content {
+  background: #fff; 
+  max-width: 800px; 
+  width: 95vw; 
+  margin: 20px auto; 
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08); 
+  padding: 20px; 
+  position: relative;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.compare-modal-close {
+  position: absolute; 
+  top: 16px; 
+  right: 16px; 
+  background: none; 
+  border: none; 
+  font-size: 24px; 
+  color: #666; 
+  cursor: pointer;
+}
+
+.compare-modal-header {
+  text-align: center; 
+  margin-bottom: 16px;
+}
+
+.compare-modal-title {
+  font-size: 16px; 
+  font-weight: 500; 
+  color: #333; 
+  margin: 0;
+}
+
+.compare-modal-tabs {
+  display: flex; 
+  margin: 16px 20px; 
+  background: #f5f5f5; 
+  border-radius: 20px; 
+  padding: 3px;
+}
+
+.compare-modal-tab {
+  flex: 1; 
+  text-align: center; 
+  padding: 8px 16px; 
+  font-size: 14px; 
+  font-weight: 500; 
+  color: #666;
+  background: none; 
+  border: none; 
+  cursor: pointer; 
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.compare-modal-tab.active {
+  background: #4a6f64; 
+  color: #fff;
+}
+
+.compare-modal-grid {
+  display: flex;
+  gap: 24px;
+  padding: 0;
+}
+
+#compareBagsGridWrap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px !important;
+  flex-grow: 1;
+}
+
+.compare-modal-labels {
+  text-align: right;
+  font-size: 13px;
+  color: #B8860B;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding-top: 140px;
+  position: sticky;
+  top: 0;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.compare-modal-label {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  transform: rotate(-90deg);
+  margin-top: 13px;
+}
+
+.compare-modal-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 12px 0;
+  width: 100%;
+}
+
+.compare-modal-product {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.compare-modal-img-wrap {
+  margin-bottom: 0;
+  background: #f8f8f8;
+  border-radius: 6px;
+  padding: 15px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compare-modal-img {
+  width: 100%; 
+  height: 100%;
+  object-fit: contain;
+}
+
+.compare-modal-product-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  order: 1;
+}
+
+.compare-modal-specs {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  order: 2;
+}
+
+.compare-modal-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  font-size: 11px;
+  color: #666;
+  min-height: 120px;
+  order: 3;
+}
+
+.compare-modal-features li {
+  margin-bottom: 3px; 
+  position: relative; 
+  padding-left: 10px;
+}
+
+.compare-modal-features li:before {
+  content: '-'; 
+  position: absolute; 
+  left: 0;
+}
+
+.compare-modal-capacity {
+  font-size: 12px; 
+  color: #999; 
+  margin: 8px 0;
+}
+
+.compare-modal-colors {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin: 0;
+  order: 4;
+}
+
+.compare-modal-color {
+  width: 14px; 
+  height: 14px; 
+  border-radius: 50%; 
+  border: 1px solid rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.compare-modal-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  order: 5;
+}
+
+.compare-modal-button {
+  order: 6;
+  margin-top: 4px;
+}
+
+.compare-modal-button {
+  display: inline-block; 
+  padding: 6px 16px; 
+  border-radius: 16px; 
+  font-size: 12px;
+  font-weight: 500; 
+  text-decoration: none; 
+  cursor: pointer; 
+  min-width: 80px;
+}
+
+.compare-modal-button.primary {
+  background: #1a2c2c; 
+  color: white; 
+  border: none;
+}
+
+.compare-modal-button.secondary {
+  background: white; 
+  color: #1a2c2c; 
+  border: 1px solid #e0e0e0;
+}
+
+.compare-modal-grid { 
+  align-items: stretch; 
+}
+
+@media (max-width: 480px) {
+  .compare-modal-content { 
+    margin: 12px; 
+    padding: 12px 0; 
+  }
+  .compare-modal-grid { 
+    gap: 12px; 
+    padding: 0 12px; 
+    margin-bottom: 12px; 
+  }
+  .compare-modal-product-title { 
+    font-size: 9px; 
+  }
+  .compare-modal-specs, .compare-modal-features { 
+    font-size: 10px; 
+  }
+}
+
+@media (max-width: 700px) {
+  .compare-modal-content { 
+    max-width: 99vw; 
+    padding: 0 0 18px 0; 
+  }
+  .compare-modal-table { 
+    grid-template-columns: 80px repeat(3, 1fr); 
+    padding: 0 4px; 
+  }
+  .compare-modal-label-cell, .compare-modal-cell { 
+    font-size: 11px; 
+    padding: 10px 2px; 
+  }
+  .compare-modal-img { 
+    width: 55px; 
+    height: 65px; 
+  }
+  .compare-modal-title { 
+    font-size: 12px; 
+    margin-top:20px; 
+  }
+  .compare-modal-price { 
+    font-size: 13px; 
+  }
+}
+
+@media (max-width: 700px) {
+  #compareBagsModalV2 {
+    align-items: flex-end !important;
+    justify-content: center !important;
+    background: rgba(0,0,0,0.45);
+    transition: background 0.3s;
+    overflow-y: auto;
+  }
+  .compare-modal-content {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 18px 18px 0 0 !important;
+    margin: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 16px) !important;
+    position: relative;
+    bottom: 0;
+    left: 0;
+    animation: compareModalSlideUp 0.35s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 -2px 16px rgba(0,0,0,0.12);
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  @keyframes compareModalSlideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+}
+
+@media (max-width: 700px) {
+  .compare-modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Compare Bags button styles */
+.comparemobilebtn {
+  border: 2px solid #2f7d7d; 
+  color: #2f7d7d; 
+  background: transparent; 
+  padding: 6px 16px; 
+  border-radius: 20px; 
+  font-size: 18px; 
+  cursor: pointer; 
+  margin-bottom: 6px; 
+  position: relative; 
+  z-index: 100;
+}
+
+.comparedesktopbtn {
+  border: 2px solid #2f7d7d; 
+  color: #2f7d7d; 
+  background: transparent; 
+  padding: 6px 16px; 
+  border-radius: 20px; 
+  font-size: 18px; 
+  cursor: pointer; 
+  margin: 0; 
+  position: relative; 
+  z-index: 100; 
+  pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+  .comparemobilebtn {
+    display: block !important;
+    margin-right: 0 !important;
+    font-size: 13px !important;
+    padding: 4px 8px !important;
+  }
+  
+  .comparedesktopbtn {
+    display: none !important;
+  }
+  
+  .mobile-compare-review {
+    display: flex !important;
+    margin-top: 24px !important;
+    min-width: 129px !important;
+  }
+}
+
+@media (min-width: 901px) {
+  .comparedesktopbtn {
+    display: block;
+    font-size: 15px !important;
+    padding: 5px 14px !important;
+    font-weight: 400 !important;
+    position: relative !important;
+    z-index: 100 !important;
+    pointer-events: auto !important;
+  }
+  
+  .mobile-compare-review {
+    display: none !important;
+  }
+  
+  .comparemobilebtn {
+    display: none !important;
+  }
+}
+
+@media (max-width: 375px) {
+  .mobile-compare-review {
+    display: flex !important;
+    margin-top: -96px !important;
+    min-width: 305px !important;
+  }
+}
+</style>
+
+<!-- Compare Bags Modal HTML -->
+<div id="compareBagsModalV2">
+  <div class="compare-modal-content">
+    <button class="compare-modal-close" onclick="closeCompareBagsModalV2()">&times;</button>
+    <div class="compare-modal-header">
+      <h2 class="compare-modal-title">Compare</h2>
+    </div>
+    <div class="compare-modal-tabs">
+      <button class="compare-modal-tab active" id="compareTabProduct" onclick="switchCompareTab('product')">Product</button>
+      <button class="compare-modal-tab" id="compareTabModel" onclick="switchCompareTab('model')">On model</button>
+    </div>
+    <div class="compare-modal-grid">
+      <div class="compare-modal-labels">
+        <div class="compare-modal-label">Size</div>
+        <div class="compare-modal-label">Features</div>
+        <div class="compare-modal-label">Color</div>
+        <div class="compare-modal-label">Price</div>
+      </div>
+      <div id="compareBagsGridWrap" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+        <!-- Grid will be rendered here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Compare Bags JavaScript -->
+<script>
+// Dynamic product data from Shopify
+const compareProductsData = {
+  currentProduct: {
+    id: {{ product.id }},
+    title: "{{ product.title | escape }}",
+    image: "{{ product.featured_image | img_url: '300x300' }}",
+    price: "{{ product.price | money }}",
+    url: "{{ product.url }}",
+    isCurrentProduct: true,
+    // Dynamic specs from metafields or product tags
+    capacity: "{{ product.metafields.custom.capacity | default: product.tags | where: 'capacity' | first | remove: 'capacity-' }}",
+    dimensions: "{{ product.metafields.custom.dimensions | default: product.tags | where: 'dimensions' | first | remove: 'dimensions-' }}",
+    weight: "{{ product.metafields.custom.weight | default: product.tags | where: 'weight' | first | remove: 'weight-' }}",
+    fabric: "{{ product.metafields.custom.fabric | default: product.tags | where: 'fabric' | first | remove: 'fabric-' }}",
+    // Features from metafields or product description
+    features: [
+      {% if product.metafields.custom.features %}
+        {% assign features = product.metafields.custom.features | split: ',' %}
+        {% for feature in features %}
+          "{{ feature | strip }}",
+        {% endfor %}
+      {% else %}
+        // Fallback features based on product type or tags
+        {% if product.tags contains 'water-bottle-pocket' %}"Water Bottle Pocket",{% endif %}
+        {% if product.tags contains 'laptop-pocket' %}"Laptop Pocket",{% endif %}
+        {% if product.tags contains 'trolley-sleeve' %}"Trolley Sleeve",{% endif %}
+        {% if product.tags contains 'carry-on' %}"Carry-On Size",{% endif %}
+        {% if product.tags contains 'phone-pocket' %}"Phone Pocket",{% endif %}
+        {% if product.tags contains 'passport-pocket' %}"Hidden Passport Pocket",{% endif %}
+        {% if product.tags contains 'waterproof' %}"Waterproof",{% endif %}
+        {% if product.tags contains 'zippers' %}"Zippers",{% endif %}
+        {% if product.tags contains 'tech-caddy' %}"Tech Caddy",{% endif %}
+      {% endif %}
+    ],
+    // Tech specs from metafields
+    techSpecs: {
+      siliconCoating: "{{ product.metafields.custom.silicon_coating | default: 'Provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric.' }}",
+      coalPUCoating: "{{ product.metafields.custom.coal_pu_coating | default: 'Makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}"
+    },
+    // Overview from metafields
+    overview: "{{ product.metafields.custom.overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
+    // Available colors/variants
+    colors: [
+      {% for variant in product.variants %}
+        {% if variant.option1 contains 'Color' or variant.option1 contains 'color' %}
+          "{{ variant.option1 }}",
+        {% endif %}
+      {% endfor %}
+    ]
+  },
+  
+  // Get related products for comparison
+  relatedProducts: [
+    {% assign compare_collection = collections.all %}
+    {% for product in compare_collection.products limit: 3 %}
+      {% unless product.id == current_product.id %}
+        {
+          id: {{ product.id }},
+          title: "{{ product.title | escape }}",
+          image: "{{ product.featured_image | img_url: '300x300' }}",
+          price: "{{ product.price | money }}",
+          url: "{{ product.url }}",
+          isCurrentProduct: false,
+          capacity: "{{ product.metafields.custom.capacity | default: product.tags | where: 'capacity' | first | remove: 'capacity-' }}",
+          dimensions: "{{ product.metafields.custom.dimensions | default: product.tags | where: 'dimensions' | first | remove: 'dimensions-' }}",
+          weight: "{{ product.metafields.custom.weight | default: product.tags | where: 'weight' | first | remove: 'weight-' }}",
+          fabric: "{{ product.metafields.custom.fabric | default: product.tags | where: 'fabric' | first | remove: 'fabric-' }}",
+          features: [
+            {% if product.metafields.custom.features %}
+              {% assign features = product.metafields.custom.features | split: ',' %}
+              {% for feature in features %}
+                "{{ feature | strip }}",
+              {% endfor %}
+            {% else %}
+              {% if product.tags contains 'water-bottle-pocket' %}"Water Bottle Pocket",{% endif %}
+              {% if product.tags contains 'laptop-pocket' %}"Laptop Pocket",{% endif %}
+              {% if product.tags contains 'trolley-sleeve' %}"Trolley Sleeve",{% endif %}
+              {% if product.tags contains 'carry-on' %}"Carry-On Size",{% endif %}
+              {% if product.tags contains 'phone-pocket' %}"Phone Pocket",{% endif %}
+              {% if product.tags contains 'passport-pocket' %}"Hidden Passport Pocket",{% endif %}
+              {% if product.tags contains 'waterproof' %}"Waterproof",{% endif %}
+              {% if product.tags contains 'zippers' %}"Zippers",{% endif %}
+              {% if product.tags contains 'tech-caddy' %}"Tech Caddy",{% endif %}
+            {% endif %}
+          ],
+          techSpecs: {
+            siliconCoating: "{{ product.metafields.custom.silicon_coating | default: 'Provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric.' }}",
+            coalPUCoating: "{{ product.metafields.custom.coal_pu_coating | default: 'Makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.' }}"
+          },
+          overview: "{{ product.metafields.custom.overview | default: 'Premium quality bag designed for modern lifestyle.' }}",
+          colors: [
+            {% for variant in product.variants %}
+              {% if variant.option1 contains 'Color' or variant.option1 contains 'color' %}
+                "{{ variant.option1 }}",
+              {% endif %}
+            {% endfor %}
+          ]
+        },
+      {% endunless %}
+    {% endfor %}
+  ]
+};
+
+// Compare Bags Modal Functions
+function openCompareBagsModalV2() {
+  const modal = document.getElementById('compareBagsModalV2');
+  const content = modal.querySelector('.compare-modal-content');
+  modal.style.display = 'flex';
+  
+  // Reset animation for mobile
+  if (window.innerWidth < 700 && content) {
+    content.style.animation = 'none';
+    void content.offsetWidth; // trigger reflow
+    content.style.animation = null;
+  }
+  
+  renderCompareBagsTable('product');
+  document.body.style.overflow = 'hidden';
+  enableCompareModalScrollLock();
+}
+
+function closeCompareBagsModalV2() {
+  document.getElementById('compareBagsModalV2').style.display = 'none';
+  document.body.style.overflow = '';
+  disableCompareModalScrollLock();
+}
+
+function switchCompareTab(tab) {
+  document.getElementById('compareTabProduct').classList.toggle('active', tab === 'product');
+  document.getElementById('compareTabModel').classList.toggle('active', tab === 'model');
+  renderCompareBagsTable(tab);
+}
+
+// Dynamic product data and rendering logic
+function renderCompareBagsTable(tab) {
+  // Combine current product with related products
+  const products = [compareProductsData.currentProduct, ...compareProductsData.relatedProducts];
+  
+  // Render products in grid layout
+  let html = '';
+  products.forEach(prod => {
+    // Generate specs string
+    const specs = [];
+    if (prod.dimensions) specs.push(prod.dimensions);
+    if (prod.weight) specs.push(prod.weight);
+    const specsString = specs.join(', ');
+    
+    // Generate features HTML
+    const featuresHtml = prod.features && prod.features.length > 0 
+      ? prod.features.map(feature => `<li>${feature}</li>`).join('')
+      : '<li>Premium quality construction</li>';
+    
+    // Generate colors HTML
+    const colorsHtml = prod.colors && prod.colors.length > 0
+      ? prod.colors.map(color => `<div class="compare-modal-color" title="${color}"></div>`).join('')
+      : '<div class="compare-modal-color" style="background-color: #000000"></div>';
+    
+    html += `
+      <div class="compare-modal-product">
+        <div class="compare-modal-img-wrap">
+          <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
+        </div>
+        
+        <h3 class="compare-modal-product-title">${prod.title}</h3>
+        <div class="compare-modal-specs">
+          ${prod.capacity ? `<span class="compare-modal-capacity">${prod.capacity}</span>` : ''}
+          ${specsString ? `<span>${specsString}</span>` : ''}
+        </div>
+        <ul class="compare-modal-features">
+          ${featuresHtml}
+        </ul>
+        <div class="compare-modal-colors">
+          ${colorsHtml}
+        </div>
+        <div class="compare-modal-price">${prod.price}</div>
+        <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
+          ${prod.isCurrentProduct ? 'Add to Bag' : 'Shop Now'}
+        </a>
+      </div>
+    `;
+  });
+  
+  document.getElementById('compareBagsGridWrap').innerHTML = html;
+}
+
+// Mobile scroll lock functionality
+let compareModalTouchLock = false;
+
+function preventBodyScroll(e) {
+  if (!compareModalTouchLock) return;
+  const modalContent = document.querySelector('.compare-modal-content');
+  if (!modalContent) return;
+  
+  if (!modalContent.contains(e.target)) {
+    e.preventDefault();
+    return;
+  }
+  
+  // Allow scroll inside modal content if scrollable
+  if (modalContent.scrollHeight > modalContent.clientHeight) {
+    return;
+  }
+  
+  // If not scrollable, prevent
+  e.preventDefault();
+}
+
+function enableCompareModalScrollLock() {
+  compareModalTouchLock = true;
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('touchmove', preventBodyScroll, { passive: false });
+  document.addEventListener('wheel', preventBodyScroll, { passive: false });
+}
+
+function disableCompareModalScrollLock() {
+  compareModalTouchLock = false;
+  document.body.style.overflow = '';
+  document.removeEventListener('touchmove', preventBodyScroll, { passive: false });
+  document.removeEventListener('wheel', preventBodyScroll, { passive: false });
+}
+
+// Initialize event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Attach to Compare Bags buttons
+  document.querySelectorAll('#compareBtnMobile, #compareBtnDesktop, .comparedesktopbtn, .comparemobilebtn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      openCompareBagsModalV2();
+    });
+  });
+  
+  // Close modal when clicking outside
+  document.getElementById('compareBagsModalV2').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeCompareBagsModalV2();
+    }
+  });
+  
+  // Close modal with Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('compareBagsModalV2');
+      if (modal.style.display === 'flex') {
+        closeCompareBagsModalV2();
+      }
+    }
+  });
+});
+
+// Make functions globally available
+window.openCompareBagsModalV2 = openCompareBagsModalV2;
+window.closeCompareBagsModalV2 = closeCompareBagsModalV2;
+window.switchCompareTab = switchCompareTab;
+</script> 
