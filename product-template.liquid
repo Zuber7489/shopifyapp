@@ -304,6 +304,14 @@
     {% assign current_variant = product.selected_or_first_available_variant %}
     {% assign featured_image = current_variant.featured_image | default: product.featured_image %}
     
+    <!-- Dynamic Hero Section - Product Specific -->
+    {% if product.metafields.custom.hero_content %}
+      {% section 'dynamic-hero-section' %}
+    {% endif %}
+    
+    <!-- Compare Bags Modal - Load after current_variant is set -->
+    {% render 'compare-bags-modal' %}
+    
     <div class="containerbb" style="margin: 0 auto; max-width: 100%; margin-top:34px;">
     
       <div class="product-layout" style="display: grid; grid-template-columns: 2.2fr 1fr !important; gap: 20px !important; margin-top: 30px; margin-bottom:20px; padding: 0 15px;">
@@ -1011,6 +1019,13 @@
     </div>
     </div>
     
+    <!-- Dynamic Hero Section - After 5-Star Functions -->
+    {% if product.metafields.custom.hero_content %}
+      <div style="margin-top: 40px;">
+        {% section 'dynamic-hero-section' %}
+      </div>
+    {% endif %}
+    
     <style>
     .fabricrowflex{
       backrgound-color:red;
@@ -1211,7 +1226,7 @@
                 margin-top: 24px !important;
         min-width: 129px !important;
       }
-      
+    
       /* Mobile compare button visibility */
       .comparedesktopbtn {
         display: none !important;
@@ -1219,7 +1234,7 @@
       .comparemobilebtn {
         display: block !important;
         font-size: 13px !important;
-        padding: 4px 8px !important;
+            padding: 4px 8px !important;
       }
       .desktop-review-section {
         /* display: none !important; */
