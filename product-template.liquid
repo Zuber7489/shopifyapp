@@ -304,10 +304,7 @@
     {% assign current_variant = product.selected_or_first_available_variant %}
     {% assign featured_image = current_variant.featured_image | default: product.featured_image %}
     
-    <!-- Dynamic Hero Section - Product Specific -->
-    {% if product.metafields.custom.hero_content %}
-      {% section 'dynamic-hero-section' %}
-    {% endif %}
+
     
     <!-- Compare Bags Modal - Load after current_variant is set -->
     {% render 'compare-bags-modal' %}
