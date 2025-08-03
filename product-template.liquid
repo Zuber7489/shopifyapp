@@ -622,7 +622,7 @@
       
       
     <!-- Compare Button and Reviews -->
-    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-bottom: 16px;">
+    <div class="lower-compare-reviews-section" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-bottom: 16px;">
       {% render 'compare-bags-buttons' %}
       <div class="review-fix" style="display: flex; align-items: center; gap: 8px; color: #2f6f6f;">
         <div class="reviewadjust" style="font-size: 14px; color: #444; cursor: pointer;" onclick="scrollToReviews()">
@@ -5737,6 +5737,11 @@ let globalTouchManager = {
     }
     @media (max-width: 900px) {
       .mobile-only-reviews { display: block !important; }
+      
+      /* Hide the lower Compare Button and Reviews section on mobile */
+      .lower-compare-reviews-section {
+        display: none !important;
+      }
     }
   </style>
 <script>
