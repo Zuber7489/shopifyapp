@@ -105,19 +105,20 @@
   text-align: right;
   font-size: 13px;
   color: #B8860B;
+  font-weight: 600;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 40px;
   padding-top: 140px;
   position: sticky;
   top: 0;
-  width: 20px;
+  width: 80px;
   flex-shrink: 0;
 }
 
 /* Fabric tab has more labels, so adjust gap */
 .compare-modal-labels.fabric-tab {
-  gap: 25px;
+  gap: 35px;
 }
 
 .compare-modal-label {
@@ -125,8 +126,10 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  transform: rotate(-90deg);
-  margin-top: 13px;
+  font-weight: 600;
+  color: #B8860B;
+  transform: none;
+  writing-mode: horizontal-tb;
 }
 
 .compare-modal-divider {
@@ -140,7 +143,8 @@
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  align-items: center;
 }
 
 .compare-modal-img-wrap {
@@ -152,6 +156,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
 }
 
 .compare-modal-img {
@@ -161,31 +166,68 @@
 }
 
 .compare-modal-product-title {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: #333;
   margin: 0;
   order: 1;
+  text-align: center;
 }
 
 .compare-modal-specs {
-  font-size: 11px;
+  font-size: 12px;
   color: #666;
   margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 20px;
+  order: 2;
+  text-align: center;
+  width: 100%;
+}
+
+.compare-modal-spec-item {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  order: 2;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0;
+  gap: 4px;
+}
+
+.compare-modal-spec-value {
+  color: #333;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+}
+
+.compare-modal-specs-golden-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 20px;
+  margin-top: 0;
+  width: 100%;
+}
+
+.compare-modal-golden-label {
+  font-size: 10px;
+  color: #B8860B;
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
 }
 
 .compare-modal-features {
   padding: 0;
   margin: 0;
   text-align: left;
-  font-size: 11px;
+  font-size: 12px;
   color: #666;
   min-height: 120px;
   order: 3;
+  width: 100%;
 }
 
 .compare-modal-features ul {
@@ -195,15 +237,18 @@
 }
 
 .compare-modal-features li {
-  margin-bottom: 3px; 
+  margin-bottom: 4px; 
   position: relative; 
-  padding-left: 10px;
+  padding-left: 12px;
+  line-height: 1.4;
 }
 
 .compare-modal-features li:before {
-  content: '-'; 
+  content: '•'; 
   position: absolute; 
   left: 0;
+  color: #333;
+  font-weight: bold;
 }
 
 .compare-modal-features p {
@@ -228,56 +273,92 @@
   margin: 8px 0;
 }
 
-.compare-modal-colors {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  margin: 0;
+.compare-modal-available-in {
   order: 4;
+  width: 100%;
+  margin-top: 16px;
 }
 
-.compare-modal-color {
-  width: 14px; 
-  height: 14px; 
-  border-radius: 50%; 
-  border: 1px solid rgba(0,0,0,0.1);
-  cursor: pointer;
+.compare-modal-available-in-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  text-align: left;
 }
 
-.compare-modal-price {
+.compare-modal-available-in-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.compare-modal-available-in-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.compare-modal-available-in-thumbnail {
+  width: 40px;
+  height: 40px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+}
+
+.compare-modal-available-in-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.compare-modal-available-in-material {
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+}
+
+.compare-modal-available-in-price {
   font-size: 14px;
   font-weight: 600;
   color: #333;
-  margin: 0;
-  order: 5;
+  margin-left: 8px;
 }
 
 .compare-modal-button {
-  order: 6;
-  margin-top: 4px;
+  order: 5;
+  margin-top: 12px;
 }
 
 .compare-modal-button {
   display: inline-block; 
-  padding: 6px 16px; 
-  border-radius: 16px; 
-  font-size: 12px;
+  padding: 8px 20px; 
+  border-radius: 20px; 
+  font-size: 13px;
   font-weight: 500; 
   text-decoration: none; 
   cursor: pointer; 
-  min-width: 80px;
+  min-width: 100px;
+  transition: all 0.3s ease;
 }
 
 .compare-modal-button.primary {
-  background: #1a2c2c; 
+  background: #2f6f6f; 
   color: white; 
   border: none;
 }
 
 .compare-modal-button.secondary {
   background: white; 
-  color: #1a2c2c; 
-  border: 1px solid #e0e0e0;
+  color: #2f6f6f; 
+  border: 2px solid #2f6f6f;
 }
 
 .compare-modal-grid { 
@@ -286,23 +367,27 @@
 
 /* Fabric tab specific styles */
 .compare-modal-fabric {
-  font-size: 11px;
-  color: #666;
+  font-size: 12px;
+  color: #333;
   margin: 0;
   order: 2;
+  text-align: center;
+  font-weight: 600;
 }
 
 .compare-modal-tech-specs {
-  font-size: 11px;
+  font-size: 12px;
   color: #666;
   margin: 0;
   text-align: left;
   order: 3;
   line-height: 1.4;
+  width: 100%;
 }
 
 .compare-modal-tech-specs p {
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
 }
 
 .compare-modal-tech-specs strong,
@@ -312,16 +397,18 @@
 }
 
 .compare-modal-overview {
-  font-size: 11px;
+  font-size: 12px;
   color: #666;
   margin: 0;
   text-align: left;
   order: 4;
   line-height: 1.4;
+  width: 100%;
 }
 
 .compare-modal-overview p {
   margin: 0 0 8px 0;
+  line-height: 1.5;
 }
 
 .compare-modal-overview strong,
@@ -701,16 +788,14 @@ function switchCompareTab(tab) {
       <div class="compare-modal-label">Specs</div>
       <div class="compare-modal-label">Features</div>
       <div class="compare-modal-label">Available in</div>
-      <div class="compare-modal-label">Price</div>
     `;
   } else if (tab === 'fabric') {
     labels.classList.add('fabric-tab');
     labels.innerHTML = `
       <div class="compare-modal-label">Fabric</div>
       <div class="compare-modal-label">Tech Specs</div>
-      <div class="compare-modal-label">Overview</div>
+      <div class="compare-modal-label">Overall Difference</div>
       <div class="compare-modal-label">Available in</div>
-      <div class="compare-modal-label">Price</div>
     `;
   }
   
@@ -779,22 +864,58 @@ function renderProducts(products, tab) {
     let html = '';
     products.forEach(prod => {
       if (tab === 'size') {
-        // Size tab content
-        const specs = [];
-        if (prod.capacity) specs.push(`Capacity: ${prod.capacity}`);
-        if (prod.dimensions) specs.push(`Dimensions: ${prod.dimensions}`);
-        if (prod.weight) specs.push(`Weight: ${prod.weight}`);
-        const specsString = specs.join('<br>');
+        // Size tab content with structured specs in 2x2 grid (values with golden labels below)
+        const specsHtml = `
+          <div class="compare-modal-spec-item">
+            <span class="compare-modal-spec-value">${prod.capacity || '20L'}</span>
+            <span class="compare-modal-golden-label">Capacity</span>
+          </div>
+          <div class="compare-modal-spec-item">
+            <span class="compare-modal-spec-value">${prod.dimensions || '19" x 18" x 4"'}</span>
+            <span class="compare-modal-golden-label">Dimensions</span>
+          </div>
+          <div class="compare-modal-spec-item">
+            <span class="compare-modal-spec-value">${prod.weight || '2.5lbs'}</span>
+            <span class="compare-modal-golden-label">Weight</span>
+          </div>
+          <div class="compare-modal-spec-item">
+            <span class="compare-modal-spec-value">${prod.price}</span>
+            <span class="compare-modal-golden-label">Price</span>
+          </div>
+        `;
         
-        // Generate features HTML from richtext
-        const featuresHtml = prod.features ? 
-          prod.features : // Rich text already contains HTML
-          '<li>Water bottle pocket</li><li>Luggage pass through</li><li>Laptop compartment</li>';
+        // Generate features HTML with proper bullet points
+        const featuresList = prod.features ? 
+          prod.features.split(',').map(feature => feature.trim()) : 
+          ['Water bottle pocket', 'Luggage pass through', 'Laptop compartment', 'Carry handle', 'Water proof', 'Zippers', 'Tech caddy'];
         
-        // Generate colors HTML
-        const colorsHtml = prod.colors && prod.colors.length > 0
-          ? prod.colors.map(color => `<div class="compare-modal-color" title="${color}" style="background-color: ${color.toLowerCase() === 'black' ? '#000000' : '#808080'}"></div>`).join('')
-          : '<div class="compare-modal-color" style="background-color: #000000"></div><div class="compare-modal-color" style="background-color: #808080"></div>';
+        const featuresHtml = `
+          <ul>
+            ${featuresList.map(feature => `<li>${feature}</li>`).join('')}
+          </ul>
+        `;
+        
+        // Generate Available in section HTML
+        const availableInHtml = `
+          <div class="compare-modal-available-in">
+            <div class="compare-modal-available-in-label">Available in</div>
+            <div class="compare-modal-available-in-content">
+              <div class="compare-modal-available-in-item">
+                <div class="compare-modal-available-in-thumbnail">
+                  <img src="${prod.image}" alt="Carbonate">
+                </div>
+                <div class="compare-modal-available-in-material">Carbonate</div>
+              </div>
+              <div class="compare-modal-available-in-item">
+                <div class="compare-modal-available-in-thumbnail">
+                  <img src="${prod.image}" alt="Ballistic">
+                </div>
+                <div class="compare-modal-available-in-material">Ballistic</div>
+              </div>
+              <div class="compare-modal-available-in-price">${prod.price}</div>
+            </div>
+          </div>
+        `;
         
         html += `
           <div class="compare-modal-product">
@@ -804,28 +925,42 @@ function renderProducts(products, tab) {
             
             <h3 class="compare-modal-product-title">${prod.title}</h3>
             <div class="compare-modal-specs">
-              ${specsString}
+              ${specsHtml}
             </div>
             <div class="compare-modal-features">
               ${featuresHtml}
             </div>
-            <div class="compare-modal-colors">
-              ${colorsHtml}
-            </div>
-            <div class="compare-modal-price">${prod.price}</div>
+            ${availableInHtml}
             <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
               ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
             </a>
           </div>
         `;
       } else if (tab === 'fabric') {
-        // Fabric tab content
-        const fabricHtml = prod.fabric ? prod.fabric : 'Premium fabric';
+        // Fabric tab content with structured layout
+        const fabricHtml = prod.fabric ? prod.fabric : '420D Cordura Polycarbonate Nylon';
         
-        // Generate colors HTML
-        const colorsHtml = prod.colors && prod.colors.length > 0
-          ? prod.colors.map(color => `<div class="compare-modal-color" title="${color}" style="background-color: ${color.toLowerCase() === 'black' ? '#000000' : '#808080'}"></div>`).join('')
-          : '<div class="compare-modal-color" style="background-color: #000000"></div><div class="compare-modal-color" style="background-color: #808080"></div>';
+        // Generate Available in section HTML for fabric tab
+        const availableInHtml = `
+          <div class="compare-modal-available-in">
+            <div class="compare-modal-available-in-label">Available in</div>
+            <div class="compare-modal-available-in-content">
+              <div class="compare-modal-available-in-item">
+                <div class="compare-modal-available-in-thumbnail">
+                  <img src="${prod.image}" alt="Carbonate">
+                </div>
+                <div class="compare-modal-available-in-material">Carbonate</div>
+              </div>
+              <div class="compare-modal-available-in-item">
+                <div class="compare-modal-available-in-thumbnail">
+                  <img src="${prod.image}" alt="Ballistic">
+                </div>
+                <div class="compare-modal-available-in-material">Ballistic</div>
+              </div>
+              <div class="compare-modal-available-in-price">${prod.price}</div>
+            </div>
+          </div>
+        `;
         
         html += `
           <div class="compare-modal-product">
@@ -835,18 +970,16 @@ function renderProducts(products, tab) {
             
             <h3 class="compare-modal-product-title">${prod.title}</h3>
             <div class="compare-modal-fabric">
-              ${fabricHtml}
+              <strong>${fabricHtml}</strong>
             </div>
             <div class="compare-modal-tech-specs">
-              ${prod.techSpecs || 'Premium technical specifications'}
+              <p><strong>Silicon Face Coating:</strong> This coating provides extra weather, strain, abrasion resistance without changing the look and hand feel of the fabric.</p>
+              <p><strong>Coal PU Backside:</strong> This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.</p>
             </div>
             <div class="compare-modal-overview">
-              ${prod.overview || 'Premium quality bag designed for modern lifestyle.'}
+              <p><strong>Overall Difference:</strong> ${prod.overview || 'Has a modern technical aesthetic with a smooth supple feel. Has slightly more structure than our ballistic version, without being stiff and rigid like many PU and TPU coated fabrics. It\'s the ideal choice for adventure enthusiast that want a hybrid option to transition between office and outdoors.'}</p>
             </div>
-            <div class="compare-modal-colors">
-              ${colorsHtml}
-            </div>
-            <div class="compare-modal-price">${prod.price}</div>
+            ${availableInHtml}
             <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
               ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
             </a>
