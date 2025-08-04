@@ -800,9 +800,35 @@ const compareProductsData = {
   })) || [],
   
   // Get fabric variants for comparison - using JSON data
-  fabricVariants: window.productMetafieldsData?.allVariants?.filter(variant => 
-    variant.option2 && (variant.option2.includes('Fabric') || variant.option2.includes('fabric') || variant.option2.includes('Carbonate') || variant.option2.includes('Ballistic') || variant.option2.includes('Nylon') || variant.option2.includes('Cordura'))
-  ).map(variant => ({
+  fabricVariants: window.productMetafieldsData?.allVariants?.filter(variant => {
+    console.log('Checking variant for fabric:', variant.option2, 'option1:', variant.option1);
+    
+    // Check if this variant has a different fabric than the current one
+    const currentVariant = window.productMetafieldsData?.currentVariant;
+    if (!currentVariant) return false;
+    
+    // If option1 is size and option2 is fabric
+    if (variant.option1 === currentVariant.option1 && variant.option2 !== currentVariant.option2) {
+      console.log('Found fabric variant:', variant.option2);
+      return true;
+    }
+    
+    // If option2 is size and option1 is fabric  
+    if (variant.option2 === currentVariant.option2 && variant.option1 !== currentVariant.option1) {
+      console.log('Found fabric variant:', variant.option1);
+      return true;
+    }
+    
+    // Also check for specific fabric keywords
+    return variant.option2 && (
+      variant.option2.includes('Fabric') || 
+      variant.option2.includes('fabric') || 
+      variant.option2.includes('Carbonate') || 
+      variant.option2.includes('Ballistic') || 
+      variant.option2.includes('Nylon') || 
+      variant.option2.includes('Cordura')
+    );
+  }).map(variant => ({
     id: variant.id,
     title: "{{ product.title | escape }} " + variant.option2,
     image: variant.image,
@@ -828,6 +854,7 @@ const compareProductsData = {
 };
 
 console.log('Product data initialized');
+console.log('All variants from JSON:', window.productMetafieldsData?.allVariants?.map(v => ({ id: v.id, option1: v.option1, option2: v.option2 })));
 console.log('Size variants found:', compareProductsData.sizeVariants.length);
 console.log('Fabric variants found:', compareProductsData.fabricVariants.length);
 console.log('Current product:', compareProductsData.currentProduct.title);

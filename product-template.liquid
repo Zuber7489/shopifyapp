@@ -352,6 +352,13 @@
     console.log('=== PRODUCT METAFIELDS DATA LOADED ===');
     console.log('Current variant metafields:', window.productMetafieldsData.currentVariant.metafields);
     console.log('All variants count:', window.productMetafieldsData.allVariants.length);
+    
+    // Debug product options
+    console.log('=== PRODUCT OPTIONS DEBUG ===');
+    {% for option in product.options_with_values %}
+      console.log('Option {{ forloop.index }}: "{{ option.name }}" with values:', {{ option.values | json }});
+    {% endfor %}
+    console.log('=== END PRODUCT OPTIONS DEBUG ===');
     </script>
     
     {% render 'compare-bags-modal' %}
