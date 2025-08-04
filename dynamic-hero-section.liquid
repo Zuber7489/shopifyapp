@@ -22,13 +22,15 @@
                   class="hero-media-content hero-desktop-only" 
                   alt="{{ item.heading | default: product.title }}"
                   loading="eager"
-                  decoding="async">
+                  decoding="async"
+                  onerror="this.style.display='none'; console.log('Image failed to load:', this.src);">
                 <img 
                   src="{{ item.mobile_image }}" 
                   class="hero-media-content hero-mobile-only" 
                   alt="{{ item.heading | default: product.title }}"
                   loading="eager"
-                  decoding="async">
+                  decoding="async"
+                  onerror="this.style.display='none'; console.log('Image failed to load:', this.src);">
               {% elsif item.content_type == 'video' %}
                 <div class="hero-video-container hero-desktop-only">
                   <video 
@@ -227,10 +229,12 @@
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.5s ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
 
   .dynamic-hero-slide:first-child {
@@ -240,7 +244,7 @@
 
   .dynamic-hero-slide.active {
     opacity: 1;
-    z-index: 1;
+    z-index: 2;
   }
 
   .hero-media-wrapper {
@@ -556,26 +560,46 @@
 
     // Initialize slider immediately
     function initSlider() {
-      // Show first slide immediately (CSS already handles this)
-      if (slides.length > 1) {
+      console.log('=== HERO SLIDER INITIALIZATION ===');
+      console.log('Total slides found:', slides.length);
+      console.log('Total dots found:', dots.length);
+      console.log('Auto slide enabled:', autoSlide);
+      console.log('Slide interval:', slideInterval);
+      
+      // Show first slide immediately
+      if (slides.length > 0) {
         slides[0].classList.add('active');
+        slides[0].style.zIndex = '2';
         if (dots.length > 0) dots[0].classList.add('active');
+        currentSlide = 0;
+        console.log('First slide activated');
       }
       
-      // Start auto-slide if enabled
+      // Start auto-slide if enabled and multiple slides
       if (autoSlide && slides.length > 1) {
         startAutoSlide();
+        console.log('Auto-slide started');
       }
+      
+      console.log('=== HERO SLIDER INITIALIZATION COMPLETE ===');
     }
 
     // Show slide
     function showSlide(index) {
+      console.log('Showing slide:', index);
+      
       // Remove active class from all slides and dots
-      slides.forEach(slide => slide.classList.remove('active'));
+      slides.forEach(slide => {
+        slide.classList.remove('active');
+        slide.style.zIndex = '0';
+      });
       dots.forEach(dot => dot.classList.remove('active'));
       
       // Add active class to current slide and dot
-      slides[index].classList.add('active');
+      if (slides[index]) {
+        slides[index].classList.add('active');
+        slides[index].style.zIndex = '2';
+      }
       if (dots[index]) dots[index].classList.add('active');
       
       currentSlide = index;
@@ -608,6 +632,7 @@
     // Event listeners
     if (prevBtn) {
       prevBtn.addEventListener('click', () => {
+        console.log('Previous button clicked');
         prevSlide();
         if (autoSlide) {
           stopAutoSlide();
@@ -618,6 +643,7 @@
 
     if (nextBtn) {
       nextBtn.addEventListener('click', () => {
+        console.log('Next button clicked');
         nextSlide();
         if (autoSlide) {
           stopAutoSlide();
