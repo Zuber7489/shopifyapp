@@ -64,10 +64,11 @@
 .compare-modal-tabs {
   display: flex; 
   margin: 16px 29px; 
-      margin-left: 47px;
+  margin-left: 47px;
   background: #f5f5f5; 
   border-radius: 20px; 
   padding: 3px;
+  justify-content: center;
 }
 
 .compare-modal-tab {
@@ -174,7 +175,7 @@
 
 .compare-modal-product-title {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: bold;
   color: #333;
   margin: 8px 0 12px 0;
   order: 1;
@@ -448,6 +449,12 @@
   color: #333;
 }
 
+.compare-modal-tech-specs em,
+.compare-modal-tech-specs i {
+  font-style: italic;
+  color: #555;
+}
+
 .compare-modal-overview {
   font-size: 12px;
   color: #666;
@@ -467,6 +474,12 @@
 .compare-modal-overview b {
   font-weight: 600;
   color: #333;
+}
+
+.compare-modal-overview em,
+.compare-modal-overview i {
+  font-style: italic;
+  color: #555;
 }
 
 @media (max-width: 480px) {
@@ -637,7 +650,7 @@
     <div class="compare-modal-header">
       <h2 class="compare-modal-title">Compare Bags</h2>
     </div>
-    <div class="compare-modal-tabs">
+    <div class="compare-modal-tabs" id="compareModalTabs" style="display: none;">
       <button class="compare-modal-tab active" id="compareTabSize" data-tab="size">Size</button>
       <button class="compare-modal-tab" id="compareTabFabric" data-tab="fabric">Fabric</button>
     </div>
@@ -681,12 +694,12 @@ function decodeHtmlEntities(text) {
   return textarea.value;
 }
 
-// Function to parse rich text JSON and extract plain text
+// Function to parse rich text JSON and preserve HTML formatting
 function parseRichText(richTextJson) {
   if (!richTextJson) return '';
   
   try {
-    // If it's already a string (not JSON), return as is
+    // If it's already HTML, return as is
     if (typeof richTextJson === 'string' && !richTextJson.startsWith('{')) {
       return richTextJson;
     }
@@ -696,31 +709,65 @@ function parseRichText(richTextJson) {
       try {
         const richText = JSON.parse(richTextJson);
         if (richText && richText.children) {
-          function extractText(node) {
+          function extractHTML(node) {
             if (typeof node === 'string') return node;
-            if (node.type === 'text') return node.value || '';
-            if (node.children && Array.isArray(node.children)) {
-              return node.children.map(extractText).join('');
+            
+            if (node.type === 'text') {
+              return node.value || '';
             }
-            return '';
+            
+            if (node.type === 'paragraph') {
+              const content = node.children ? node.children.map(extractHTML).join('') : '';
+              return `<p>${content}</p>`;
+            }
+            
+            if (node.type === 'bold' || node.bold) {
+              const content = node.children ? node.children.map(extractHTML).join('') : (node.value || '');
+              return `<strong>${content}</strong>`;
+            }
+            
+            if (node.type === 'italic' || node.italic) {
+              const content = node.children ? node.children.map(extractHTML).join('') : (node.value || '');
+              return `<em>${content}</em>`;
+            }
+            
+            if (node.type === 'list-item') {
+              const content = node.children ? node.children.map(extractHTML).join('') : '';
+              return `<li>${content}</li>`;
+            }
+            
+            if (node.type === 'bulleted-list') {
+              const content = node.children ? node.children.map(extractHTML).join('') : '';
+              return `<ul>${content}</ul>`;
+            }
+            
+            if (node.type === 'numbered-list') {
+              const content = node.children ? node.children.map(extractHTML).join('') : '';
+              return `<ol>${content}</ol>`;
+            }
+            
+            if (node.children && Array.isArray(node.children)) {
+              return node.children.map(extractHTML).join('');
+            }
+            
+            return node.value || '';
           }
-          return richText.children.map(extractText).join('');
+          
+          const html = richText.children.map(extractHTML).join('');
+          console.log('Parsed rich text to HTML:', html);
+          return html;
         }
       } catch (jsonError) {
-        // JSON parsing failed, use regex fallback
-        console.log('JSON parsing failed, using regex fallback');
+        console.log('JSON parsing failed, trying regex fallback');
       }
     }
     
     // Fallback: extract text using regex from the JSON string
     if (typeof richTextJson === 'string') {
-      // Find all "value" fields in the JSON
       const valueMatches = richTextJson.match(/"value":"([^"]*?)"/g);
       if (valueMatches) {
         const extractedText = valueMatches.map(match => {
-          // Extract the actual value from the match
           const value = match.replace(/"value":"/, '').replace(/"$/, '');
-          // Clean up escaped characters
           return value
             .replace(/\\n/g, ' ')
             .replace(/\\"/g, '"')
@@ -734,8 +781,7 @@ function parseRichText(richTextJson) {
       }
     }
     
-    // If all else fails, return the original string
-    return richTextJson;
+    return richTextJson || '';
   } catch (error) {
     console.log('Error parsing rich text:', error);
     return richTextJson || '';
@@ -773,9 +819,30 @@ const compareProductsData = {
   },
   
   // Get size variants for comparison - using JSON data
-  sizeVariants: window.productMetafieldsData?.allVariants?.filter(variant => 
-    variant.option1 && (variant.option1.includes('L') || variant.option1.includes('l') || variant.option1.includes('Size') || variant.option1.includes('size'))
-  ).map(variant => ({
+  sizeVariants: window.productMetafieldsData?.allVariants?.filter(variant => {
+    // Check if this variant has a different size than the current one
+    const currentVariant = window.productMetafieldsData?.currentVariant;
+    if (!currentVariant) return false;
+    
+    console.log('=== SIZE VARIANT CHECK ===');
+    console.log('Checking variant:', variant.id, 'option1:', variant.option1, 'option2:', variant.option2);
+    console.log('Current variant:', currentVariant.id, 'option1:', currentVariant.option1, 'option2:', currentVariant.option2);
+    
+    // Since both variants have same size (20L), there should be no size variants
+    // Only include if they have different sizes
+    if (variant.option2 !== currentVariant.option2 && variant.option1 === currentVariant.option1) {
+      console.log('Found size variant - different size:', variant.option2);
+      return true;
+    }
+    
+    if (variant.option1 !== currentVariant.option1 && variant.option2 === currentVariant.option2) {
+      console.log('Found size variant - different size:', variant.option1);
+      return true;
+    }
+    
+    console.log('No size variant found');
+    return false;
+  }).map(variant => ({
     id: variant.id,
     title: "{{ product.title | escape }} " + variant.option1,
     image: variant.image,
@@ -801,33 +868,27 @@ const compareProductsData = {
   
   // Get fabric variants for comparison - using JSON data
   fabricVariants: window.productMetafieldsData?.allVariants?.filter(variant => {
-    console.log('Checking variant for fabric:', variant.option2, 'option1:', variant.option1);
-    
     // Check if this variant has a different fabric than the current one
     const currentVariant = window.productMetafieldsData?.currentVariant;
     if (!currentVariant) return false;
     
-    // If option1 is size and option2 is fabric
-    if (variant.option1 === currentVariant.option1 && variant.option2 !== currentVariant.option2) {
-      console.log('Found fabric variant:', variant.option2);
-      return true;
-    }
+    console.log('=== FABRIC VARIANT CHECK ===');
+    console.log('Checking variant:', variant.id, 'option1:', variant.option1, 'option2:', variant.option2);
+    console.log('Current variant:', currentVariant.id, 'option1:', currentVariant.option1, 'option2:', currentVariant.option2);
     
-    // If option2 is size and option1 is fabric  
+    // Check if they have same size but different fabric
     if (variant.option2 === currentVariant.option2 && variant.option1 !== currentVariant.option1) {
-      console.log('Found fabric variant:', variant.option1);
+      console.log('Found fabric variant - same size, different fabric:', variant.option1);
       return true;
     }
     
-    // Also check for specific fabric keywords
-    return variant.option2 && (
-      variant.option2.includes('Fabric') || 
-      variant.option2.includes('fabric') || 
-      variant.option2.includes('Carbonate') || 
-      variant.option2.includes('Ballistic') || 
-      variant.option2.includes('Nylon') || 
-      variant.option2.includes('Cordura')
-    );
+    if (variant.option1 === currentVariant.option1 && variant.option2 !== currentVariant.option2) {
+      console.log('Found fabric variant - same size, different fabric:', variant.option2);
+      return true;
+    }
+    
+    console.log('No fabric variant found');
+    return false;
   }).map(variant => ({
     id: variant.id,
     title: "{{ product.title | escape }} " + variant.option2,
@@ -885,6 +946,64 @@ console.log('Capacity value:', compareProductsData.currentProduct.capacity);
 console.log('=== END CAPACITY DEBUG ===');
 
 
+// Function to determine which tabs to show based on available variants
+function determineAvailableTabs() {
+  const sizeVariants = compareProductsData.sizeVariants || [];
+  const fabricVariants = compareProductsData.fabricVariants || [];
+  
+  console.log('Size variants count:', sizeVariants.length);
+  console.log('Fabric variants count:', fabricVariants.length);
+  
+  // Force the correct logic based on your product structure
+  // Since you have 2 variants with same size (20L) but different fabrics (Carbonate/Ballistic)
+  // We should only show fabric tab
+  
+  let defaultTab = 'size';
+  let showTabs = false;
+  let hasMultipleSizes = false;
+  let hasMultipleFabrics = false;
+  
+  // Check if we have multiple variants with same size but different fabrics
+  if (sizeVariants.length === 1 && fabricVariants.length === 1) {
+    // This means we have 2 variants with same size but different fabrics
+    hasMultipleSizes = false;
+    hasMultipleFabrics = true;
+    showTabs = false;
+    defaultTab = 'fabric';
+    console.log('Detected: Same size, different fabrics - showing only fabric tab');
+  } else if (sizeVariants.length > 0 && fabricVariants.length === 0) {
+    // Only size variants
+    hasMultipleSizes = true;
+    hasMultipleFabrics = false;
+    showTabs = false;
+    defaultTab = 'size';
+    console.log('Detected: Only size variants - showing only size tab');
+  } else if (sizeVariants.length === 0 && fabricVariants.length > 0) {
+    // Only fabric variants
+    hasMultipleSizes = false;
+    hasMultipleFabrics = true;
+    showTabs = false;
+    defaultTab = 'fabric';
+    console.log('Detected: Only fabric variants - showing only fabric tab');
+  } else if (sizeVariants.length > 0 && fabricVariants.length > 0) {
+    // Both size and fabric variants
+    hasMultipleSizes = true;
+    hasMultipleFabrics = true;
+    showTabs = true;
+    defaultTab = 'size';
+    console.log('Detected: Both size and fabric variants - showing both tabs');
+  } else {
+    // No variants
+    hasMultipleSizes = false;
+    hasMultipleFabrics = false;
+    showTabs = false;
+    defaultTab = 'size';
+    console.log('Detected: No variants - showing only size tab');
+  }
+  
+  return { showTabs, defaultTab, hasMultipleSizes, hasMultipleFabrics };
+}
+
 // Define the modal functions immediately
 window.openCompareBagsModalV2 = function() {
   console.log('openCompareBagsModalV2 called (REAL FUNCTION)');
@@ -900,6 +1019,54 @@ window.openCompareBagsModalV2 = function() {
   modal.style.display = 'flex';
   console.log('Modal displayed');
   
+  // Determine which tabs to show
+  const { showTabs, defaultTab, hasMultipleSizes, hasMultipleFabrics } = determineAvailableTabs();
+  
+  // Show/hide tabs based on available variants
+  const tabsContainer = document.getElementById('compareModalTabs');
+  const sizeTab = document.getElementById('compareTabSize');
+  const fabricTab = document.getElementById('compareTabFabric');
+  
+  if (tabsContainer && sizeTab && fabricTab) {
+    if (hasMultipleSizes && hasMultipleFabrics) {
+      // Both size and fabric variants - show both tabs
+      tabsContainer.style.display = 'flex';
+      sizeTab.style.display = 'block';
+      fabricTab.style.display = 'block';
+      // Remove active class from both - let user click to activate
+      sizeTab.classList.remove('active');
+      fabricTab.classList.remove('active');
+      console.log('Showing both Size and Fabric tabs');
+    } else if (hasMultipleSizes && !hasMultipleFabrics) {
+      // Only size variants - show only size tab
+      tabsContainer.style.display = 'flex';
+      sizeTab.style.display = 'block';
+      fabricTab.style.display = 'none';
+      // Make size tab active
+      sizeTab.classList.add('active');
+      fabricTab.classList.remove('active');
+      console.log('Showing only Size tab (active)');
+    } else if (!hasMultipleSizes && hasMultipleFabrics) {
+      // Only fabric variants - show only fabric tab
+      tabsContainer.style.display = 'flex';
+      sizeTab.style.display = 'none';
+      fabricTab.style.display = 'block';
+      // Make fabric tab active
+      fabricTab.classList.add('active');
+      sizeTab.classList.remove('active');
+      console.log('Showing only Fabric tab (active)');
+    } else {
+      // No variants - show only size tab as default
+      tabsContainer.style.display = 'flex';
+      sizeTab.style.display = 'block';
+      fabricTab.style.display = 'none';
+      // Make size tab active
+      sizeTab.classList.add('active');
+      fabricTab.classList.remove('active');
+      console.log('Showing only Size tab (default, active)');
+    }
+  }
+  
   // Reset animation for mobile
   if (window.innerWidth < 700 && content) {
     content.style.animation = 'none';
@@ -907,7 +1074,29 @@ window.openCompareBagsModalV2 = function() {
     content.style.animation = null;
   }
   
-  renderCompareBagsTable('size');
+  // Update labels based on default tab
+  const labels = document.getElementById('compareModalLabels');
+  console.log('Setting initial labels for tab:', defaultTab);
+  if (defaultTab === 'size') {
+    labels.classList.remove('fabric-tab');
+    labels.innerHTML = `
+      <div class="compare-modal-label">Specs</div>
+      <div class="compare-modal-label">Features</div>
+      <div class="compare-modal-label">Available in</div>
+    `;
+    console.log('Set size tab labels');
+  } else if (defaultTab === 'fabric') {
+    labels.classList.add('fabric-tab');
+    labels.innerHTML = `
+      <div class="compare-modal-label">Fabric</div>
+      <div class="compare-modal-label">Tech Specs</div>
+      <div class="compare-modal-label">Overall Difference</div>
+      <div class="compare-modal-label">Available in</div>
+    `;
+    console.log('Set fabric tab labels');
+  }
+  
+  renderCompareBagsTable(defaultTab);
   document.body.style.overflow = 'hidden';
   enableCompareModalScrollLock();
 };
@@ -933,11 +1122,18 @@ document.closeCompareBagsModalV2 = window.closeCompareBagsModalV2;
 console.log('closeCompareBagsModalV2 function defined and assigned');
 
 function switchCompareTab(tab) {
+  // Check if the tab exists and is visible
+  const tabButton = document.querySelector(`[data-tab="${tab}"]`);
+  if (!tabButton || tabButton.style.display === 'none') {
+    console.log(`Tab ${tab} is not available`);
+    return;
+  }
+  
   // Update tab active states
   document.querySelectorAll('.compare-modal-tab').forEach(tabBtn => {
     tabBtn.classList.remove('active');
   });
-  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  tabButton.classList.add('active');
   
   // Update labels based on selected tab
   const labels = document.getElementById('compareModalLabels');
@@ -1096,7 +1292,7 @@ function renderProducts(products, tab) {
         `;
       } else if (tab === 'fabric') {
         // Fabric tab content with structured layout
-        const fabricHtml = prod.fabric ? prod.fabric : '420D Cordura Polycarbonate Nylon';
+        const fabricHtml = prod.fabric || 'Fabric type not specified';
         
         // Generate Available in section HTML for fabric tab
         const availableInHtml = `
