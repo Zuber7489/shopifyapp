@@ -898,6 +898,43 @@ function decodeHtmlEntities(text) {
   return textarea.value;
 }
 
+// Function to safely parse JSON
+function safeJsonParse(jsonString) {
+  if (!jsonString) return null;
+  
+  try {
+    // If it's already an object, return it
+    if (typeof jsonString === 'object') {
+      return jsonString;
+    }
+    
+    // Try to parse as JSON
+    if (typeof jsonString === 'string') {
+      // First decode HTML entities
+      let cleanedString = decodeHtmlEntities(jsonString);
+      
+      // Clean up common control characters that break JSON parsing
+      cleanedString = cleanedString
+        .replace(/\n/g, '\\n')  // Escape newlines
+        .replace(/\r/g, '\\r')  // Escape carriage returns
+        .replace(/\t/g, '\\t')  // Escape tabs
+        .replace(/\f/g, '\\f')  // Escape form feeds
+        .replace(/\v/g, '\\v'); // Escape vertical tabs
+      // Note: Removed \b escaping as it breaks JSON parsing
+      
+      console.log('Cleaned JSON string:', cleanedString);
+      
+      return JSON.parse(cleanedString);
+    }
+    
+    return null;
+  } catch (error) {
+    console.log('JSON parse error:', error);
+    console.log('Original string:', jsonString);
+    return null;
+  }
+}
+
 // Function to parse rich text JSON and preserve HTML formatting
 function parseRichText(richTextJson) {
   if (!richTextJson) return '';
@@ -911,45 +948,89 @@ function parseRichText(richTextJson) {
     // Try to parse as JSON first
     if (typeof richTextJson === 'string') {
       try {
-        const richText = JSON.parse(richTextJson);
+        console.log('Attempting to parse rich text:', richTextJson);
+        const richText = safeJsonParse(richTextJson);
+        console.log('Parsed rich text object:', richText);
+        
         if (richText && richText.children) {
           function extractHTML(node) {
             if (typeof node === 'string') return node;
             
+            // Handle text nodes with formatting
             if (node.type === 'text') {
-              return node.value || '';
+              let text = node.value || '';
+              
+              // Apply formatting based on node properties
+              if (node.bold) {
+                text = `<strong>${text}</strong>`;
+              }
+              if (node.italic) {
+                text = `<em>${text}</em>`;
+              }
+              if (node.underline) {
+                text = `<u>${text}</u>`;
+              }
+              
+              return text;
             }
             
+            // Handle paragraph nodes
             if (node.type === 'paragraph') {
               const content = node.children ? node.children.map(extractHTML).join('') : '';
               return `<p>${content}</p>`;
             }
             
-            if (node.type === 'bold' || node.bold) {
-              const content = node.children ? node.children.map(extractHTML).join('') : (node.value || '');
-              return `<strong>${content}</strong>`;
+            // Handle heading nodes
+            if (node.type === 'heading') {
+              const level = node.level || 1;
+              const content = node.children ? node.children.map(extractHTML).join('') : '';
+              return `<h${level}>${content}</h${level}>`;
             }
             
-            if (node.type === 'italic' || node.italic) {
-              const content = node.children ? node.children.map(extractHTML).join('') : (node.value || '');
-              return `<em>${content}</em>`;
-            }
-            
+            // Handle list item nodes
             if (node.type === 'list-item') {
               const content = node.children ? node.children.map(extractHTML).join('') : '';
               return `<li>${content}</li>`;
             }
             
+            // Handle bulleted list nodes
             if (node.type === 'bulleted-list') {
               const content = node.children ? node.children.map(extractHTML).join('') : '';
               return `<ul>${content}</ul>`;
             }
             
+            // Handle numbered list nodes
             if (node.type === 'numbered-list') {
               const content = node.children ? node.children.map(extractHTML).join('') : '';
               return `<ol>${content}</ol>`;
             }
             
+            // Handle link nodes
+            if (node.type === 'link') {
+              const content = node.children ? node.children.map(extractHTML).join('') : '';
+              const url = node.url || '#';
+              return `<a href="${url}">${content}</a>`;
+            }
+            
+            // Handle quote nodes
+            if (node.type === 'quote') {
+              const content = node.children ? node.children.map(extractHTML).join('') : '';
+              return `<blockquote>${content}</blockquote>`;
+            }
+            
+            // Handle code nodes
+            if (node.type === 'code') {
+              const content = node.children ? node.children.map(extractHTML).join('') : (node.value || '');
+              return `<code>${content}</code>`;
+            }
+            
+            // Handle preformatted text
+            if (node.type === 'preformatted') {
+              const content = node.children ? node.children.map(extractHTML).join('') : (node.value || '');
+              return `<pre>${content}</pre>`;
+            }
+            
+            // Recursively process children
             if (node.children && Array.isArray(node.children)) {
               return node.children.map(extractHTML).join('');
             }
@@ -963,27 +1044,72 @@ function parseRichText(richTextJson) {
         }
       } catch (jsonError) {
         console.log('JSON parsing failed, trying regex fallback');
+        console.log('JSON error details:', jsonError);
       }
     }
     
-    // Fallback: extract text using regex from the JSON string
-    if (typeof richTextJson === 'string') {
-      const valueMatches = richTextJson.match(/"value":"([^"]*?)"/g);
-      if (valueMatches) {
-        const extractedText = valueMatches.map(match => {
-          const value = match.replace(/"value":"/, '').replace(/"$/, '');
-          return value
+          // Fallback: extract text using regex from the JSON string with formatting
+      if (typeof richTextJson === 'string') {
+        console.log('Trying regex fallback for:', richTextJson);
+        
+        // First try to decode HTML entities
+        const decodedString = decodeHtmlEntities(richTextJson);
+        console.log('Decoded string:', decodedString);
+        
+        // Try to extract text with formatting information
+        const textNodes = [];
+        const regex = /"type":"text","value":"([^"]*?)"(?:,"bold":true)?(?:,"italic":true)?/g;
+        let match;
+        
+        while ((match = regex.exec(decodedString)) !== null) {
+          const value = match[1]
             .replace(/\\n/g, ' ')
             .replace(/\\"/g, '"')
             .replace(/\\/g, '')
             .trim();
-        }).filter(text => text.length > 0).join(' ');
+          
+          if (value) {
+            let formattedValue = value;
+            
+            // Check if this node has bold formatting
+            if (match[0].includes('"bold":true')) {
+              formattedValue = `<strong>${value}</strong>`;
+            }
+            
+            // Check if this node has italic formatting
+            if (match[0].includes('"italic":true')) {
+              formattedValue = `<em>${value}</em>`;
+            }
+            
+            textNodes.push(formattedValue);
+          }
+        }
         
-        if (extractedText) {
-          return extractedText;
+        if (textNodes.length > 0) {
+          const formattedText = textNodes.join(' ');
+          console.log('Extracted formatted text from regex:', formattedText);
+          return formattedText;
+        }
+        
+        // Fallback to simple text extraction if formatting extraction fails
+        const valueMatches = decodedString.match(/"value":"([^"]*?)"/g);
+        if (valueMatches) {
+          const extractedText = valueMatches.map(match => {
+            const value = match.replace(/"value":"/, '').replace(/"$/, '');
+            return value
+              .replace(/\\n/g, ' ')
+              .replace(/\\"/g, '"')
+              .replace(/\\/g, '')
+              .trim();
+          }).filter(text => text.length > 0).join(' ');
+          
+          console.log('Extracted plain text from regex:', extractedText);
+          
+          if (extractedText) {
+            return extractedText;
+          }
         }
       }
-    }
     
     return richTextJson || '';
   } catch (error) {
@@ -1142,6 +1268,13 @@ console.log('Fabric metafield:', parseRichText(decodeHtmlEntities(window.product
 console.log('Features metafield:', parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.features)) || 'NOT SET');
 console.log('Tech specs metafield:', parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.techSpecs)) || 'NOT SET');
 console.log('Overview metafield:', parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.overview)) || 'NOT SET');
+
+// Debug raw rich text data
+console.log('=== RAW RICH TEXT DATA DEBUG ===');
+console.log('Raw tech specs data:', window.productMetafieldsData?.currentVariant?.metafields?.techSpecs);
+console.log('Raw overview data:', window.productMetafieldsData?.currentVariant?.metafields?.overview);
+console.log('=== END RAW RICH TEXT DATA DEBUG ===');
+
 console.log('=== END METAFIELDS DEBUG ===');
 
 // Debug capacity value
