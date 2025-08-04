@@ -94,6 +94,7 @@
   display: flex;
   gap: 16px;
   padding: 0;
+  width: 100%;
 }
 
 #compareBagsGridWrap {
@@ -101,6 +102,7 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 16px !important;
   flex-grow: 1;
+  width: 100%;
 }
 
 .compare-modal-category-label {
@@ -149,6 +151,8 @@
   flex-direction: column;
   gap: 16px;
   align-items: center;
+  width: 100%;
+  min-width: 0;
 }
 
 .compare-modal-img-wrap {
@@ -321,6 +325,8 @@
   align-items: center;
   gap: 20px;
   justify-content: flex-start;
+  width: 100%;
+  overflow: visible;
 }
 
 .compare-modal-available-in-item {
@@ -498,26 +504,201 @@
   background-color: #f8f8f8;
   border-radius: 0;
   {% comment %} margin-left: -50px; {% endcomment %}
-  margin-right: -19px;
-  margin-bottom: -20px;
+  margin-right: 0;
+  margin-bottom: 0;
   {% comment %} width: calc(100% + 100px); {% endcomment %}
+  width: 100%;
 }
 
 @media (max-width: 480px) {
   .compare-modal-content { 
-    margin: 12px; 
-    padding: 12px 0; 
+    margin: 8px; 
+    padding: 8px 0; 
+    max-height: 90vh;
+    overflow-y: auto;
   }
+  
   .compare-modal-grid { 
-    gap: 12px; 
-    padding: 0 12px; 
-    margin-bottom: 12px; 
+    gap: 8px; 
+    padding: 0 8px; 
+    margin-bottom: 8px; 
+    display: flex;
+    width: 100%;
   }
+  
+  #compareBagsGridWrap {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    flex-grow: 1;
+  }
+  
   .compare-modal-product-title { 
     font-size: 9px; 
+    margin: 4px 0 6px 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
+  
   .compare-modal-specs, .compare-modal-features { 
-    font-size: 10px; 
+    font-size: 9px; 
+    width: 100%;
+    min-width: 0;
+  }
+  
+  .compare-modal-fabric,
+  .compare-modal-tech-specs,
+  .compare-modal-overview {
+    font-size: 8px;
+    padding-left: 20px;
+    width: 100%;
+    min-width: 0;
+  }
+  
+  .compare-modal-category-label {
+    font-size: 8px;
+    left: -2px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .compare-modal-img-wrap {
+    height: 100px;
+    width: 80%;
+    padding: 8px;
+  }
+  
+  .compare-modal-available-in-wrapper {
+    margin-top: 12px;
+    padding: 8px;
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 100%;
+  }
+  
+  .compare-modal-available-in-thumbnail {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .compare-modal-available-in-material {
+    font-size: 8px;
+  }
+  
+  .compare-modal-available-in-content {
+    gap: 12px;
+    overflow: visible;
+  }
+  
+  .compare-modal-available-in-price {
+    font-size: 8px;
+    margin-left: 4px;
+    margin-top: 6px;
+    white-space: nowrap;
+    overflow: visible;
+  }
+  
+  .compare-modal-button {
+    padding: 6px 12px;
+    min-width: 120px;
+    font-size: 10px;
+  }
+  
+  .compare-modal-tabs {
+    margin: 8px 12px;
+    padding: 2px;
+  }
+  
+  .compare-modal-tab {
+    font-size: 10px;
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .compare-modal-content { 
+    margin: 4px; 
+    padding: 4px 0; 
+  }
+  
+  .compare-modal-grid { 
+    gap: 4px; 
+    padding: 0 4px; 
+    display: flex;
+    width: 100%;
+  }
+  
+  #compareBagsGridWrap {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 4px !important;
+    width: 100% !important;
+    flex-grow: 1;
+  }
+  
+  .compare-modal-product {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  .compare-modal-img-wrap {
+    height: 80px;
+    width: 70%;
+    padding: 6px;
+  }
+  
+  .compare-modal-fabric,
+  .compare-modal-tech-specs,
+  .compare-modal-overview {
+    font-size: 8px;
+    padding-left: 15px;
+  }
+  
+  .compare-modal-category-label {
+    font-size: 7px;
+    left: -1px;
+    width: 15px;
+    height: 15px;
+  }
+  
+  .compare-modal-available-in-wrapper {
+    margin-top: 8px;
+    padding: 6px;
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 100%;
+  }
+  
+  .compare-modal-available-in-thumbnail {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .compare-modal-available-in-material {
+    font-size: 7px;
+  }
+  
+  .compare-modal-available-in-content {
+    gap: 8px;
+    overflow: visible;
+  }
+  
+  .compare-modal-button {
+    padding: 4px 8px;
+    min-width: 100px;
+    font-size: 9px;
+  }
+  
+  .compare-modal-tabs {
+    margin: 6px 8px;
+    padding: 1px;
+  }
+  
+  .compare-modal-tab {
+    font-size: 9px;
+    padding: 4px 8px;
   }
 }
 
@@ -526,9 +707,16 @@
     max-width: 99vw; 
     padding: 0 0 18px 0; 
   }
+  .compare-modal-grid {
+    display: flex;
+    width: 100%;
+  }
   #compareBagsGridWrap { 
+    display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important; 
     gap: 12px !important; 
+    width: 100% !important;
+    flex-grow: 1;
   }
   .compare-modal-img { 
     width: 55px; 
