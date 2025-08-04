@@ -110,7 +110,7 @@
   display: flex;
   flex-direction: column;
   gap: 180px;
-  padding-top: 140px;
+  padding-top: 200px;
   position: sticky;
   top: 0;
   width: 0px;
@@ -119,7 +119,7 @@
 
 /* Fabric tab has more labels, so adjust gap */
 .compare-modal-labels.fabric-tab {
-  gap: 160px;
+  gap: 140px;
 }
 
 .compare-modal-label {
@@ -235,6 +235,17 @@
   min-height: 120px;
   order: 3;
   width: 100%;
+  position: relative;
+}
+
+.compare-modal-features::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #e0e0e0;
 }
 
 .compare-modal-features ul {
@@ -284,12 +295,30 @@
   order: 4;
   width: 100%;
   margin-top: 16px;
+  background: #f8f8f8;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.compare-modal-button {
+  display: inline-block; 
+  padding: 12px 32px; 
+  border-radius: 25px; 
+  font-size: 14px;
+  font-weight: 500; 
+  text-decoration: none; 
+  cursor: pointer; 
+  min-width: 180px;
+  transition: all 0.3s ease;
+  text-align: center;
+  margin-top: 12px;
 }
 
 .compare-modal-available-in-content {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   justify-content: flex-start;
 }
 
@@ -297,29 +326,51 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  position: relative;
+}
+
+.compare-modal-available-in-item.selected {
+  position: relative;
+}
+
+.compare-modal-available-in-item.selected::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 1px;
+  background-color: #ccc;
 }
 
 .compare-modal-available-in-thumbnail {
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   background: #f8f8f8;
-  border-radius: 4px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+
+.compare-modal-available-in-item.selected .compare-modal-available-in-thumbnail {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
 }
 
 .compare-modal-available-in-thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .compare-modal-available-in-material {
-  font-size: 11px;
+  font-size: 12px;
   color: #B8860B;
   text-align: center;
   font-weight: 500;
@@ -329,7 +380,7 @@
   font-size: 16px;
   font-weight: 600;
   color: #333;
-  margin-left: 12px;
+  margin-left: 16px;
 }
 
 .compare-modal-button {
@@ -339,13 +390,13 @@
 
 .compare-modal-button {
   display: inline-block; 
-  padding: 10px 24px; 
-  border-radius: 6px; 
+  padding: 12px 32px; 
+  border-radius: 25px; 
   font-size: 14px;
   font-weight: 500; 
   text-decoration: none; 
   cursor: pointer; 
-  min-width: 120px;
+  min-width: 180px;
   transition: all 0.3s ease;
   text-align: center;
 }
@@ -898,9 +949,8 @@ function renderProducts(products, tab) {
         // Generate Available in section HTML
         const availableInHtml = `
           <div class="compare-modal-available-in">
-            
             <div class="compare-modal-available-in-content">
-              <div class="compare-modal-available-in-item">
+              <div class="compare-modal-available-in-item selected">
                 <div class="compare-modal-available-in-thumbnail">
                   <img src="${prod.image}" alt="Carbonate">
                 </div>
@@ -914,6 +964,9 @@ function renderProducts(products, tab) {
               </div>
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
+            <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
+              ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
+            </a>
           </div>
         `;
         
@@ -931,9 +984,6 @@ function renderProducts(products, tab) {
               ${featuresHtml}
             </div>
             ${availableInHtml}
-            <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
-              ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
-            </a>
           </div>
         `;
       } else if (tab === 'fabric') {
@@ -943,9 +993,8 @@ function renderProducts(products, tab) {
         // Generate Available in section HTML for fabric tab
         const availableInHtml = `
           <div class="compare-modal-available-in">
-            
             <div class="compare-modal-available-in-content">
-              <div class="compare-modal-available-in-item">
+              <div class="compare-modal-available-in-item selected">
                 <div class="compare-modal-available-in-thumbnail">
                   <img src="${prod.image}" alt="Carbonate">
                 </div>
@@ -959,6 +1008,9 @@ function renderProducts(products, tab) {
               </div>
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
+            <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
+              ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
+            </a>
           </div>
         `;
         
@@ -980,9 +1032,6 @@ function renderProducts(products, tab) {
               <p><strong>Overall Difference:</strong> ${prod.overview || 'Has a modern technical aesthetic with a smooth supple feel. Has slightly more structure than our ballistic version, without being stiff and rigid like many PU and TPU coated fabrics. It\'s the ideal choice for adventure enthusiast that want a hybrid option to transition between office and outdoors.'}</p>
             </div>
             ${availableInHtml}
-            <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
-              ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
-            </a>
           </div>
         `;
       }
