@@ -64,7 +64,7 @@
 .compare-modal-tabs {
   display: flex; 
   margin: 16px 29px; 
-  margin-left: 47px;
+      margin-left: 47px;
   background: #f5f5f5; 
   border-radius: 20px; 
   padding: 3px;
@@ -103,37 +103,37 @@
   flex-grow: 1;
 }
 
-.compare-modal-labels {
-  text-align: right;
+.compare-modal-category-label {
   font-size: 13px;
   color: #B8860B;
   font-weight: 600;
-  display: flex;
-  flex-direction: column;
-  gap: 180px;
-  padding-top: 200px;
-  position: sticky;
-  top: 0;
-  width: 0px;
-  flex-shrink: 0;
-}
-
-/* Fabric tab has more labels, so adjust gap */
-.compare-modal-labels.fabric-tab {
-  gap: 140px;
-}
-
-.compare-modal-label {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  font-weight: 600;
-  color: #B8860B;
   transform: rotate(-90deg);
   text-align: center;
   white-space: nowrap;
-  margin-left: 3px;
+  position: absolute;
+  left: -30px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compare-modal-specs,
+.compare-modal-features,
+.compare-modal-fabric,
+.compare-modal-tech-specs,
+.compare-modal-overview,
+.compare-modal-available-in-wrapper {
+  position: relative;
+  padding-left: 50px;
+}
+
+/* Hide the old left-side labels */
+.compare-modal-labels {
+  display: none !important;
 }
 
 .compare-modal-divider {
@@ -482,6 +482,13 @@
   color: #555;
 }
 
+.compare-modal-available-in-wrapper {
+  order: 5;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
 @media (max-width: 480px) {
   .compare-modal-content { 
     margin: 12px; 
@@ -655,11 +662,6 @@
       <button class="compare-modal-tab" id="compareTabFabric" data-tab="fabric">Fabric</button>
     </div>
     <div class="compare-modal-grid">
-      <div class="compare-modal-labels" id="compareModalLabels">
-        <div class="compare-modal-label">Specs</div>
-        <div class="compare-modal-label">Features</div>
-        <div class="compare-modal-label">Available in</div>
-      </div>
       <div id="compareBagsGridWrap" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
         <!-- Grid will be rendered here -->
       </div>
@@ -857,13 +859,13 @@ const compareProductsData = {
     features: parseRichText(decodeHtmlEntities(variant.metafields.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
     techSpecs: parseRichText(decodeHtmlEntities(variant.metafields.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
     overview: parseRichText(decodeHtmlEntities(variant.metafields.overview)) || "Premium quality bag designed for modern lifestyle.",
-    colors: [
-      {% for color_variant in product.variants %}
-        {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
-          "{{ color_variant.option1 }}",
-        {% endif %}
-      {% endfor %}
-    ]
+          colors: [
+            {% for color_variant in product.variants %}
+              {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
+                "{{ color_variant.option1 }}",
+              {% endif %}
+            {% endfor %}
+          ]
   })) || [],
   
   // Get fabric variants for comparison - using JSON data
@@ -904,13 +906,13 @@ const compareProductsData = {
     features: parseRichText(decodeHtmlEntities(variant.metafields.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
     techSpecs: parseRichText(decodeHtmlEntities(variant.metafields.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
     overview: parseRichText(decodeHtmlEntities(variant.metafields.overview)) || "Premium quality bag designed for modern lifestyle.",
-    colors: [
-      {% for color_variant in product.variants %}
-        {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
-          "{{ color_variant.option1 }}",
-        {% endif %}
-      {% endfor %}
-    ]
+          colors: [
+            {% for color_variant in product.variants %}
+              {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
+                "{{ color_variant.option1 }}",
+              {% endif %}
+            {% endfor %}
+          ]
   })) || []
 };
 
@@ -1074,27 +1076,8 @@ window.openCompareBagsModalV2 = function() {
     content.style.animation = null;
   }
   
-  // Update labels based on default tab
-  const labels = document.getElementById('compareModalLabels');
-  console.log('Setting initial labels for tab:', defaultTab);
-  if (defaultTab === 'size') {
-    labels.classList.remove('fabric-tab');
-    labels.innerHTML = `
-      <div class="compare-modal-label">Specs</div>
-      <div class="compare-modal-label">Features</div>
-      <div class="compare-modal-label">Available in</div>
-    `;
-    console.log('Set size tab labels');
-  } else if (defaultTab === 'fabric') {
-    labels.classList.add('fabric-tab');
-    labels.innerHTML = `
-      <div class="compare-modal-label">Fabric</div>
-      <div class="compare-modal-label">Tech Specs</div>
-      <div class="compare-modal-label">Overall Difference</div>
-      <div class="compare-modal-label">Available in</div>
-    `;
-    console.log('Set fabric tab labels');
-  }
+  // Labels are now inside each category div, no need to update separately
+  console.log('Opening modal with tab:', defaultTab);
   
   renderCompareBagsTable(defaultTab);
   document.body.style.overflow = 'hidden';
@@ -1135,24 +1118,8 @@ function switchCompareTab(tab) {
   });
   tabButton.classList.add('active');
   
-  // Update labels based on selected tab
-  const labels = document.getElementById('compareModalLabels');
-  if (tab === 'size') {
-    labels.classList.remove('fabric-tab');
-    labels.innerHTML = `
-      <div class="compare-modal-label">Specs</div>
-      <div class="compare-modal-label">Features</div>
-      <div class="compare-modal-label">Available in</div>
-    `;
-  } else if (tab === 'fabric') {
-    labels.classList.add('fabric-tab');
-    labels.innerHTML = `
-      <div class="compare-modal-label">Fabric</div>
-      <div class="compare-modal-label">Tech Specs</div>
-      <div class="compare-modal-label">Overall Difference</div>
-      <div class="compare-modal-label">Available in</div>
-    `;
-  }
+  // Labels are now inside each category div, no need to update separately
+  console.log('Switching to tab:', tab);
   
   renderCompareBagsTable(tab);
 }
@@ -1282,12 +1249,17 @@ function renderProducts(products, tab) {
             
             <h3 class="compare-modal-product-title">${prod.title}</h3>
             <div class="compare-modal-specs">
+              ${prod.isCurrentProduct ? '<div class="compare-modal-category-label">Specs</div>' : ''}
               ${specsHtml}
             </div>
             <div class="compare-modal-features">
+              ${prod.isCurrentProduct ? '<div class="compare-modal-category-label">Features</div>' : ''}
               ${featuresHtml}
             </div>
+            <div class="compare-modal-available-in-wrapper">
+              ${prod.isCurrentProduct ? '<div class="compare-modal-category-label">Available in</div>' : ''}
             ${availableInHtml}
+            </div>
           </div>
         `;
       } else if (tab === 'fabric') {
@@ -1324,17 +1296,22 @@ function renderProducts(products, tab) {
               <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
             </div>
             
-            <h3 class="compare-modal-product-title">${prod.title}</h3>
             <div class="compare-modal-fabric">
+              ${prod.isCurrentProduct ? '<div class="compare-modal-category-label">Fabric</div>' : ''}
               <strong>${fabricHtml}</strong>
             </div>
             <div class="compare-modal-tech-specs">
+              ${prod.isCurrentProduct ? '<div class="compare-modal-category-label">Tech Specs</div>' : ''}
               ${prod.techSpecs ? `<p>${prod.techSpecs.replace(/\n/g, '</p><p>')}</p>` : '<p><strong>Silicon Face Coating:</strong> This coating provides extra weather, strain, abrasion resistance without changing the look and hand feel of the fabric.</p><p><strong>Coal PU Backside:</strong> This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.</p>'}
             </div>
-            <div class="compare-modal-overview">
+                        <div class="compare-modal-overview">
+              ${prod.isCurrentProduct ? '<div class="compare-modal-category-label">Overall Difference</div>' : ''}
               <p><strong>Overall Difference:</strong> ${prod.overview || 'Has a modern technical aesthetic with a smooth supple feel. Has slightly more structure than our ballistic version, without being stiff and rigid like many PU and TPU coated fabrics. It\'s the ideal choice for adventure enthusiast that want a hybrid option to transition between office and outdoors.'}</p>
             </div>
-            ${availableInHtml}
+            <div class="compare-modal-available-in-wrapper">
+              ${prod.isCurrentProduct ? '<div class="compare-modal-category-label">Available in</div>' : ''}
+              ${availableInHtml}
+            </div>
           </div>
         `;
       }
