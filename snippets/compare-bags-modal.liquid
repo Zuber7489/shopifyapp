@@ -1158,15 +1158,15 @@ const compareProductsData = {
     console.log('Checking variant:', variant.id, 'option1:', variant.option1, 'option2:', variant.option2);
     console.log('Current variant:', currentVariant.id, 'option1:', currentVariant.option1, 'option2:', currentVariant.option2);
     
-    // Since both variants have same size (20L), there should be no size variants
-    // Only include if they have different sizes
-    if (variant.option2 !== currentVariant.option2 && variant.option1 === currentVariant.option1) {
-      console.log('Found size variant - different size:', variant.option2);
-      return true;
+    // Skip if this is the current variant
+    if (variant.id === currentVariant.id) {
+      console.log('Skipping current variant');
+      return false;
     }
     
-    if (variant.option1 !== currentVariant.option1 && variant.option2 === currentVariant.option2) {
-      console.log('Found size variant - different size:', variant.option1);
+    // For size comparison, we want variants with different size (option2) but same fabric (option1)
+    if (variant.option2 !== currentVariant.option2) {
+      console.log('Found size variant - different size:', variant.option2, 'vs', currentVariant.option2);
       return true;
     }
     
@@ -1206,14 +1206,16 @@ const compareProductsData = {
     console.log('Checking variant:', variant.id, 'option1:', variant.option1, 'option2:', variant.option2);
     console.log('Current variant:', currentVariant.id, 'option1:', currentVariant.option1, 'option2:', currentVariant.option2);
     
-    // Check if they have same size but different fabric
-    if (variant.option2 === currentVariant.option2 && variant.option1 !== currentVariant.option1) {
-      console.log('Found fabric variant - same size, different fabric:', variant.option1);
-      return true;
+    // Skip if this is the current variant
+    if (variant.id === currentVariant.id) {
+      console.log('Skipping current variant');
+      return false;
     }
     
-    if (variant.option1 === currentVariant.option1 && variant.option2 !== currentVariant.option2) {
-      console.log('Found fabric variant - same size, different fabric:', variant.option2);
+    // For fabric comparison, we want variants with different fabric (option1) but same size (option2)
+    // OR variants with same fabric (option1) but different size (option2) - for comprehensive comparison
+    if (variant.option1 !== currentVariant.option1) {
+      console.log('Found fabric variant - different fabric:', variant.option1, 'vs', currentVariant.option1);
       return true;
     }
     
@@ -1291,48 +1293,29 @@ function determineAvailableTabs() {
   console.log('Size variants count:', sizeVariants.length);
   console.log('Fabric variants count:', fabricVariants.length);
   
-  // Force the correct logic based on your product structure
-  // Since you have 2 variants with same size (20L) but different fabrics (Carbonate/Ballistic)
-  // We should only show fabric tab
-  
   let defaultTab = 'size';
   let showTabs = false;
-  let hasMultipleSizes = false;
-  let hasMultipleFabrics = false;
+  let hasMultipleSizes = sizeVariants.length > 0;
+  let hasMultipleFabrics = fabricVariants.length > 0;
   
-  // Check if we have multiple variants with same size but different fabrics
-  if (sizeVariants.length === 1 && fabricVariants.length === 1) {
-    // This means we have 2 variants with same size but different fabrics
-    hasMultipleSizes = false;
-    hasMultipleFabrics = true;
-    showTabs = false;
-    defaultTab = 'fabric';
-    console.log('Detected: Same size, different fabrics - showing only fabric tab');
-  } else if (sizeVariants.length > 0 && fabricVariants.length === 0) {
-    // Only size variants
-    hasMultipleSizes = true;
-    hasMultipleFabrics = false;
-    showTabs = false;
-    defaultTab = 'size';
-    console.log('Detected: Only size variants - showing only size tab');
-  } else if (sizeVariants.length === 0 && fabricVariants.length > 0) {
-    // Only fabric variants
-    hasMultipleSizes = false;
-    hasMultipleFabrics = true;
-    showTabs = false;
-    defaultTab = 'fabric';
-    console.log('Detected: Only fabric variants - showing only fabric tab');
-  } else if (sizeVariants.length > 0 && fabricVariants.length > 0) {
-    // Both size and fabric variants
-    hasMultipleSizes = true;
-    hasMultipleFabrics = true;
+  // Determine which tabs to show based on available variants
+  if (hasMultipleSizes && hasMultipleFabrics) {
+    // Both size and fabric variants - show both tabs
     showTabs = true;
     defaultTab = 'size';
     console.log('Detected: Both size and fabric variants - showing both tabs');
+  } else if (hasMultipleSizes && !hasMultipleFabrics) {
+    // Only size variants - show only size tab
+    showTabs = false;
+    defaultTab = 'size';
+    console.log('Detected: Only size variants - showing only size tab');
+  } else if (!hasMultipleSizes && hasMultipleFabrics) {
+    // Only fabric variants - show only fabric tab
+    showTabs = false;
+    defaultTab = 'fabric';
+    console.log('Detected: Only fabric variants - showing only fabric tab');
   } else {
-    // No variants
-    hasMultipleSizes = false;
-    hasMultipleFabrics = false;
+    // No variants - show only size tab as default
     showTabs = false;
     defaultTab = 'size';
     console.log('Detected: No variants - showing only size tab');
@@ -1474,8 +1457,10 @@ function renderCompareBagsTable(tab) {
     let variants = [];
     if (tab === 'size') {
       variants = compareProductsData.sizeVariants || [];
+      console.log('Selected size variants:', variants);
     } else if (tab === 'fabric') {
       variants = compareProductsData.fabricVariants || [];
+      console.log('Selected fabric variants:', variants);
     }
     
     // If no variants found, show only current product with a message
@@ -1500,6 +1485,8 @@ function renderCompareBagsTable(tab) {
     
     // Combine current product with appropriate variants (limit to 2 total)
     const products = [compareProductsData.currentProduct, ...variants].slice(0, 2);
+    
+    console.log('Products to render for tab', tab, ':', products.map(p => ({ id: p.id, title: p.title, variantTitle: p.variantTitle })));
     
     renderProducts(products, tab);
   } catch (error) {
