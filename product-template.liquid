@@ -287,13 +287,7 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
     
 
     <script>
-    console.log('=== PRODUCT VARIANT DEBUG ===');
-    console.log('Current Variant ID:', {{ current_variant.id | default: 'null' }});
-    console.log('Current Variant Available:', {{ current_variant.available | json }});
-    console.log('Current Variant Inventory Quantity:', {{ current_variant.inventory_quantity | json }});
-    console.log('Current Variant Title:', "{{ current_variant.title | escape }}");
-    console.log('Product Available:', {{ product.available | json }});
-    console.log('================================');
+   
     
     window.productMetafieldsData = {
       currentVariant: {
@@ -708,14 +702,7 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
           <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to Bag{% else %}Out of Stock{% endif %}</span>
         </button>
         
-        <script>
-        console.log('=== BUTTON DEBUG ===');
-        console.log('Button Available Check:', {{ current_variant.available | json }});
-        console.log('Button Text:', "{% if current_variant.available %}Add to Bag{% else %}Out of Stock{% endif %}");
-        console.log('Button Background Color:', "{% if current_variant.available %}#2f6f6f{% else %}#999{% endif %}");
-        console.log('Button Disabled:', {{ current_variant.available | json }} ? false : true);
-        console.log('====================');
-        </script>
+
         
 
         <div class="apple-pay-button-container" style="margin-top: 10px;">
@@ -3811,14 +3798,6 @@ let globalTouchManager = {
     // Simplified availability check - just check if variant is available
     const isAvailable = currentVariant.available;
     const isOutOfStock = !currentVariant.available;
-    
-    console.log('=== VARIANT CHANGE DEBUG ===');
-    console.log('New Variant ID:', currentVariant.id);
-    console.log('New Variant Available:', currentVariant.available);
-    console.log('New Variant Inventory:', currentVariant.inventory_quantity);
-    console.log('Is Available:', isAvailable);
-    console.log('Is Out of Stock:', isOutOfStock);
-    console.log('============================');
     
     // Update button
     addToCartButton.disabled = isOutOfStock;
