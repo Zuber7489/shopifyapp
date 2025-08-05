@@ -287,6 +287,14 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
     
 
     <script>
+    console.log('=== PRODUCT VARIANT DEBUG ===');
+    console.log('Current Variant ID:', {{ current_variant.id | default: 'null' }});
+    console.log('Current Variant Available:', {{ current_variant.available | json }});
+    console.log('Current Variant Inventory Quantity:', {{ current_variant.inventory_quantity | json }});
+    console.log('Current Variant Title:', "{{ current_variant.title | escape }}");
+    console.log('Product Available:', {{ product.available | json }});
+    console.log('================================');
+    
     window.productMetafieldsData = {
       currentVariant: {
         id: {{ current_variant.id | default: 'null' }},
@@ -679,9 +687,18 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
           {% endfor %}
         </select>
     
-        <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available and current_variant.inventory_quantity > 0 %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: {% if current_variant.available and current_variant.inventory_quantity > 0 %}#2f6f6f{% else %}#ccc{% endif %}; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: {% if current_variant.available and current_variant.inventory_quantity > 0 %}pointer{% else %}not-allowed{% endif %}; border-radius:31px !important; transition: background 0.3s; text-transform: none !important;">
-          <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available and current_variant.inventory_quantity > 0 %}Add to Bag{% else %}Out of Stock{% endif %}</span>
+        <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: {% if current_variant.available %}#2f6f6f{% else %}#999{% endif %}; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: {% if current_variant.available %}pointer{% else %}not-allowed{% endif %}; border-radius:31px !important; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}opacity: 0.6;{% endunless %}">
+          <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to Bag{% else %}Out of Stock{% endif %}</span>
         </button>
+        
+        <script>
+        console.log('=== BUTTON DEBUG ===');
+        console.log('Button Available Check:', {{ current_variant.available | json }});
+        console.log('Button Text:', "{% if current_variant.available %}Add to Bag{% else %}Out of Stock{% endif %}");
+        console.log('Button Background Color:', "{% if current_variant.available %}#2f6f6f{% else %}#999{% endif %}");
+        console.log('Button Disabled:', {{ current_variant.available | json }} ? false : true);
+        console.log('====================');
+        </script>
         
 
         <div class="apple-pay-button-container" style="margin-top: 10px;">
@@ -3770,17 +3787,28 @@ let globalTouchManager = {
     if (priceElement) priceElement.textContent = currentVariant.formatted_price;
   }); 
   
-  const addToCartButton = document.getElementById("AddToCart");
+  const addToCartButton = document.getElementById("MobileAddToCart");
   const addToCartText = document.getElementById("AddToCartText");
+  
   if (addToCartButton && addToCartText) {
-    // Enhanced availability check - consider both inventory and "continue to sell when out of stock" setting
-    const isAvailable = currentVariant.available && currentVariant.inventory_quantity > 0;
-    const isOutOfStock = !currentVariant.available || currentVariant.inventory_quantity <= 0;
+    // Simplified availability check - just check if variant is available
+    const isAvailable = currentVariant.available;
+    const isOutOfStock = !currentVariant.available;
     
+    console.log('=== VARIANT CHANGE DEBUG ===');
+    console.log('New Variant ID:', currentVariant.id);
+    console.log('New Variant Available:', currentVariant.available);
+    console.log('New Variant Inventory:', currentVariant.inventory_quantity);
+    console.log('Is Available:', isAvailable);
+    console.log('Is Out of Stock:', isOutOfStock);
+    console.log('============================');
+    
+    // Update button
     addToCartButton.disabled = isOutOfStock;
     addToCartButton.classList.toggle("disabled", isOutOfStock);
-    addToCartButton.style.backgroundColor = isAvailable ? "#2f6f6f" : "#ccc";
+    addToCartButton.style.backgroundColor = isAvailable ? "#2f6f6f" : "#999";
     addToCartButton.style.cursor = isAvailable ? "pointer" : "not-allowed";
+    addToCartButton.style.opacity = isAvailable ? "1" : "0.6";
     addToCartText.textContent = isAvailable ? "Add to Bag" : "Out of Stock";
   }
   
@@ -5538,8 +5566,8 @@ let globalTouchManager = {
             {% endif %}
           {% endfor %}
         </select>
-        <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available and current_variant.inventory_quantity > 0 %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: {% if current_variant.available and current_variant.inventory_quantity > 0 %}#2f6f6f{% else %}#ccc{% endif %}; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: {% if current_variant.available and current_variant.inventory_quantity > 0 %}pointer{% else %}not-allowed{% endif %}; border-radius:31px !important; margin-bottom: 0; margin-top:3px; transition: background 0.3s; text-transform: none !important;">
-          <span id="MobileAddToCartText" style="text-transform: none !important;">{% if current_variant.available and current_variant.inventory_quantity > 0 %}Add to Bag{% else %}Out of Stock{% endif %}</span>
+        <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: {% if current_variant.available %}#2f6f6f{% else %}#999{% endif %}; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: {% if current_variant.available %}pointer{% else %}not-allowed{% endif %}; border-radius:31px !important; margin-bottom: 0; margin-top:3px; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}opacity: 0.6;{% endunless %}">
+          <span id="MobileAddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to Bag{% else %}Out of Stock{% endif %}</span>
         </button>
       </form>
     </div>
@@ -5606,7 +5634,7 @@ let globalTouchManager = {
         if (mainBtn && mobileBtn && mainBtnText && mobileBtnText) {
           mobileBtn.disabled = mainBtn.disabled;
           mobileBtn.classList.toggle('disabled', mainBtn.disabled);
-          mobileBtn.style.backgroundColor = mainBtn.disabled ? '#ccc' : '#2f6f6f';
+          mobileBtn.style.backgroundColor = mainBtn.disabled ? '#999' : '#2f6f6f';
           mobileBtn.style.cursor = mainBtn.style.cursor;
           // Set sticky cart text to match main button
           mobileBtnText.textContent = mainBtn.disabled ? 'Out of Stock' : 'Add to Bag';
