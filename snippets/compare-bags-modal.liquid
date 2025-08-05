@@ -1386,10 +1386,10 @@ window.openCompareBagsModalV2 = function() {
       tabsContainer.style.display = 'flex';
       sizeTab.style.display = 'block';
       fabricTab.style.display = 'block';
-      // Remove active class from both - let user click to activate
-      sizeTab.classList.remove('active');
+      // Make size tab active by default
+      sizeTab.classList.add('active');
       fabricTab.classList.remove('active');
-      console.log('Showing both Size and Fabric tabs');
+      console.log('Showing both Size and Fabric tabs - Size tab active by default');
     } else if (hasMultipleSizes && !hasMultipleFabrics) {
       // Only size variants - show only size tab
       tabsContainer.style.display = 'flex';

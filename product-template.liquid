@@ -389,16 +389,7 @@
       ]
     };
     
-    console.log('=== PRODUCT METAFIELDS DATA LOADED ===');
-    console.log('Current variant metafields:', window.productMetafieldsData.currentVariant.metafields);
-    console.log('All variants count:', window.productMetafieldsData.allVariants.length);
-    
-    // Debug product options
-    console.log('=== PRODUCT OPTIONS DEBUG ===');
-    {% for option in product.options_with_values %}
-      console.log('Option {{ forloop.index }}: "{{ option.name }}" with values:', {{ option.values | json }});
-    {% endfor %}
-    console.log('=== END PRODUCT OPTIONS DEBUG ===');
+
     </script>
     
     {% render 'compare-bags-modal' %}
@@ -2851,7 +2842,7 @@ let globalTouchManager = {
       
       // setTimeout(() => { toggleAccordion('description'); }, 500);
     } catch (error) {
-      console.error("Error initializing product page:", error);
+      // Error initializing product page
     }
     });
     
@@ -2869,12 +2860,10 @@ let globalTouchManager = {
    specsContainers.forEach(container => {
      if (container && container.innerHTML) {
        let content = container.innerHTML;
-       console.log('Original content:', content); // Debug log
        // Replace only the word immediately before asterisk - more precise matching
        let formattedContent = content
          .replace(/(\b[a-zA-Z]+)\*/g, '<strong>$1</strong>')
          .replace(/(\b[a-zA-Z]+):\*/g, '<strong>$1</strong>:');
-       console.log('Formatted content:', formattedContent); // Debug log
        container.innerHTML = formattedContent;
      }
    });
@@ -4441,7 +4430,7 @@ let globalTouchManager = {
       );
       
       document.addEventListener('DOMContentLoaded', () => {
-        console.log('Safari video ready');
+        // Safari video ready
       });
     }
 
@@ -4635,7 +4624,7 @@ let globalTouchManager = {
           document.dispatchEvent(new CustomEvent('cart:refresh'));
         }
       })
-      .catch(err => { console.error("Fetch error:", err); showNotification("Error adding product.", true); })
+              .catch(err => { showNotification("Error adding product.", true); })
       .finally(() => {
         if (mainBtn && mainBtnText && mainBtn.form && new FormData(mainBtn.form).get("id") === id) {
           mainBtnText.textContent = (currentVariant && currentVariant.id == id && !currentVariant.available) ? "SOLD OUT" : originalMainText;
@@ -5025,9 +5014,9 @@ let globalTouchManager = {
         }
         if (desktopView) desktopView.style.display = 'none';
         
-        console.log('Mobile carousels reinitialized on DOM ready');
+        // Mobile carousels reinitialized on DOM ready
       } catch (error) {
-        console.error('Error initializing mobile carousels:', error);
+        // Error initializing mobile carousels
       }
     }, 200);
   }
