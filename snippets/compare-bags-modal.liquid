@@ -372,7 +372,21 @@
 
 .compare-modal-available-in-item.selected .compare-modal-available-in-thumbnail {
   background: #f0f0f0;
+  border: 2px solid #2f6f6f;
+}
 
+.compare-modal-available-in-item {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.compare-modal-available-in-item:hover {
+  transform: translateY(-2px);
+}
+
+.compare-modal-available-in-item:hover .compare-modal-available-in-thumbnail {
+  background: #f8f8f8;
+  border: 2px solid #2f6f6f;
 }
 
 .compare-modal-available-in-thumbnail img {
@@ -1533,6 +1547,133 @@ function renderCompareBagsTable(tab) {
   }
 }
 
+// Function to generate swatch options based on product variants
+function generateSwatchOptions(product, tab) {
+  console.log('Generating swatch options for product:', product.id, 'tab:', tab);
+  
+  // Get all variants for this product
+  const allVariants = window.productMetafieldsData?.allVariants || [];
+  const currentVariant = window.productMetafieldsData?.currentVariant;
+  
+  if (!allVariants.length) {
+    // Fallback to static swatches if no variants
+    return `
+      <div class="compare-modal-available-in-item selected">
+        <div class="compare-modal-available-in-thumbnail">
+          <img src="${product.image}" alt="Carbonate">
+        </div>
+        <div class="compare-modal-available-in-material">Carbonate</div>
+      </div>
+      <div class="compare-modal-available-in-item">
+        <div class="compare-modal-available-in-thumbnail">
+          <img src="${product.image}" alt="Ballistic">
+        </div>
+        <div class="compare-modal-available-in-material">Ballistic</div>
+      </div>
+    `;
+  }
+  
+  // Determine which variants to show based on tab
+  let relevantVariants = [];
+  
+  if (tab === 'size') {
+    // For size tab, show fabric variants for the current size
+    // First, determine which option is size and which is fabric
+    const currentSize = currentVariant?.option2 || currentVariant?.option1;
+    const currentFabric = currentVariant?.option1 || currentVariant?.option2;
+    
+    // Find variants with same size but different fabric
+    relevantVariants = allVariants.filter(variant => {
+      const variantSize = variant.option2 || variant.option1;
+      const variantFabric = variant.option1 || variant.option2;
+      return variantSize === currentSize && variantFabric !== currentFabric;
+    });
+    
+    // If no fabric variants found, show size variants
+    if (relevantVariants.length === 0) {
+      relevantVariants = allVariants.filter(variant => {
+        const variantSize = variant.option2 || variant.option1;
+        return variantSize !== currentSize;
+      });
+    }
+  } else if (tab === 'fabric') {
+    // For fabric tab, show size variants for the current fabric
+    const currentSize = currentVariant?.option2 || currentVariant?.option1;
+    const currentFabric = currentVariant?.option1 || currentVariant?.option2;
+    
+    // Find variants with same fabric but different size
+    relevantVariants = allVariants.filter(variant => {
+      const variantSize = variant.option2 || variant.option1;
+      const variantFabric = variant.option1 || variant.option2;
+      return variantFabric === currentFabric && variantSize !== currentSize;
+    });
+    
+    // If no size variants found, show fabric variants
+    if (relevantVariants.length === 0) {
+      relevantVariants = allVariants.filter(variant => {
+        const variantFabric = variant.option1 || variant.option2;
+        return variantFabric !== currentFabric;
+      });
+    }
+  }
+  
+  // If still no relevant variants found, show all variants except current
+  if (relevantVariants.length === 0) {
+    relevantVariants = allVariants.filter(variant => variant.id !== currentVariant?.id).slice(0, 2);
+  }
+  
+  // Generate swatch HTML
+  let swatchHtml = '';
+  
+  // Add current variant as first swatch
+  if (currentVariant) {
+    let currentOption;
+    if (tab === 'size') {
+      // For size tab, show the fabric option (the other option)
+      currentOption = currentVariant.option1 === (currentVariant.option2 || currentVariant.option1) ? 
+                     currentVariant.option2 : currentVariant.option1;
+    } else {
+      // For fabric tab, show the size option (the other option)
+      currentOption = currentVariant.option2 === (currentVariant.option1 || currentVariant.option2) ? 
+                     currentVariant.option1 : currentVariant.option2;
+    }
+    
+    swatchHtml += `
+      <div class="compare-modal-available-in-item selected" data-variant-id="${currentVariant.id}" data-option="${currentOption}">
+        <div class="compare-modal-available-in-thumbnail">
+          <img src="${currentVariant.image || product.image}" alt="${currentOption}">
+        </div>
+        <div class="compare-modal-available-in-material">${currentOption}</div>
+      </div>
+    `;
+  }
+  
+  // Add other variants
+  relevantVariants.forEach(variant => {
+    let option;
+    if (tab === 'size') {
+      // For size tab, show the fabric option (the other option)
+      option = variant.option1 === (variant.option2 || variant.option1) ? 
+               variant.option2 : variant.option1;
+    } else {
+      // For fabric tab, show the size option (the other option)
+      option = variant.option2 === (variant.option1 || variant.option2) ? 
+               variant.option1 : variant.option2;
+    }
+    
+    swatchHtml += `
+      <div class="compare-modal-available-in-item" data-variant-id="${variant.id}" data-option="${option}">
+        <div class="compare-modal-available-in-thumbnail">
+          <img src="${variant.image || product.image}" alt="${option}">
+        </div>
+        <div class="compare-modal-available-in-material">${option}</div>
+      </div>
+    `;
+  });
+  
+  return swatchHtml;
+}
+
 function renderProducts(products, tab) {
   console.log('renderProducts called with', products.length, 'products for tab:', tab);
   
@@ -1578,22 +1719,11 @@ function renderProducts(products, tab) {
           </ul>
         `;
         
-        // Generate Available in section HTML
+        // Generate Available in section HTML with dynamic swatches
         const availableInHtml = `
           <div class="compare-modal-available-in">
             <div class="compare-modal-available-in-content">
-              <div class="compare-modal-available-in-item selected">
-                <div class="compare-modal-available-in-thumbnail">
-                  <img src="${prod.image}" alt="Carbonate">
-                </div>
-                <div class="compare-modal-available-in-material">Carbonate</div>
-              </div>
-              <div class="compare-modal-available-in-item">
-                <div class="compare-modal-available-in-thumbnail">
-                  <img src="${prod.image}" alt="Ballistic">
-                </div>
-                <div class="compare-modal-available-in-material">Ballistic</div>
-              </div>
+              ${generateSwatchOptions(prod, tab)}
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
             <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
@@ -1627,22 +1757,11 @@ function renderProducts(products, tab) {
         // Fabric tab content with structured layout
         const fabricHtml = prod.fabric || 'Fabric type not specified';
         
-        // Generate Available in section HTML for fabric tab
+        // Generate Available in section HTML for fabric tab with dynamic swatches
         const availableInHtml = `
           <div class="compare-modal-available-in">
             <div class="compare-modal-available-in-content">
-              <div class="compare-modal-available-in-item selected">
-                <div class="compare-modal-available-in-thumbnail">
-                  <img src="${prod.image}" alt="Carbonate">
-                </div>
-                <div class="compare-modal-available-in-material">Carbonate</div>
-              </div>
-              <div class="compare-modal-available-in-item">
-                <div class="compare-modal-available-in-thumbnail">
-                  <img src="${prod.image}" alt="Ballistic">
-                </div>
-                <div class="compare-modal-available-in-material">Ballistic</div>
-              </div>
+              ${generateSwatchOptions(prod, tab)}
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
             <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
@@ -1680,8 +1799,99 @@ function renderProducts(products, tab) {
     
     gridWrap.innerHTML = html;
     console.log('Modal content rendered successfully with', products.length, 'products');
+    
+    // Add swatch click event handlers
+    attachSwatchEventHandlers();
   } catch (error) {
     console.error('Error rendering products:', error);
+  }
+}
+
+// Function to attach swatch click event handlers
+function attachSwatchEventHandlers() {
+  const swatchItems = document.querySelectorAll('.compare-modal-available-in-item');
+  
+  swatchItems.forEach(item => {
+    item.addEventListener('click', function() {
+      const variantId = this.getAttribute('data-variant-id');
+      const option = this.getAttribute('data-option');
+      
+      if (!variantId) return;
+      
+      console.log('Swatch clicked - Variant ID:', variantId, 'Option:', option);
+      
+      // Remove active class from all swatches in this group
+      const parentContent = this.closest('.compare-modal-available-in-content');
+      if (parentContent) {
+        parentContent.querySelectorAll('.compare-modal-available-in-item').forEach(swatch => {
+          swatch.classList.remove('selected');
+        });
+      }
+      
+      // Add active class to clicked swatch
+      this.classList.add('selected');
+      
+      // Update modal content with new variant
+      updateModalWithVariant(variantId);
+    });
+  });
+}
+
+// Function to update modal content with selected variant
+function updateModalWithVariant(variantId) {
+  console.log('Updating modal with variant:', variantId);
+  
+  // Find the variant data
+  const variantData = window.productMetafieldsData?.allVariants?.find(v => v.id == variantId);
+  if (!variantData) {
+    console.error('Variant not found:', variantId);
+    return;
+  }
+  
+  // Update current variant in the global data
+  window.productMetafieldsData.currentVariant = variantData;
+  
+  // Update the current product data
+  compareProductsData.currentProduct = {
+    ...compareProductsData.currentProduct,
+    id: variantData.id,
+    title: parseRichText(decodeHtmlEntities(variantData.metafields?.productTitle)) || variantData.title,
+    image: parseRichText(decodeHtmlEntities(variantData.metafields?.variantImage)) || variantData.image,
+    price: parseRichText(decodeHtmlEntities(variantData.metafields?.customPrice)) || variantData.price,
+    capacity: parseRichText(decodeHtmlEntities(variantData.metafields?.capacity)) || variantData.option1,
+    dimensions: parseRichText(decodeHtmlEntities(variantData.metafields?.dimensions)) || "19\" x 18\" x 4\"",
+    weight: parseRichText(decodeHtmlEntities(variantData.metafields?.weight)) || "2.5lbs",
+    fabric: parseRichText(decodeHtmlEntities(variantData.metafields?.fabric)) || variantData.option2,
+    features: parseRichText(decodeHtmlEntities(variantData.metafields?.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
+    techSpecs: parseRichText(decodeHtmlEntities(variantData.metafields?.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
+    overview: parseRichText(decodeHtmlEntities(variantData.metafields?.overview)) || "Premium quality bag designed for modern lifestyle.",
+    isCurrentProduct: true
+  };
+  
+  // Update labels with new variant's metafields
+  if (variantData.metafields) {
+    compareProductsData.labels = {
+      // 90-degree left labels
+      specsLabel: parseRichText(decodeHtmlEntities(variantData.metafields.specsLabel)) || "Specs",
+      featuresLabel: parseRichText(decodeHtmlEntities(variantData.metafields.featuresLabel)) || "Features",
+      availableInLabel: parseRichText(decodeHtmlEntities(variantData.metafields.availableInLabel)) || "Available in",
+      fabricLabel: parseRichText(decodeHtmlEntities(variantData.metafields.fabricLabel)) || "Fabric",
+      techSpecsLabel: parseRichText(decodeHtmlEntities(variantData.metafields.techSpecsLabel)) || "Tech Specs",
+      overallDifferenceLabel: parseRichText(decodeHtmlEntities(variantData.metafields.overallDifferenceLabel)) || "Overall Difference",
+      
+      // Golden labels (under spec values)
+      capacityLabel: parseRichText(decodeHtmlEntities(variantData.metafields.capacityLabel)) || "Capacity",
+      dimensionsLabel: parseRichText(decodeHtmlEntities(variantData.metafields.dimensionsLabel)) || "Dimensions",
+      weightLabel: parseRichText(decodeHtmlEntities(variantData.metafields.weightLabel)) || "Weight",
+      priceLabel: parseRichText(decodeHtmlEntities(variantData.metafields.priceLabel)) || "Price"
+    };
+  }
+  
+  // Re-render the modal with updated data
+  const activeTab = document.querySelector('.compare-modal-tab.active');
+  if (activeTab) {
+    const tabName = activeTab.getAttribute('data-tab');
+    renderCompareBagsTable(tabName);
   }
 }
 
@@ -1832,42 +2042,47 @@ if (typeof window.openCompareBagsModalV2 === 'function') {
 window.updateCompareModalWithVariant = function(variantId) {
   console.log('Updating compare modal with variant:', variantId);
   
-  // Find the variant data
-  const variantData = compareProductsData.sizeVariants.find(v => v.id == variantId) || 
-                     compareProductsData.fabricVariants.find(v => v.id == variantId) ||
-                     compareProductsData.currentProduct;
+  // Find the variant data from the global product data
+  const variantData = window.productMetafieldsData?.allVariants?.find(v => v.id == variantId);
   
   if (variantData) {
+    // Update current variant in the global data
+    window.productMetafieldsData.currentVariant = variantData;
+    
     // Update current product data
     compareProductsData.currentProduct = {
       ...compareProductsData.currentProduct,
-      ...variantData,
+      id: variantData.id,
+      title: parseRichText(decodeHtmlEntities(variantData.metafields?.productTitle)) || variantData.title,
+      image: parseRichText(decodeHtmlEntities(variantData.metafields?.variantImage)) || variantData.image,
+      price: parseRichText(decodeHtmlEntities(variantData.metafields?.customPrice)) || variantData.price,
+      capacity: parseRichText(decodeHtmlEntities(variantData.metafields?.capacity)) || variantData.option1,
+      dimensions: parseRichText(decodeHtmlEntities(variantData.metafields?.dimensions)) || "19\" x 18\" x 4\"",
+      weight: parseRichText(decodeHtmlEntities(variantData.metafields?.weight)) || "2.5lbs",
+      fabric: parseRichText(decodeHtmlEntities(variantData.metafields?.fabric)) || variantData.option2,
+      features: parseRichText(decodeHtmlEntities(variantData.metafields?.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
+      techSpecs: parseRichText(decodeHtmlEntities(variantData.metafields?.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
+      overview: parseRichText(decodeHtmlEntities(variantData.metafields?.overview)) || "Premium quality bag designed for modern lifestyle.",
       isCurrentProduct: true
     };
     
     // Update labels with new variant's metafields
-    const newVariant = window.productMetafieldsData?.allVariants?.find(v => v.id == variantId);
-    if (newVariant && newVariant.metafields) {
+    if (variantData.metafields) {
       compareProductsData.labels = {
         // 90-degree left labels
-        specsLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.specsLabel)) || "Specs",
-        featuresLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.featuresLabel)) || "Features",
-        availableInLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.availableInLabel)) || "Available in",
-        fabricLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.fabricLabel)) || "Fabric",
-        techSpecsLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.techSpecsLabel)) || "Tech Specs",
-        overallDifferenceLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.overallDifferenceLabel)) || "Overall Difference",
+        specsLabel: parseRichText(decodeHtmlEntities(variantData.metafields.specsLabel)) || "Specs",
+        featuresLabel: parseRichText(decodeHtmlEntities(variantData.metafields.featuresLabel)) || "Features",
+        availableInLabel: parseRichText(decodeHtmlEntities(variantData.metafields.availableInLabel)) || "Available in",
+        fabricLabel: parseRichText(decodeHtmlEntities(variantData.metafields.fabricLabel)) || "Fabric",
+        techSpecsLabel: parseRichText(decodeHtmlEntities(variantData.metafields.techSpecsLabel)) || "Tech Specs",
+        overallDifferenceLabel: parseRichText(decodeHtmlEntities(variantData.metafields.overallDifferenceLabel)) || "Overall Difference",
         
         // Golden labels (under spec values)
-        capacityLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.capacityLabel)) || "Capacity",
-        dimensionsLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.dimensionsLabel)) || "Dimensions",
-        weightLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.weightLabel)) || "Weight",
-        priceLabel: parseRichText(decodeHtmlEntities(newVariant.metafields.priceLabel)) || "Price"
+        capacityLabel: parseRichText(decodeHtmlEntities(variantData.metafields.capacityLabel)) || "Capacity",
+        dimensionsLabel: parseRichText(decodeHtmlEntities(variantData.metafields.dimensionsLabel)) || "Dimensions",
+        weightLabel: parseRichText(decodeHtmlEntities(variantData.metafields.weightLabel)) || "Weight",
+        priceLabel: parseRichText(decodeHtmlEntities(variantData.metafields.priceLabel)) || "Price"
       };
-      
-      // Update current product price with custom price if available
-      if (newVariant.metafields.customPrice) {
-        compareProductsData.currentProduct.price = parseRichText(decodeHtmlEntities(newVariant.metafields.customPrice));
-      }
     }
     
     // If modal is open, re-render it
