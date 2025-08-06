@@ -1652,9 +1652,9 @@ function renderProducts(products, tab) {
               ${generateSwatchOptions(prod, tab, cardPosition)}
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
-            <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
-              ${prod.isCurrentProduct ? 'Add to Bag' : 'Select Size'}
-            </a>
+            <button type="button" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}" data-variant-id="${prod.id}" data-card-position="${cardPosition}">
+              Add to Bag
+            </button>
           </div>
         `;
         
@@ -1690,9 +1690,9 @@ function renderProducts(products, tab) {
               ${generateSwatchOptions(prod, tab, cardPosition)}
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
-            <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
-              ${prod.isCurrentProduct ? 'Add to Bag' : 'Select Size'}
-            </a>
+            <button type="button" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}" data-variant-id="${prod.id}" data-card-position="${cardPosition}">
+              Add to Bag
+            </button>
           </div>
         `;
         
@@ -1727,6 +1727,9 @@ function renderProducts(products, tab) {
     
     // Add swatch click event handlers
     attachSwatchEventHandlers();
+    
+    // Add "Add to Bag" button click event handlers
+    attachAddToBagEventHandlers();
   } catch (error) {
     // Error handling
   }
@@ -1757,6 +1760,41 @@ function attachSwatchEventHandlers() {
       
       // Update only the specific card with new variant
       updateSpecificCardWithVariant(variantId, cardPosition);
+    });
+  });
+}
+
+// Function to attach "Add to Bag" button click event handlers
+function attachAddToBagEventHandlers() {
+  const addToBagButtons = document.querySelectorAll('.compare-modal-button[data-variant-id]');
+  
+  addToBagButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const variantId = this.getAttribute('data-variant-id');
+      const cardPosition = this.getAttribute('data-card-position');
+      
+      if (!variantId) return;
+      
+      // Check if addItemToCart function exists (from product-template.liquid)
+      if (typeof addItemToCart === 'function') {
+        // Show loading state
+        const originalText = this.textContent;
+        this.textContent = 'Adding...';
+        this.disabled = true;
+        
+        // Add item to cart
+        addItemToCart(variantId, 1, () => {
+          // Restore button state
+          this.textContent = originalText;
+          this.disabled = false;
+        });
+      } else {
+        // Fallback: redirect to product page with variant
+        const variantData = window.productMetafieldsData?.allVariants?.find(v => v.id == variantId);
+        if (variantData) {
+          window.location.href = "{{ product.url }}?variant=" + variantId;
+        }
+      }
     });
   });
 }
@@ -1836,9 +1874,9 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
             ${generateSwatchOptions(productData, tabName, cardPosition, variantId)}
             <div class="compare-modal-available-in-price">${productData.price}</div>
           </div>
-          <a href="${productData.url}" class="compare-modal-button secondary">
-            Select Size
-          </a>
+          <button type="button" class="compare-modal-button secondary" data-variant-id="${productData.id}" data-card-position="${cardPosition}">
+            Add to Bag
+          </button>
         </div>
       `;
     
@@ -1874,9 +1912,9 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
             ${generateSwatchOptions(productData, tabName, cardPosition, variantId)}
             <div class="compare-modal-available-in-price">${productData.price}</div>
           </div>
-          <a href="${productData.url}" class="compare-modal-button secondary">
-            Select Size
-          </a>
+          <button type="button" class="compare-modal-button secondary" data-variant-id="${productData.id}" data-card-position="${cardPosition}">
+            Add to Bag
+          </button>
         </div>
       `;
     
@@ -1928,6 +1966,38 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
       
       // Update only the specific card with new variant
       updateSpecificCardWithVariant(variantId, cardPosition);
+    });
+  });
+  
+  // Re-attach event handlers for the updated "Add to Bag" buttons
+  const newAddToBagButtons = cardElement.querySelectorAll('.compare-modal-button[data-variant-id]');
+  newAddToBagButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const variantId = this.getAttribute('data-variant-id');
+      const cardPosition = this.getAttribute('data-card-position');
+      
+      if (!variantId) return;
+      
+      // Check if addItemToCart function exists (from product-template.liquid)
+      if (typeof addItemToCart === 'function') {
+        // Show loading state
+        const originalText = this.textContent;
+        this.textContent = 'Adding...';
+        this.disabled = true;
+        
+        // Add item to cart
+        addItemToCart(variantId, 1, () => {
+          // Restore button state
+          this.textContent = originalText;
+          this.disabled = false;
+        });
+      } else {
+        // Fallback: redirect to product page with variant
+        const variantData = window.productMetafieldsData?.allVariants?.find(v => v.id == variantId);
+        if (variantData) {
+          window.location.href = "{{ product.url }}?variant=" + variantId;
+        }
+      }
     });
   });
 }
