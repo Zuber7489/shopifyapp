@@ -1472,79 +1472,103 @@ function generateSwatchOptions(product, tab, cardPosition = 'left', selectedVari
     `;
   }
   
-  // Determine which variants to show based on tab
+  // Get the base variant for this card position
+  let baseVariant = currentVariant;
+  if (cardPosition === 'right') {
+    // For right card, we need to find the appropriate variant based on the tab
+    if (tab === 'size') {
+      // Find a variant with different size but same fabric
+      const currentSize = currentVariant?.option2 || currentVariant?.option1;
+      const currentFabric = currentVariant?.option1 || currentVariant?.option2;
+      baseVariant = allVariants.find(variant => {
+        const variantSize = variant.option2 || variant.option1;
+        const variantFabric = variant.option1 || variant.option2;
+        return variantSize !== currentSize && variantFabric === currentFabric;
+      }) || allVariants.find(variant => variant.id !== currentVariant?.id);
+    } else if (tab === 'fabric') {
+      // Find a variant with different fabric but same size
+      const currentSize = currentVariant?.option2 || currentVariant?.option1;
+      const currentFabric = currentVariant?.option1 || currentVariant?.option2;
+      baseVariant = allVariants.find(variant => {
+        const variantSize = variant.option2 || variant.option1;
+        const variantFabric = variant.option1 || variant.option2;
+        return variantFabric !== currentFabric && variantSize === currentSize;
+      }) || allVariants.find(variant => variant.id !== currentVariant?.id);
+    }
+  }
+  
+  // Determine which variants to show based on tab and card position
   let relevantVariants = [];
   
   if (tab === 'size') {
-    // For size tab, show fabric variants for the current size
-    // First, determine which option is size and which is fabric
-    const currentSize = currentVariant?.option2 || currentVariant?.option1;
-    const currentFabric = currentVariant?.option1 || currentVariant?.option2;
+    // For size tab, show fabric variants for the base variant's size
+    const baseSize = baseVariant?.option2 || baseVariant?.option1;
+    const baseFabric = baseVariant?.option1 || baseVariant?.option2;
     
     // Find variants with same size but different fabric
     relevantVariants = allVariants.filter(variant => {
       const variantSize = variant.option2 || variant.option1;
       const variantFabric = variant.option1 || variant.option2;
-      return variantSize === currentSize && variantFabric !== currentFabric;
+      return variantSize === baseSize && variantFabric !== baseFabric;
     });
     
     // If no fabric variants found, show size variants
     if (relevantVariants.length === 0) {
       relevantVariants = allVariants.filter(variant => {
         const variantSize = variant.option2 || variant.option1;
-        return variantSize !== currentSize;
+        return variantSize !== baseSize;
       });
     }
   } else if (tab === 'fabric') {
-    // For fabric tab, show size variants for the current fabric
-    const currentSize = currentVariant?.option2 || currentVariant?.option1;
-    const currentFabric = currentVariant?.option1 || currentVariant?.option2;
+    // For fabric tab, show size variants for the base variant's fabric
+    const baseSize = baseVariant?.option2 || baseVariant?.option1;
+    const baseFabric = baseVariant?.option1 || baseVariant?.option2;
     
     // Find variants with same fabric but different size
     relevantVariants = allVariants.filter(variant => {
       const variantSize = variant.option2 || variant.option1;
       const variantFabric = variant.option1 || variant.option2;
-      return variantFabric === currentFabric && variantSize !== currentSize;
+      return variantFabric === baseFabric && variantSize !== baseSize;
     });
     
     // If no size variants found, show fabric variants
     if (relevantVariants.length === 0) {
       relevantVariants = allVariants.filter(variant => {
         const variantFabric = variant.option1 || variant.option2;
-        return variantFabric !== currentFabric;
+        return variantFabric !== baseFabric;
       });
     }
   }
   
-  // If still no relevant variants found, show all variants except current
+  // If still no relevant variants found, show all variants except base
   if (relevantVariants.length === 0) {
-    relevantVariants = allVariants.filter(variant => variant.id !== currentVariant?.id).slice(0, 2);
+    relevantVariants = allVariants.filter(variant => variant.id !== baseVariant?.id).slice(0, 2);
   }
   
   // Generate swatch HTML
   let swatchHtml = '';
   
-  // Add current variant as first swatch
-  if (currentVariant) {
-    let currentOption;
+  // Add base variant as first swatch
+  if (baseVariant) {
+    let baseOption;
     if (tab === 'size') {
       // For size tab, show the fabric option (the other option)
-      currentOption = currentVariant.option1 === (currentVariant.option2 || currentVariant.option1) ? 
-                     currentVariant.option2 : currentVariant.option1;
+      baseOption = baseVariant.option1 === (baseVariant.option2 || baseVariant.option1) ? 
+                   baseVariant.option2 : baseVariant.option1;
     } else {
       // For fabric tab, show the size option (the other option)
-      currentOption = currentVariant.option2 === (currentVariant.option1 || currentVariant.option2) ? 
-                     currentVariant.option1 : currentVariant.option2;
+      baseOption = baseVariant.option2 === (baseVariant.option1 || baseVariant.option2) ? 
+                   baseVariant.option1 : baseVariant.option2;
     }
     
-    const isSelected = selectedVariant && selectedVariant.id == currentVariant.id;
+    const isSelected = selectedVariant && selectedVariant.id == baseVariant.id;
     
     swatchHtml += `
-      <div class="compare-modal-available-in-item ${isSelected ? 'selected' : ''}" data-variant-id="${currentVariant.id}" data-option="${currentOption}" data-card-position="${cardPosition}">
+      <div class="compare-modal-available-in-item ${isSelected ? 'selected' : ''}" data-variant-id="${baseVariant.id}" data-option="${baseOption}" data-card-position="${cardPosition}">
         <div class="compare-modal-available-in-thumbnail">
-          <img src="${currentVariant.image || product.image}" alt="${currentOption}">
+          <img src="${baseVariant.image || product.image}" alt="${baseOption}">
         </div>
-        <div class="compare-modal-available-in-material">${currentOption}</div>
+        <div class="compare-modal-available-in-material">${baseOption}</div>
       </div>
     `;
   }
@@ -1629,7 +1653,7 @@ function renderProducts(products, tab) {
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
             <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
-              ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
+              ${prod.isCurrentProduct ? 'Add to Bag' : 'Select Size'}
             </a>
           </div>
         `;
@@ -1667,7 +1691,7 @@ function renderProducts(products, tab) {
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
             <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
-              ${prod.isCurrentProduct ? 'Add to Bag' : (tab === 'fabric' ? 'Select Fabric' : 'Select Size')}
+              ${prod.isCurrentProduct ? 'Add to Bag' : 'Select Size'}
             </a>
           </div>
         `;
@@ -1762,7 +1786,7 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
     image: parseRichText(decodeHtmlEntities(variantData.metafields?.variantImage)) || variantData.image,
     price: parseRichText(decodeHtmlEntities(variantData.metafields?.customPrice)) || variantData.price,
     url: "{{ product.url }}?variant=" + variantData.id,
-    isCurrentProduct: false,
+    isCurrentProduct: cardPosition === 'left', // Only left card is current product
     capacity: parseRichText(decodeHtmlEntities(variantData.metafields?.capacity)) || variantData.option1,
     dimensions: parseRichText(decodeHtmlEntities(variantData.metafields?.dimensions)) || "19\" x 18\" x 4\"",
     weight: parseRichText(decodeHtmlEntities(variantData.metafields?.weight)) || "2.5lbs",
@@ -1772,51 +1796,51 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
     overview: parseRichText(decodeHtmlEntities(variantData.metafields?.overview)) || "Premium quality bag designed for modern lifestyle."
   };
   
-  // Update the card content based on the tab
-  if (tabName === 'size') {
-    // Update size tab content
-    const specsHtml = `
-      <div class="compare-modal-spec-item">
-        <span class="compare-modal-spec-value">${productData.capacity || '20L'}</span>
-        <span class="compare-modal-golden-label">${compareProductsData.labels.capacityLabel}</span>
-      </div>
-      <div class="compare-modal-spec-item">
-        <span class="compare-modal-spec-value">${productData.dimensions || '19" x 18" x 4"'}</span>
-        <span class="compare-modal-golden-label">${compareProductsData.labels.dimensionsLabel}</span>
-      </div>
-      <div class="compare-modal-spec-item">
-        <span class="compare-modal-spec-value">${productData.weight || '2.5lbs'}</span>
-        <span class="compare-modal-golden-label">${compareProductsData.labels.weightLabel}</span>
-      </div>
-      <div class="compare-modal-spec-item">
-        <span class="compare-modal-spec-value">${productData.price}</span>
-        <span class="compare-modal-golden-label">${compareProductsData.labels.priceLabel}</span>
-      </div>
-    `;
-    
-    // Generate features HTML with proper bullet points
-    const featuresList = productData.features ? 
-      productData.features.split(/[•\n]/).filter(feature => feature.trim()).map(feature => feature.trim()) : 
-      ['Water bottle pocket', 'Luggage pass through', 'Laptop compartment', 'Carry handle', 'Water proof', 'Zippers', 'Tech caddy'];
-    
-    const featuresHtml = `
-      <ul>
-        ${featuresList.map(feature => `<li>${feature}</li>`).join('')}
-      </ul>
-    `;
-    
-    // Generate Available in section HTML with dynamic swatches
-    const availableInHtml = `
-      <div class="compare-modal-available-in">
-        <div class="compare-modal-available-in-content">
-          ${generateSwatchOptions(productData, tabName, cardPosition, variantId)}
-          <div class="compare-modal-available-in-price">${productData.price}</div>
+      // Update the card content based on the tab
+    if (tabName === 'size') {
+      // Update size tab content
+      const specsHtml = `
+        <div class="compare-modal-spec-item">
+          <span class="compare-modal-spec-value">${productData.capacity || '20L'}</span>
+          <span class="compare-modal-golden-label">${compareProductsData.labels.capacityLabel}</span>
         </div>
-        <a href="${productData.url}" class="compare-modal-button secondary">
-          ${tabName === 'fabric' ? 'Select Fabric' : 'Select Size'}
-        </a>
-      </div>
-    `;
+        <div class="compare-modal-spec-item">
+          <span class="compare-modal-spec-value">${productData.dimensions || '19" x 18" x 4"'}</span>
+          <span class="compare-modal-golden-label">${compareProductsData.labels.dimensionsLabel}</span>
+        </div>
+        <div class="compare-modal-spec-item">
+          <span class="compare-modal-spec-value">${productData.weight || '2.5lbs'}</span>
+          <span class="compare-modal-golden-label">${compareProductsData.labels.weightLabel}</span>
+        </div>
+        <div class="compare-modal-spec-item">
+          <span class="compare-modal-spec-value">${productData.price}</span>
+          <span class="compare-modal-golden-label">${compareProductsData.labels.priceLabel}</span>
+        </div>
+      `;
+      
+      // Generate features HTML with proper bullet points
+      const featuresList = productData.features ? 
+        productData.features.split(/[•\n]/).filter(feature => feature.trim()).map(feature => feature.trim()) : 
+        ['Water bottle pocket', 'Luggage pass through', 'Laptop compartment', 'Carry handle', 'Water proof', 'Zippers', 'Tech caddy'];
+      
+      const featuresHtml = `
+        <ul>
+          ${featuresList.map(feature => `<li>${feature}</li>`).join('')}
+        </ul>
+      `;
+      
+      // Generate Available in section HTML with dynamic swatches
+      const availableInHtml = `
+        <div class="compare-modal-available-in">
+          <div class="compare-modal-available-in-content">
+            ${generateSwatchOptions(productData, tabName, cardPosition, variantId)}
+            <div class="compare-modal-available-in-price">${productData.price}</div>
+          </div>
+          <a href="${productData.url}" class="compare-modal-button secondary">
+            Select Size
+          </a>
+        </div>
+      `;
     
     // Update the card content - preserve labels for left card
     cardElement.innerHTML = `
@@ -1839,22 +1863,22 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
       </div>
     `;
     
-  } else if (tabName === 'fabric') {
-    // Update fabric tab content
-    const fabricHtml = productData.fabric || 'Fabric type not specified';
-    
-    // Generate Available in section HTML for fabric tab with dynamic swatches
-    const availableInHtml = `
-      <div class="compare-modal-available-in">
-        <div class="compare-modal-available-in-content">
-          ${generateSwatchOptions(productData, tabName, cardPosition, variantId)}
-          <div class="compare-modal-available-in-price">${productData.price}</div>
+      } else if (tabName === 'fabric') {
+      // Update fabric tab content
+      const fabricHtml = productData.fabric || 'Fabric type not specified';
+      
+      // Generate Available in section HTML for fabric tab with dynamic swatches
+      const availableInHtml = `
+        <div class="compare-modal-available-in">
+          <div class="compare-modal-available-in-content">
+            ${generateSwatchOptions(productData, tabName, cardPosition, variantId)}
+            <div class="compare-modal-available-in-price">${productData.price}</div>
+          </div>
+          <a href="${productData.url}" class="compare-modal-button secondary">
+            Select Size
+          </a>
         </div>
-        <a href="${productData.url}" class="compare-modal-button secondary">
-          ${tabName === 'fabric' ? 'Select Fabric' : 'Select Size'}
-        </a>
-      </div>
-    `;
+      `;
     
     // Update the card content - preserve labels for left card
     cardElement.innerHTML = `
