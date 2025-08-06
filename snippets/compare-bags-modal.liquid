@@ -1434,7 +1434,7 @@ function renderCompareBagsTable(tab) {
 }
 
 // Function to generate swatch options based on product variants
-function generateSwatchOptions(product, tab) {
+function generateSwatchOptions(product, tab, cardPosition = 'left') {
   // Get all variants for this product
   const allVariants = window.productMetafieldsData?.allVariants || [];
   const currentVariant = window.productMetafieldsData?.currentVariant;
@@ -1442,13 +1442,13 @@ function generateSwatchOptions(product, tab) {
   if (!allVariants.length) {
     // Fallback to static swatches if no variants
     return `
-      <div class="compare-modal-available-in-item selected">
+      <div class="compare-modal-available-in-item selected" data-card-position="${cardPosition}">
         <div class="compare-modal-available-in-thumbnail">
           <img src="${product.image}" alt="Carbonate">
         </div>
         <div class="compare-modal-available-in-material">Carbonate</div>
       </div>
-      <div class="compare-modal-available-in-item">
+      <div class="compare-modal-available-in-item" data-card-position="${cardPosition}">
         <div class="compare-modal-available-in-thumbnail">
           <img src="${product.image}" alt="Ballistic">
         </div>
@@ -1523,7 +1523,7 @@ function generateSwatchOptions(product, tab) {
     }
     
     swatchHtml += `
-      <div class="compare-modal-available-in-item selected" data-variant-id="${currentVariant.id}" data-option="${currentOption}">
+      <div class="compare-modal-available-in-item selected" data-variant-id="${currentVariant.id}" data-option="${currentOption}" data-card-position="${cardPosition}">
         <div class="compare-modal-available-in-thumbnail">
           <img src="${currentVariant.image || product.image}" alt="${currentOption}">
         </div>
@@ -1546,7 +1546,7 @@ function generateSwatchOptions(product, tab) {
     }
     
     swatchHtml += `
-      <div class="compare-modal-available-in-item" data-variant-id="${variant.id}" data-option="${option}">
+      <div class="compare-modal-available-in-item" data-variant-id="${variant.id}" data-option="${option}" data-card-position="${cardPosition}">
         <div class="compare-modal-available-in-thumbnail">
           <img src="${variant.image || product.image}" alt="${option}">
         </div>
@@ -1567,7 +1567,9 @@ function renderProducts(products, tab) {
     
     // Render products in grid layout
     let html = '';
-    products.forEach(prod => {
+    products.forEach((prod, index) => {
+      const cardPosition = index === 0 ? 'left' : 'right';
+      
       if (tab === 'size') {
         // Size tab content with structured specs in 2x2 grid (values with golden labels below)
         const specsHtml = `
@@ -1604,7 +1606,7 @@ function renderProducts(products, tab) {
         const availableInHtml = `
           <div class="compare-modal-available-in">
             <div class="compare-modal-available-in-content">
-              ${generateSwatchOptions(prod, tab)}
+              ${generateSwatchOptions(prod, tab, cardPosition)}
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
             <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
@@ -1614,7 +1616,7 @@ function renderProducts(products, tab) {
         `;
         
         html += `
-          <div class="compare-modal-product">
+          <div class="compare-modal-product" data-card-position="${cardPosition}">
             <div class="compare-modal-img-wrap">
               <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
             </div>
@@ -1642,7 +1644,7 @@ function renderProducts(products, tab) {
         const availableInHtml = `
           <div class="compare-modal-available-in">
             <div class="compare-modal-available-in-content">
-              ${generateSwatchOptions(prod, tab)}
+              ${generateSwatchOptions(prod, tab, cardPosition)}
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
             <a href="${prod.url}" class="compare-modal-button ${prod.isCurrentProduct ? 'primary' : 'secondary'}">
@@ -1652,7 +1654,7 @@ function renderProducts(products, tab) {
         `;
         
         html += `
-          <div class="compare-modal-product">
+          <div class="compare-modal-product" data-card-position="${cardPosition}">
             <div class="compare-modal-img-wrap">
               <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
             </div>
@@ -1695,6 +1697,7 @@ function attachSwatchEventHandlers() {
     item.addEventListener('click', function() {
       const variantId = this.getAttribute('data-variant-id');
       const option = this.getAttribute('data-option');
+      const cardPosition = this.getAttribute('data-card-position');
       
       if (!variantId) return;
       
@@ -1709,13 +1712,177 @@ function attachSwatchEventHandlers() {
       // Add active class to clicked swatch
       this.classList.add('selected');
       
-      // Update modal content with new variant
-      updateModalWithVariant(variantId);
+      // Update only the specific card with new variant
+      updateSpecificCardWithVariant(variantId, cardPosition);
     });
   });
 }
 
-// Function to update modal content with selected variant
+// Function to update only a specific card with selected variant
+function updateSpecificCardWithVariant(variantId, cardPosition) {
+  // Find the variant data
+  const variantData = window.productMetafieldsData?.allVariants?.find(v => v.id == variantId);
+  if (!variantData) {
+    return;
+  }
+  
+  // Find the specific card to update
+  const cardElement = document.querySelector(`.compare-modal-product[data-card-position="${cardPosition}"]`);
+  if (!cardElement) {
+    return;
+  }
+  
+  // Get the active tab
+  const activeTab = document.querySelector('.compare-modal-tab.active');
+  const tabName = activeTab ? activeTab.getAttribute('data-tab') : 'size';
+  
+  // Create product data for this variant
+  const productData = {
+    id: variantData.id,
+    title: parseRichText(decodeHtmlEntities(variantData.metafields?.productTitle)) || variantData.title,
+    image: parseRichText(decodeHtmlEntities(variantData.metafields?.variantImage)) || variantData.image,
+    price: parseRichText(decodeHtmlEntities(variantData.metafields?.customPrice)) || variantData.price,
+    url: "{{ product.url }}?variant=" + variantData.id,
+    isCurrentProduct: false,
+    capacity: parseRichText(decodeHtmlEntities(variantData.metafields?.capacity)) || variantData.option1,
+    dimensions: parseRichText(decodeHtmlEntities(variantData.metafields?.dimensions)) || "19\" x 18\" x 4\"",
+    weight: parseRichText(decodeHtmlEntities(variantData.metafields?.weight)) || "2.5lbs",
+    fabric: parseRichText(decodeHtmlEntities(variantData.metafields?.fabric)) || variantData.option2,
+    features: parseRichText(decodeHtmlEntities(variantData.metafields?.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
+    techSpecs: parseRichText(decodeHtmlEntities(variantData.metafields?.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
+    overview: parseRichText(decodeHtmlEntities(variantData.metafields?.overview)) || "Premium quality bag designed for modern lifestyle."
+  };
+  
+  // Update the card content based on the tab
+  if (tabName === 'size') {
+    // Update size tab content
+    const specsHtml = `
+      <div class="compare-modal-spec-item">
+        <span class="compare-modal-spec-value">${productData.capacity || '20L'}</span>
+        <span class="compare-modal-golden-label">${compareProductsData.labels.capacityLabel}</span>
+      </div>
+      <div class="compare-modal-spec-item">
+        <span class="compare-modal-spec-value">${productData.dimensions || '19" x 18" x 4"'}</span>
+        <span class="compare-modal-golden-label">${compareProductsData.labels.dimensionsLabel}</span>
+      </div>
+      <div class="compare-modal-spec-item">
+        <span class="compare-modal-spec-value">${productData.weight || '2.5lbs'}</span>
+        <span class="compare-modal-golden-label">${compareProductsData.labels.weightLabel}</span>
+      </div>
+      <div class="compare-modal-spec-item">
+        <span class="compare-modal-spec-value">${productData.price}</span>
+        <span class="compare-modal-golden-label">${compareProductsData.labels.priceLabel}</span>
+      </div>
+    `;
+    
+    // Generate features HTML with proper bullet points
+    const featuresList = productData.features ? 
+      productData.features.split(/[•\n]/).filter(feature => feature.trim()).map(feature => feature.trim()) : 
+      ['Water bottle pocket', 'Luggage pass through', 'Laptop compartment', 'Carry handle', 'Water proof', 'Zippers', 'Tech caddy'];
+    
+    const featuresHtml = `
+      <ul>
+        ${featuresList.map(feature => `<li>${feature}</li>`).join('')}
+      </ul>
+    `;
+    
+    // Generate Available in section HTML with dynamic swatches
+    const availableInHtml = `
+      <div class="compare-modal-available-in">
+        <div class="compare-modal-available-in-content">
+          ${generateSwatchOptions(productData, tabName, cardPosition)}
+          <div class="compare-modal-available-in-price">${productData.price}</div>
+        </div>
+        <a href="${productData.url}" class="compare-modal-button secondary">
+          ${tabName === 'fabric' ? 'Select Fabric' : 'Select Size'}
+        </a>
+      </div>
+    `;
+    
+    // Update the card content
+    cardElement.innerHTML = `
+      <div class="compare-modal-img-wrap">
+        <img class="compare-modal-img" src="${productData.image}" alt="${productData.title}">
+      </div>
+      
+      <h3 class="compare-modal-product-title">${productData.title}</h3>
+      <div class="compare-modal-specs">
+        ${specsHtml}
+      </div>
+      <div class="compare-modal-features">
+        ${featuresHtml}
+      </div>
+      <div class="compare-modal-available-in-wrapper">
+        ${availableInHtml}
+      </div>
+    `;
+    
+  } else if (tabName === 'fabric') {
+    // Update fabric tab content
+    const fabricHtml = productData.fabric || 'Fabric type not specified';
+    
+    // Generate Available in section HTML for fabric tab with dynamic swatches
+    const availableInHtml = `
+      <div class="compare-modal-available-in">
+        <div class="compare-modal-available-in-content">
+          ${generateSwatchOptions(productData, tabName, cardPosition)}
+          <div class="compare-modal-available-in-price">${productData.price}</div>
+        </div>
+        <a href="${productData.url}" class="compare-modal-button secondary">
+          ${tabName === 'fabric' ? 'Select Fabric' : 'Select Size'}
+        </a>
+      </div>
+    `;
+    
+    // Update the card content
+    cardElement.innerHTML = `
+      <div class="compare-modal-img-wrap">
+        <img class="compare-modal-img" src="${productData.image}" alt="${productData.title}">
+      </div>
+      
+      <div class="compare-modal-fabric">
+        <strong>${fabricHtml}</strong>
+      </div>
+      <div class="compare-modal-tech-specs">
+        ${productData.techSpecs ? `<p>${productData.techSpecs.replace(/\n/g, '</p><p>')}</p>` : '<p><strong>Silicon Face Coating:</strong> This coating provides extra weather, strain, abrasion resistance without changing the look and hand feel of the fabric.</p><p><strong>Coal PU Backside:</strong> This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.</p>'}
+      </div>
+      <div class="compare-modal-overview">
+        <p><strong>Overall Difference:</strong> ${productData.overview || 'Has a modern technical aesthetic with a smooth supple feel. Has slightly more structure than our ballistic version, without being stiff and rigid like many PU and TPU coated fabrics. It\'s the ideal choice for adventure enthusiast that want a hybrid option to transition between office and outdoors.'}</p>
+      </div>
+      <div class="compare-modal-available-in-wrapper">
+        ${availableInHtml}
+      </div>
+    `;
+  }
+  
+  // Re-attach event handlers for the updated swatches
+  const newSwatchItems = cardElement.querySelectorAll('.compare-modal-available-in-item');
+  newSwatchItems.forEach(item => {
+    item.addEventListener('click', function() {
+      const variantId = this.getAttribute('data-variant-id');
+      const option = this.getAttribute('data-option');
+      const cardPosition = this.getAttribute('data-card-position');
+      
+      if (!variantId) return;
+      
+      // Remove active class from all swatches in this group
+      const parentContent = this.closest('.compare-modal-available-in-content');
+      if (parentContent) {
+        parentContent.querySelectorAll('.compare-modal-available-in-item').forEach(swatch => {
+          swatch.classList.remove('selected');
+        });
+      }
+      
+      // Add active class to clicked swatch
+      this.classList.add('selected');
+      
+      // Update only the specific card with new variant
+      updateSpecificCardWithVariant(variantId, cardPosition);
+    });
+  });
+}
+
+// Function to update modal content with selected variant (kept for backward compatibility)
 function updateModalWithVariant(variantId) {
   // Find the variant data
   const variantData = window.productMetafieldsData?.allVariants?.find(v => v.id == variantId);
@@ -1938,14 +2105,11 @@ window.updateCompareModalWithVariant = function(variantId) {
       };
     }
     
-    // If modal is open, re-render it
+    // If modal is open, update only the left card (current product card)
     const modal = document.getElementById('compareBagsModalV2');
     if (modal && modal.style.display === 'flex') {
-      const activeTab = document.querySelector('.compare-modal-tab.active');
-      if (activeTab) {
-        const tabName = activeTab.getAttribute('data-tab');
-        renderCompareBagsTable(tabName);
-      }
+      // Update only the left card with the new variant data
+      updateSpecificCardWithVariant(variantId, 'left');
     }
   }
 };
