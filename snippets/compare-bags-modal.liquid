@@ -106,6 +106,40 @@
   align-items: stretch;
 }
 
+/* Ensure each product card is a flex container for better control */
+.compare-modal-product {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Force equal heights for matching sections across columns */
+.compare-modal-product[data-card-position="left"] .compare-modal-fabric,
+.compare-modal-product[data-card-position="right"] .compare-modal-fabric {
+  min-height: 0;
+  flex-shrink: 0;
+}
+
+.compare-modal-product[data-card-position="left"] .compare-modal-tech-specs,
+.compare-modal-product[data-card-position="right"] .compare-modal-tech-specs {
+  min-height: 0;
+  flex-shrink: 0;
+}
+
+.compare-modal-product[data-card-position="left"] .compare-modal-overview,
+.compare-modal-product[data-card-position="right"] .compare-modal-overview {
+  min-height: 0;
+  flex-shrink: 0;
+}
+
+.compare-modal-product[data-card-position="left"] .compare-modal-available-in-wrapper,
+.compare-modal-product[data-card-position="right"] .compare-modal-available-in-wrapper {
+  min-height: 0;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
 .compare-modal-category-label {
   font-size: 13px;
   color: #B8860B;
@@ -461,6 +495,9 @@
   text-align: left;
   font-weight: 600;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .compare-modal-fabric strong {
@@ -477,6 +514,9 @@
   order: 3;
   line-height: 1.4;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .compare-modal-tech-specs p {
@@ -504,6 +544,9 @@
   order: 4;
   line-height: 1.4;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .compare-modal-overview p {
@@ -1361,6 +1404,10 @@ window.openCompareBagsModalV2 = function() {
   // Labels are now inside each category div, no need to update separately
   
   renderCompareBagsTable(defaultTab);
+  
+  // Equalize heights after modal opens
+  setTimeout(equalizeGridHeights, 200);
+  
   document.body.style.overflow = 'hidden';
   enableCompareModalScrollLock();
 };
@@ -1730,6 +1777,9 @@ function renderProducts(products, tab) {
     
     // Add "Add to Bag" button click event handlers
     attachAddToBagEventHandlers();
+    
+    // Equalize heights of matching sections across columns
+    setTimeout(equalizeGridHeights, 100);
   } catch (error) {
     // Error handling
   }
@@ -2000,6 +2050,51 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
       }
     });
   });
+  
+  // Re-equalize heights after updating card content
+  setTimeout(equalizeGridHeights, 100);
+}
+
+// Function to equalize heights of matching sections across columns
+function equalizeGridHeights() {
+  try {
+    const leftCard = document.querySelector('.compare-modal-product[data-card-position="left"]');
+    const rightCard = document.querySelector('.compare-modal-product[data-card-position="right"]');
+    
+    if (!leftCard || !rightCard) return;
+    
+    // Sections to equalize
+    const sections = [
+      'compare-modal-fabric',
+      'compare-modal-tech-specs', 
+      'compare-modal-overview',
+      'compare-modal-available-in-wrapper'
+    ];
+    
+    sections.forEach(sectionClass => {
+      const leftSection = leftCard.querySelector(`.${sectionClass}`);
+      const rightSection = rightCard.querySelector(`.${sectionClass}`);
+      
+      if (leftSection && rightSection) {
+        // Reset heights to get natural heights
+        leftSection.style.height = '';
+        rightSection.style.height = '';
+        
+        // Get the maximum height
+        const leftHeight = leftSection.offsetHeight;
+        const rightHeight = rightSection.offsetHeight;
+        const maxHeight = Math.max(leftHeight, rightHeight);
+        
+        // Apply the maximum height to both sections
+        if (maxHeight > 0) {
+          leftSection.style.height = maxHeight + 'px';
+          rightSection.style.height = maxHeight + 'px';
+        }
+      }
+    });
+  } catch (error) {
+    console.log('Height equalization error:', error);
+  }
 }
 
 // Function to update modal content with selected variant (kept for backward compatibility)
@@ -2099,12 +2194,38 @@ function disableCompareModalScrollLock() {
 document.addEventListener('DOMContentLoaded', function() {
   attachCompareButtonListeners();
   attachModalEventListeners();
+  
+  // Add resize and orientation change listeners for height equalization
+  window.addEventListener('resize', function() {
+    if (document.getElementById('compareBagsModalV2')?.style.display === 'flex') {
+      setTimeout(equalizeGridHeights, 100);
+    }
+  });
+  
+  window.addEventListener('orientationchange', function() {
+    if (document.getElementById('compareBagsModalV2')?.style.display === 'flex') {
+      setTimeout(equalizeGridHeights, 300);
+    }
+  });
 });
 
 // Also try immediately if DOM is already loaded
 if (document.readyState !== 'loading') {
   attachCompareButtonListeners();
   attachModalEventListeners();
+  
+  // Add resize and orientation change listeners for height equalization
+  window.addEventListener('resize', function() {
+    if (document.getElementById('compareBagsModalV2')?.style.display === 'flex') {
+      setTimeout(equalizeGridHeights, 100);
+    }
+  });
+  
+  window.addEventListener('orientationchange', function() {
+    if (document.getElementById('compareBagsModalV2')?.style.display === 'flex') {
+      setTimeout(equalizeGridHeights, 300);
+    }
+  });
 }
 
 function attachCompareButtonListeners() {
