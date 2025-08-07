@@ -32,10 +32,11 @@
   margin: 20px auto; 
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08); 
-  padding: 20px; 
+  padding: 20px 20px 0 20px; 
   position: relative;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .compare-modal-close {
@@ -571,20 +572,27 @@
   margin-top: auto;
   padding: 20px;
   background-color: #f8f8f8;
-  border-radius: 8px;
-  margin-right: 0;
+  margin-right: -20px;
+  margin-left: -20px;
   margin-bottom: 0;
-  width: 100%;
+  width: calc(100% + 40px);
   position: sticky;
   bottom: 0;
+  box-sizing: border-box;
+}
+
+.compare-modal-available-in-wrapper .compare-modal-category-label {
+  left: 12px;
+  position: absolute;
 }
 
 @media (max-width: 480px) {
   .compare-modal-content { 
     margin: 8px; 
-    padding: 8px 0; 
+    padding: 8px 8px 0 8px; 
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: hidden;
   }
   
   .compare-modal-grid { 
@@ -641,11 +649,16 @@
   .compare-modal-available-in-wrapper {
     margin-top: auto;
     padding: 8px;
-    margin-right: 0;
+    margin-right: -8px;
+    margin-left: -8px;
     margin-bottom: 0;
-    width: 100%;
+    width: calc(100% + 16px);
     position: sticky;
     bottom: 0;
+  }
+  
+  .compare-modal-available-in-wrapper .compare-modal-category-label {
+    left: 8px;
   }
   
   .compare-modal-available-in-thumbnail {
@@ -690,7 +703,8 @@
 @media (max-width: 360px) {
   .compare-modal-content { 
     margin: 4px; 
-    padding: 4px 0; 
+    padding: 4px 4px 0 4px; 
+    overflow-x: hidden;
   }
   
   .compare-modal-grid { 
@@ -737,11 +751,16 @@
   .compare-modal-available-in-wrapper {
     margin-top: auto;
     padding: 6px;
-    margin-right: 0;
+    margin-right: -4px;
+    margin-left: -4px;
     margin-bottom: 0;
-    width: 100%;
+    width: calc(100% + 8px);
     position: sticky;
     bottom: 0;
+  }
+  
+  .compare-modal-available-in-wrapper .compare-modal-category-label {
+    left: 4px;
   }
   
   .compare-modal-available-in-thumbnail {
