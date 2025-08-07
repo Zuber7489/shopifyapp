@@ -1,22 +1,43 @@
     <style>
+    /* Font loading with error handling and fallbacks */
     @font-face {
-      font-family: 'Neue Haas Display';   src: url('{{ "NeueHaasDisplayBlack.ttf" | asset_url }}') format('truetype'); font-weight: 900; font-style: normal;
+      font-family: 'Neue Haas Display';   
+      src: url('{{ "NeueHaasDisplayBlack.ttf" | asset_url }}') format('truetype'); 
+      font-weight: 900; 
+      font-style: normal;
+      font-display: swap;
     }
     
     @font-face {
-      font-family: 'Neue Haas Display';      src: url('{{ "NeueHaasDisplayBold.ttf" | asset_url }}') format('truetype');      font-weight: 700;      font-style: normal;
+      font-family: 'Neue Haas Display';      
+      src: url('{{ "NeueHaasDisplayBold.ttf" | asset_url }}') format('truetype');      
+      font-weight: 700;      
+      font-style: normal;
+      font-display: swap;
     }
     
     @font-face {
-      font-family: 'Neue Haas Display';      src: url('{{ "NeueHaasDisplayMedium.ttf" | asset_url }}') format('truetype');      font-weight: 500;      font-style: normal;
+      font-family: 'Neue Haas Display';      
+      src: url('{{ "NeueHaasDisplayMedium.ttf" | asset_url }}') format('truetype');      
+      font-weight: 500;      
+      font-style: normal;
+      font-display: swap;
     }
     
     @font-face {
-      font-family: 'Neue Haas Display';      src: url('{{ "NeueHaasDisplayRoman.ttf" | asset_url }}') format('truetype');      font-weight: 400;      font-style: normal;
+      font-family: 'Neue Haas Display';      
+      src: url('{{ "NeueHaasDisplayRoman.ttf" | asset_url }}') format('truetype');      
+      font-weight: 400;      
+      font-style: normal;
+      font-display: swap;
     }
     
     @font-face {
-      font-family: 'Neue Haas Display';      src: url('{{ "NeueHaasDisplayLight.ttf" | asset_url }}') format('truetype');      font-weight: 300;      font-style: normal;
+      font-family: 'Neue Haas Display';      
+      src: url('{{ "NeueHaasDisplayLight.ttf" | asset_url }}') format('truetype');      
+      font-weight: 300;      
+      font-style: normal;
+      font-display: swap;
     }
     
     @font-face {
@@ -24,9 +45,43 @@
       src: url('{{ "NeueHaasDisplayThin.ttf" | asset_url }}') format('truetype');
       font-weight: 100;
       font-style: normal;
+      font-display: swap;
     }
     
     /* Video optimizations */
+    
+    <script>
+    // Font loading optimization - silent error handling
+    (function() {
+      'use strict';
+      
+      // Font loading detection with error handling - only for error prevention
+      if ('fonts' in document) {
+        const fontFaces = [
+          { family: 'Neue Haas Display', weight: '900', style: 'normal' },
+          { family: 'Neue Haas Display', weight: '700', style: 'normal' },
+          { family: 'Neue Haas Display', weight: '500', style: 'normal' },
+          { family: 'Neue Haas Display', weight: '400', style: 'normal' },
+          { family: 'Neue Haas Display', weight: '300', style: 'normal' },
+          { family: 'Neue Haas Display', weight: '100', style: 'normal' }
+        ];
+        
+        // Load fonts with error handling - silent error catching
+        Promise.all(
+          fontFaces.map(fontFace => {
+            return document.fonts.load(`${fontFace.weight} 1em "${fontFace.family}"`, fontFace.style)
+              .catch(error => {
+                // Silent error handling - don't show console warnings
+                return null;
+              });
+          })
+        ).catch(error => {
+          // Silent error handling - don't show console warnings
+        });
+      }
+      
+    })();
+    </script>
     video {
       -webkit-transform: translate3d(0, 0, 0);
       transform: translate3d(0, 0, 0);
