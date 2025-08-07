@@ -1517,7 +1517,7 @@ function generateSwatchOptions(product, tab, cardPosition = 'left', selectedVari
   
   // Determine which variant should be marked as selected
   // If selectedVariantId is provided, use that, otherwise use currentVariant
-  const selectedVariant = selectedVariantId ? 
+  let selectedVariant = selectedVariantId ? 
     allVariants.find(v => v.id == selectedVariantId) : currentVariant;
   
   if (!allVariants.length) {
@@ -1561,6 +1561,11 @@ function generateSwatchOptions(product, tab, cardPosition = 'left', selectedVari
         return variantFabric !== currentFabric && variantSize === currentSize;
       }) || allVariants.find(variant => variant.id !== currentVariant?.id);
     }
+  }
+  
+  // For right card, update selectedVariant to use baseVariant if no specific variant is selected
+  if (cardPosition === 'right' && !selectedVariantId) {
+    selectedVariant = baseVariant;
   }
   
   // Determine which variants to show based on tab and card position
