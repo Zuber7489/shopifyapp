@@ -1065,6 +1065,13 @@ try {
 
 // Dynamic product data from Shopify with metafields - using JSON data from product template
 const compareProductsData = {
+  // Debug: Log the current variant data
+  _debug: (function() {
+    console.log('Compare Modal Debug - Current Variant Data:', window.productMetafieldsData?.currentVariant);
+    console.log('Compare Modal Debug - Current Variant ID:', window.productMetafieldsData?.currentVariant?.id);
+    console.log('Compare Modal Debug - Fallback Variant ID:', {{ current_variant.id | default: product.id }});
+  })(),
+  
   // Metafield-based labels for 90-degree left labels and golden labels
   labels: {
     // 90-degree left labels
@@ -1083,7 +1090,7 @@ const compareProductsData = {
   },
   
   currentProduct: {
-    id: {{ product.id | default: 0 }},
+    id: window.productMetafieldsData?.currentVariant?.id || {{ current_variant.id | default: product.id }},
     title: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.productTitle)) || "{{ product.title | escape | default: 'Product' }}",
     image: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.variantImage)) || window.productMetafieldsData?.currentVariant?.image || "{{ current_variant.featured_image | img_url: '300x300' | default: product.featured_image | img_url: '300x300' | default: '' }}",
     price: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.customPrice)) || "{{ current_variant.price | money | default: product.price | money }}",
@@ -1717,10 +1724,16 @@ function attachAddToBagEventHandlers() {
       const variantId = this.getAttribute('data-variant-id');
       const cardPosition = this.getAttribute('data-card-position');
       
-      if (!variantId) return;
+      console.log('Add to Bag clicked - Variant ID:', variantId, 'Card Position:', cardPosition);
+      
+      if (!variantId) {
+        console.error('No variant ID found for Add to Bag button');
+        return;
+      }
       
       // Check if addItemToCart function exists (from product-template.liquid)
       if (typeof addItemToCart === 'function') {
+        console.log('Using addItemToCart function with variant ID:', variantId);
         // Show loading state
         const originalText = this.textContent;
         this.textContent = 'Adding...';
@@ -1733,6 +1746,7 @@ function attachAddToBagEventHandlers() {
           this.disabled = false;
         });
       } else {
+        console.log('addItemToCart function not found, using fallback redirect');
         // Fallback: redirect to product page with variant
         const variantData = window.productMetafieldsData?.allVariants?.find(v => v.id == variantId);
         if (variantData) {
