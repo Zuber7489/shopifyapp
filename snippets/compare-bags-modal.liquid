@@ -160,7 +160,7 @@
 }
 
 
-.compare-modal-features,
+{% comment %} .compare-modal-features, {% endcomment %}
 .compare-modal-fabric,
 .compare-modal-tech-specs,
 .compare-modal-overview,
@@ -204,12 +204,12 @@
   background: #f8f8f8;
   border-radius: 8px;
   padding: 15px;
-  height: 215px;
+  height: 189px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 80%;
-  max-width: 236px;
+  width: 94%;
+  max-width: 261px;
   margin: 0 auto;
   
 }
@@ -380,7 +380,7 @@
 .compare-modal-available-in-item {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   position: relative;
 }
@@ -441,7 +441,7 @@
 .compare-modal-available-in-material {
   font-size: 10px;
   color: #ccb670;
-  text-align: left;
+  text-align: center;
   font-weight: 500;
 }
 
@@ -592,8 +592,84 @@
 
 
 
+/* For screen widths up to 450px */
+@media (max-width: 700px) {
+  .compare-modal-features ul {
+    padding-left: 12%;
+  }
+}
+
+@media (max-width: 400px){
+.compare-modal-specs {
+ padding-left: 5% !important;
+  }
+}
+
+{% comment %} /* For screen widths up to 700px (but more than 450px) */
 
 
+/* 601px to 700px */
+@media (min-width: 516px) and (max-width: 600px) {
+  .compare-modal-features ul {
+    padding-left: 36px;
+  }
+} {% endcomment %}
+@media (max-width: 700px) {
+  .compare-modal-button {
+    min-width: 69px;
+    margin-right: 4%;
+        padding: 8px 21px;
+  }
+  .compare-modal-product-title{
+  font-size:11px;
+  padding-left:21px;
+  padding-right:21px;
+  }
+  .compare-modal-specs {
+padding-right: 4% !important;
+  }
+.compare-modal-img-wrap {
+  width:100%;
+}
+  .compare-modal-available-in-content {
+    margin-left: 20%; /* Or whatever smaller value you prefer */
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .compare-modal-fabric, .compare-modal-tech-specs, .compare-modal-overview, .compare-modal-available-in-wrapper{
+  padding-left: 24px;
+    padding-right: 26px;
+  }
+  
+  /* Keep swatches on the same line for mobile */
+  .compare-modal-available-in-content .compare-modal-available-in-item {
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: top;
+    float: left;
+  }
+  
+  /* Center price below swatches for mobile */
+  .compare-modal-available-in-price {
+    margin-left: 0;
+    margin-top: 0;
+    margin-right: 45%;
+    text-align: center;
+    width: 100%;
+    order: 2;
+    clear: both;
+  }
+}
+
+/* 601px to 700px */
+@media (min-width: 601px) and (max-width: 700px) {
+  .compare-modal-features ul {
+    padding-left: 45px;
+  }
+}
 
 
 
@@ -622,10 +698,25 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
+  .compare-modal-spec-value{
+      font-size: 11px;
+  }
   @keyframes compareModalSlideUp {
     from { transform: translateY(100%); }
     to   { transform: translateY(0); }
   }
+  
+  /* Mobile responsive adjustments for compare modal elements */
+  .compare-modal-category-label {
+    left: -19px !important;
+  }
+  
+  .compare-modal-available-in-wrapper .compare-modal-category-label {
+    left: 1px !important;
+    top: 66px !important;
+  }
+  
+
 }
 
 /* Compare Bags button styles */
