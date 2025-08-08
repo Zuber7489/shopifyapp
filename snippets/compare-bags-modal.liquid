@@ -603,6 +603,7 @@
 @media (max-width: 700px) {
   .compare-modal-button {
  min-width: 140px;
+margin-right: 12%;
 padding: 3px 18px;
   }
 
@@ -1065,13 +1066,6 @@ try {
 
 // Dynamic product data from Shopify with metafields - using JSON data from product template
 const compareProductsData = {
-  // Debug: Log the current variant data
-  _debug: (function() {
-    console.log('Compare Modal Debug - Current Variant Data:', window.productMetafieldsData?.currentVariant);
-    console.log('Compare Modal Debug - Current Variant ID:', window.productMetafieldsData?.currentVariant?.id);
-    console.log('Compare Modal Debug - Fallback Variant ID:', {{ current_variant.id | default: product.id }});
-  })(),
-  
   // Metafield-based labels for 90-degree left labels and golden labels
   labels: {
     // 90-degree left labels
