@@ -18,8 +18,7 @@
   left: 0; 
   top: 0; 
   width: 100vw; 
-  height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile */
+  height: 100dvh;
   background: rgba(0,0,0,0.45); 
   overflow: auto; 
   align-items: center; 
@@ -594,8 +593,7 @@
     padding-left: 9%;
   }
   .compare-modal-available-in-wrapper {
-    padding: 20px;
-    min-height: auto;
+    padding:10px;
   }
 }
 
@@ -607,36 +605,32 @@
 
 @media (max-width: 700px) {
   .compare-modal-button {
-    min-width: 140px;
-    margin-right: 31%;
-    padding: 8px 18px;
-    margin-bottom: 0px;
+ min-width: 140px;
+margin-right: 31%;
+padding: 3px 18px;
   }
 
   .compare-modal-tabs{
-    margin: 16px 0px;
+        margin: 16px 0px;
   }
 
   .compare-modal-tab{
-    padding:8px;
+  padding:8px;
   }
 
   .compare-modal-product-title{
-    font-size:11px;
-    padding-left:21px;
-    padding-right:21px;
+  font-size:11px;
+  padding-left:21px;
+  padding-right:21px;
   }
-  
   .compare-modal-specs {
-    padding-right: 4% !important;
+padding-right: 4% !important;
   }
-  
-  .compare-modal-img-wrap {
-    width:100%;
-  }
-  
+.compare-modal-img-wrap {
+  width:100%;
+}
   .compare-modal-available-in-content {
-    margin-left: 13%;
+    margin-left: 13%; /* Or whatever smaller value you prefer */
     flex-direction: row;
     align-items: center;
     gap: 7px;
@@ -644,17 +638,8 @@
   }
 
   .compare-modal-fabric, .compare-modal-tech-specs, .compare-modal-overview, .compare-modal-available-in-wrapper{
-    padding-left: 24px;
+  padding-left: 24px;
     padding-right: 26px;
-  }
-  
-  .compare-modal-available-in-wrapper {
-    padding: 20px !important;
-    margin-bottom: 0 !important;
-    min-height: auto !important;
-    height: auto !important;
-    position: sticky !important; /* Keep sticky positioning on mobile */
-    bottom: 0 !important;
   }
   
   /* Keep swatches on the same line for mobile */
@@ -692,8 +677,6 @@
     background: rgba(0,0,0,0.45);
     transition: background 0.3s;
     overflow-y: auto;
-    height: 100vh !important;
-    height: 100dvh !important; /* Dynamic viewport height for mobile */
   }
   .compare-modal-content {
     width: 100vw !important;
@@ -706,8 +689,7 @@
     left: 0;
     animation: compareModalSlideUp 0.35s cubic-bezier(0.4,0,0.2,1);
     box-shadow: 0 -2px 16px rgba(0,0,0,0.12);
-    max-height: 85vh;
-    max-height: 85dvh; /* Dynamic viewport height for mobile */
+    max-height: 80vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -1986,27 +1968,7 @@ function equalizeGridHeights() {
     
     if (!leftCard || !rightCard) return;
     
-    // Skip height equalization on mobile devices
-    if (window.innerWidth <= 700) {
-      // Reset any previously set heights on mobile
-      const sections = [
-        'compare-modal-fabric',
-        'compare-modal-tech-specs', 
-        'compare-modal-overview',
-        'compare-modal-available-in-wrapper'
-      ];
-      
-      sections.forEach(sectionClass => {
-        const leftSection = leftCard.querySelector(`.${sectionClass}`);
-        const rightSection = rightCard.querySelector(`.${sectionClass}`);
-        
-        if (leftSection) leftSection.style.height = '';
-        if (rightSection) rightSection.style.height = '';
-      });
-      return;
-    }
-    
-    // Sections to equalize (only on desktop)
+    // Sections to equalize
     const sections = [
       'compare-modal-fabric',
       'compare-modal-tech-specs', 
