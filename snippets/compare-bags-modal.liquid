@@ -187,6 +187,15 @@
   width: 100%;
 }
 
+.compare-modal-fabric-divider {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: #e0e0e0;
+  margin: 12px 0;
+  width: 100%;
+  order: 3;
+}
+
 .compare-modal-product {
   text-align: center;
   display: flex;
@@ -499,6 +508,19 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  position: relative;
+}
+
+/* Add single divider line that spans across both fabric sections */
+.compare-modal-product[data-card-position="left"] .compare-modal-fabric::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0px; /* Account for left padding */
+  height: 1px;
+  background: #e0e0e0;
+  width: calc(200% + 10px); /* Span both columns plus gap and padding */
+  z-index: 10;
 }
 
 .compare-modal-fabric strong {
@@ -518,6 +540,19 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  position: relative;
+}
+
+/* Add single divider line that spans across both tech specs sections */
+.compare-modal-product[data-card-position="left"] .compare-modal-tech-specs::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0px; /* Account for left padding */
+  height: 1px;
+  background: #e0e0e0;
+  width: calc(200% + 10px); /* Span both columns plus gap and padding */
+  z-index: 10;
 }
 
 .compare-modal-tech-specs p {
@@ -548,7 +583,10 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  position: relative;
 }
+
+
 
 .compare-modal-overview p {
   margin: 0 0 8px 0;
@@ -640,6 +678,14 @@ padding-right: 4% !important;
   .compare-modal-fabric, .compare-modal-tech-specs, .compare-modal-overview, .compare-modal-available-in-wrapper{
   padding-left: 24px;
     padding-right: 26px;
+  }
+  
+  /* Adjust divider positioning for mobile */
+  .compare-modal-product[data-card-position="left"] .compare-modal-fabric::after,
+  .compare-modal-product[data-card-position="left"] .compare-modal-tech-specs::after,
+  .compare-modal-product[data-card-position="left"] .compare-modal-overview::after {
+    left: -24px; /* Account for mobile padding */
+    width: calc(200% + 40px); /* Adjust for mobile padding and gap */
   }
   
   /* Keep swatches on the same line for mobile */
@@ -1650,12 +1696,10 @@ function renderProducts(products, tab) {
             <div class="compare-modal-fabric">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.fabricLabel}</div>` : ''}
               <strong>${fabricHtml}</strong>
-              <div class="compare-modal-divider"></div>
             </div>
             <div class="compare-modal-tech-specs">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.techSpecsLabel}</div>` : ''}
               ${prod.techSpecs ? `<p>${prod.techSpecs.replace(/\n/g, '</p><p>')}</p>` : '<p><strong>Silicon Face Coating:</strong> This coating provides extra weather, strain, abrasion resistance without changing the look and hand feel of the fabric.</p><p><strong>Coal PU Backside:</strong> This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.</p>'}
-                 <div class="compare-modal-divider"></div>
             </div>
             <div class="compare-modal-overview">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.overallDifferenceLabel}</div>` : ''}
@@ -1885,7 +1929,6 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
       <div class="compare-modal-fabric">
         ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.fabricLabel}</div>` : ''}
         <strong>${fabricHtml}</strong>
-        <div class="compare-modal-divider"></div>
       </div>
       <div class="compare-modal-tech-specs">
         ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.techSpecsLabel}</div>` : ''}
