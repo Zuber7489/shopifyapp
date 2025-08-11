@@ -1650,14 +1650,17 @@ function renderProducts(products, tab) {
             <div class="compare-modal-fabric">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.fabricLabel}</div>` : ''}
               <strong>${fabricHtml}</strong>
+              <div class="compare-modal-divider"></div>
             </div>
             <div class="compare-modal-tech-specs">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.techSpecsLabel}</div>` : ''}
               ${prod.techSpecs ? `<p>${prod.techSpecs.replace(/\n/g, '</p><p>')}</p>` : '<p><strong>Silicon Face Coating:</strong> This coating provides extra weather, strain, abrasion resistance without changing the look and hand feel of the fabric.</p><p><strong>Coal PU Backside:</strong> This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.</p>'}
+                 <div class="compare-modal-divider"></div>
             </div>
             <div class="compare-modal-overview">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.overallDifferenceLabel}</div>` : ''}
               <p><strong>Overall Difference:</strong> ${prod.overview || 'Has a modern technical aesthetic with a smooth supple feel. Has slightly more structure than our ballistic version, without being stiff and rigid like many PU and TPU coated fabrics. It\'s the ideal choice for adventure enthusiast that want a hybrid option to transition between office and outdoors.'}</p>
+                 
             </div>
             <div class="compare-modal-available-in-wrapper">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
@@ -1882,6 +1885,7 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
       <div class="compare-modal-fabric">
         ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.fabricLabel}</div>` : ''}
         <strong>${fabricHtml}</strong>
+        <div class="compare-modal-divider"></div>
       </div>
       <div class="compare-modal-tech-specs">
         ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.techSpecsLabel}</div>` : ''}
