@@ -528,7 +528,7 @@
   height: 1px;
   background: #e0e0e0;
   width: calc(200% + 10px); /* Span both columns plus gap and padding */
-  z-index: 10;
+
 }
 
 .compare-modal-fabric strong {
@@ -560,7 +560,7 @@
   height: 1px;
   background: #e0e0e0;
   width: calc(200% + 10px); /* Span both columns plus gap and padding */
-  z-index: 10;
+  
 }
 
 .compare-modal-tech-specs p {
@@ -677,6 +677,35 @@
   }
 }
 
+@media (min-width: 600px) and (max-width: 700px) {
+    .compare-modal-fabric,
+    .compare-modal-tech-specs,
+    .compare-modal-overview {
+        padding-left: 20%;
+    }
+
+  .compare-modal-available-in-wrapper{
+     padding-left: 14%;
+    padding-right: 26px;
+  }
+
+}
+
+@media (max-width: 599px) {
+    .compare-modal-fabric,
+    .compare-modal-tech-specs,
+    .compare-modal-overview {
+        padding-left: 15%;
+        padding-right: 26px;
+    }
+
+      .compare-modal-available-in-wrapper{
+     padding-left: 14%;
+    padding-right: 26px;
+  }
+}
+
+
 @media (max-width: 700px) {
   .compare-modal-button {
  min-width: 140px;
@@ -711,10 +740,7 @@ padding-right: 4% !important;
     flex-wrap: wrap;
   }
 
-  .compare-modal-fabric, .compare-modal-tech-specs, .compare-modal-overview, .compare-modal-available-in-wrapper{
-  padding-left: 24px;
-    padding-right: 26px;
-  }
+
   
   /* Adjust divider positioning for mobile */
   .compare-modal-product[data-card-position="left"] .compare-modal-fabric::after,
