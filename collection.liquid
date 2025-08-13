@@ -1007,16 +1007,33 @@
                           {% endif %}
                         {% endfor %}
                         
-                        {% if first_fabric_variant.metafields.custom.variant_gallery.value != blank %}
-                          {% assign first_gallery_image = first_fabric_variant.metafields.custom.variant_gallery.value | first %}
-                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' }}
-                          data-second-image="{{ second_image_url }}"
-                          data-variant-gallery="true"
-                        {% elsif product.images.size > 1 %}
-                          {% comment %}Only fallback to product gallery if no variant gallery exists{% endcomment %}
-                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                          data-fallback="true"
+                        {% comment %}Check if product has only one variant and use main gallery if variant gallery is empty{% endcomment %}
+                        {% if product.variants.size == 1 %}
+                          {% comment %}Single variant product - use main product gallery if variant gallery is empty{% endcomment %}
+                          {% if first_fabric_variant.metafields.custom.variant_gallery.value != blank %}
+                            {% assign first_gallery_image = first_fabric_variant.metafields.custom.variant_gallery.value | first %}
+                            {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
+                            data-second-image="{{ second_image_url }}"
+                            data-variant-gallery="true"
+                          {% elsif product.images.size > 1 %}
+                            {% comment %}Use main product gallery when variant gallery is empty{% endcomment %}
+                            {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                            data-second-image="{{ second_image_url }}"
+                            data-fallback="true"
+                          {% endif %}
+                        {% else %}
+                          {% comment %}Multiple variants - prioritize variant gallery{% endcomment %}
+                          {% if first_fabric_variant.metafields.custom.variant_gallery.value != blank %}
+                            {% assign first_gallery_image = first_fabric_variant.metafields.custom.variant_gallery.value | first %}
+                            {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
+                            data-second-image="{{ second_image_url }}"
+                            data-variant-gallery="true"
+                          {% elsif product.images.size > 1 %}
+                            {% comment %}Only fallback to product gallery if no variant gallery exists{% endcomment %}
+                            {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                            data-second-image="{{ second_image_url }}"
+                            data-fallback="true"
+                          {% endif %}
                         {% endif %}
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
@@ -1076,16 +1093,33 @@
                       class="color-swatch-variant" 
                       data-image="{% if matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
                       {% comment %}Get variant gallery images for second image - prioritize variant gallery over product gallery{% endcomment %}
-                      {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
-                        {% assign first_gallery_image = matched_variant.metafields.custom.variant_gallery.value | first %}
-                        {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                        data-second-image="{{ second_image_url }}"
-                        data-variant-gallery="true"
-                      {% elsif product.images.size > 1 %}
-                        {% comment %}Only fallback to product gallery if no variant gallery exists{% endcomment %}
-                        {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                        data-second-image="{{ second_image_url }}"
-                        data-fallback="true"
+                      {% comment %}Check if product has only one variant and use main gallery if variant gallery is empty{% endcomment %}
+                      {% if product.variants.size == 1 %}
+                        {% comment %}Single variant product - use main product gallery if variant gallery is empty{% endcomment %}
+                        {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
+                          {% assign first_gallery_image = matched_variant.metafields.custom.variant_gallery.value | first %}
+                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
+                          data-variant-gallery="true"
+                        {% elsif product.images.size > 1 %}
+                          {% comment %}Use main product gallery when variant gallery is empty{% endcomment %}
+                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
+                          data-fallback="true"
+                        {% endif %}
+                      {% else %}
+                        {% comment %}Multiple variants - prioritize variant gallery{% endcomment %}
+                        {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
+                          {% assign first_gallery_image = matched_variant.metafields.custom.variant_gallery.value | first %}
+                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
+                          data-variant-gallery="true"
+                        {% elsif product.images.size > 1 %}
+                          {% comment %}Only fallback to product gallery if no variant gallery exists{% endcomment %}
+                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
+                          data-fallback="true"
+                        {% endif %}
                       {% endif %}
                       data-product-id="{{ product.id }}"
                       data-variant-index="{{ forloop.index0 }}"
