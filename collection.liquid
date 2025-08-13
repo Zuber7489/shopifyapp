@@ -978,31 +978,48 @@
           <!-- Regular product card without size variants -->
           <div class="product-card">
             <a href="{{ product.url }}" class="product-link">
-              <!-- Product Image -->
-              <div class="product-image-wrapper" 
-                   onmouseenter="showSecondImage('{{ product.id }}')" 
-                   onmouseleave="showFirstImage('{{ product.id }}')">
-                {% if product.featured_image %}
-                  <img 
-                    id="main-image-product-{{ product.id }}"
-                    src="{{ product.featured_image | img_url: '2000x2000' }}" 
-                    alt="{{ product.featured_image.alt | escape }}"
-                    class="product-image"
-                    loading="lazy"
-                    data-first-image="{{ product.featured_image | img_url: '2000x2000' }}"
-                    {% comment %}Get variant gallery images for second image{% endcomment %}
-                    {% assign first_variant = product.selected_or_first_available_variant %}
-                    {% if first_variant.metafields.custom.variant_gallery.value != blank %}
-                      {% assign first_gallery_image = first_variant.metafields.custom.variant_gallery.value | first %}
-                      {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                      data-second-image="{{ second_image_url }}"
-                    {% elsif product.images.size > 1 %}
-                      {% comment %}Fallback to product gallery second image{% endcomment %}
-                      {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                      data-second-image="{{ second_image_url }}"
-                    {% endif %}
-                    onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
-                  >
+                                <!-- Product Image -->
+                  <div class="product-image-wrapper" 
+                       onmouseenter="showSecondImage('{{ product.id }}')" 
+                       onmouseleave="showFirstImage('{{ product.id }}')">
+                    {% if product.featured_image %}
+                      <img 
+                        id="main-image-product-{{ product.id }}"
+                        src="{{ product.featured_image | img_url: '2000x2000' }}" 
+                        alt="{{ product.featured_image.alt | escape }}"
+                        class="product-image"
+                        loading="lazy"
+                        data-first-image="{{ product.featured_image | img_url: '2000x2000' }}"
+                        {% comment %}Get variant gallery images for second image - prioritize variant gallery over product gallery{% endcomment %}
+                        {% comment %}Find the first fabric variant to get its gallery images for initial hover{% endcomment %}
+                        {% assign first_fabric_variant = product.selected_or_first_available_variant %}
+                        {% for option in product.options_with_values %}
+                          {% assign option_name_lower = option.name | downcase %}
+                          {% if option_name_lower == 'color' or option_name_lower == 'colour' or option_name_lower == 'fabric' %}
+                            {% assign first_color_value = option.values.first %}
+                            {% for variant in product.variants %}
+                              {% if variant.option1 == first_color_value or variant.option2 == first_color_value or variant.option3 == first_color_value %}
+                                {% assign first_fabric_variant = variant %}
+                                {% break %}
+                              {% endif %}
+                            {% endfor %}
+                            {% break %}
+                          {% endif %}
+                        {% endfor %}
+                        
+                        {% if first_fabric_variant.metafields.custom.variant_gallery.value != blank %}
+                          {% assign first_gallery_image = first_fabric_variant.metafields.custom.variant_gallery.value | first %}
+                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' }}
+                          data-second-image="{{ second_image_url }}"
+                          data-variant-gallery="true"
+                        {% elsif product.images.size > 1 %}
+                          {% comment %}Only fallback to product gallery if no variant gallery exists{% endcomment %}
+                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
+                          data-second-image="{{ second_image_url }}"
+                          data-fallback="true"
+                        {% endif %}
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
+                      >
                 {% else %}
                   <div class="product-image-placeholder">
                     <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
@@ -1058,15 +1075,17 @@
                     <div 
                       class="color-swatch-variant" 
                       data-image="{% if matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
-                      {% comment %}Get variant gallery images for second image{% endcomment %}
-                      {% assign variant_gallery_images = matched_variant.metafields.custom.variant_gallery.value %}
-                      {% if variant_gallery_images != blank and variant_gallery_images.size > 0 %}
-                        {% assign second_image_url = variant_gallery_images[0] | img_url: '2000x2000' %}
+                      {% comment %}Get variant gallery images for second image - prioritize variant gallery over product gallery{% endcomment %}
+                      {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
+                        {% assign first_gallery_image = matched_variant.metafields.custom.variant_gallery.value | first %}
+                        {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
                         data-second-image="{{ second_image_url }}"
+                        data-variant-gallery="true"
                       {% elsif product.images.size > 1 %}
-                        {% comment %}Fallback to product gallery second image{% endcomment %}
+                        {% comment %}Only fallback to product gallery if no variant gallery exists{% endcomment %}
                         {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
                         data-second-image="{{ second_image_url }}"
+                        data-fallback="true"
                       {% endif %}
                       data-product-id="{{ product.id }}"
                       data-variant-index="{{ forloop.index0 }}"
@@ -1303,6 +1322,7 @@ function updateProductLink(element, productUrl, variantId) {
   const productId = element.getAttribute('data-product-id');
   const imageUrl = element.getAttribute('data-image');
   const secondImageUrl = element.getAttribute('data-second-image');
+  const hasVariantGallery = element.getAttribute('data-variant-gallery') === 'true';
   
   if (imageUrl) {
     const img = document.getElementById('main-image-product-' + productId);
@@ -1313,9 +1333,19 @@ function updateProductLink(element, productUrl, variantId) {
         newImg.onload = function() {
           img.src = imageUrl;
           img.dataset.firstImage = imageUrl;
-          // Update second image if available
+          // Update second image if available - prioritize variant gallery
           if (secondImageUrl) {
             img.dataset.secondImage = secondImageUrl;
+            // Mark if this is from variant gallery
+            if (hasVariantGallery) {
+              img.dataset.variantGallery = 'true';
+            } else {
+              delete img.dataset.variantGallery;
+            }
+          } else {
+            // Clear second image if no gallery available
+            delete img.dataset.secondImage;
+            delete img.dataset.variantGallery;
           }
         };
         newImg.onerror = function() {
@@ -1329,12 +1359,19 @@ function updateProductLink(element, productUrl, variantId) {
       } else {
         img.src = imageUrl;
         img.dataset.firstImage = imageUrl;
-        // Update second image if available
+        // Update second image if available - prioritize variant gallery
         if (secondImageUrl) {
           img.dataset.secondImage = secondImageUrl;
+          // Mark if this is from variant gallery
+          if (hasVariantGallery) {
+            img.dataset.variantGallery = 'true';
+          } else {
+            delete img.dataset.variantGallery;
+          }
         } else {
           // Clear second image if no gallery available
           delete img.dataset.secondImage;
+          delete img.dataset.variantGallery;
         }
       }
     }
