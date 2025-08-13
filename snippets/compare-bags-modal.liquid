@@ -297,14 +297,22 @@
   position: relative;
 }
 
+/* Remove the old individual dividers */
 .compare-modal-features::before {
+  display: none;
+}
+
+/* Add single divider line that spans across both features sections */
+.compare-modal-product[data-card-position="left"] .compare-modal-features::before {
+  display: block;
   content: '';
   position: absolute;
   top: -12px;
-  left: 0;
-  right: 0;
+  left: 0; /* Account for left padding */
   height: 1px;
-  background-color: #e0e0e0;
+  background: #e0e0e0;
+  width: calc(200% + 22px); /* Span both columns plus gap and padding */
+  
 }
 
 .compare-modal-features ul {
@@ -683,7 +691,8 @@ padding-right: 4% !important;
   /* Adjust divider positioning for mobile */
   .compare-modal-product[data-card-position="left"] .compare-modal-fabric::after,
   .compare-modal-product[data-card-position="left"] .compare-modal-tech-specs::after,
-  .compare-modal-product[data-card-position="left"] .compare-modal-overview::after {
+  .compare-modal-product[data-card-position="left"] .compare-modal-overview::after,
+  .compare-modal-product[data-card-position="left"] .compare-modal-features::before {
     left: 0px; /* Account for mobile padding */
     width: calc(200% + 10px); /* Adjust for mobile padding and gap */
   }
