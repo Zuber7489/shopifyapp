@@ -758,24 +758,47 @@ padding-right: 4% !important;
     vertical-align: top;
     float: left;
   }
-  
-  /* Center price below swatches for mobile */
-  .compare-modal-available-in-price {
-    margin-left: 0;
+}
+
+@media (min-width: 0px) and (max-width: 510px) {
+    .compare-modal-available-in-price {
+       margin-left: 0;
     margin-top: 0;
-    margin-right: 45%;
+    margin-right: 50%;
     text-align: center;
     width: 100%;
     order: 2;
     clear: both;
-  }
+    }
 }
+
+@media (min-width: 511px) and (max-width: 600px) {
+    .compare-modal-available-in-price {
+       margin-left: 0;
+    margin-top: 0;
+    margin-right: 67%;
+    text-align: center;
+    width: 100%;
+    order: 2;
+    clear: both;
+    }
+}
+
 
 /* 601px to 700px */
 @media (min-width: 601px) and (max-width: 700px) {
   .compare-modal-features ul {
     padding-left: 45px;
   }
+    .compare-modal-available-in-price {
+      margin-left: 0;
+    margin-top: 0;
+    margin-right: 72%;
+    text-align: center;
+    width: 100%;
+    order: 2;
+    clear: both;
+    }
 }
 
 /* Mobile Modal Behavior - Bottom Slide Up and Full Width */
