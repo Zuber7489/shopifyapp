@@ -1254,14 +1254,8 @@ const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.
 // Product image hover functionality with Safari fixes
 function showSecondImage(productId) {
   const img = document.getElementById('main-image-product-' + productId);
-  console.log('showSecondImage called for productId:', productId);
-  console.log('Image element:', img);
-  if (img) {
-    console.log('Current second image:', img.dataset.secondImage);
-  }
   
   if (img && img.dataset.secondImage) {
-    console.log('Switching to second image:', img.dataset.secondImage);
     // Safari-specific image loading
     if (isSafari) {
       const newImg = new Image();
@@ -1269,14 +1263,12 @@ function showSecondImage(productId) {
         img.src = img.dataset.secondImage;
       };
       newImg.onerror = function() {
-        console.warn('Failed to load second image for Safari:', img.dataset.secondImage);
+        // Silent error handling for Safari
       };
       newImg.src = img.dataset.secondImage;
     } else {
       img.src = img.dataset.secondImage;
     }
-  } else {
-    console.log('No second image available for productId:', productId, '- staying on first image');
   }
 }
 
@@ -1312,30 +1304,9 @@ function updateProductLink(element, productUrl, variantId) {
   const imageUrl = element.getAttribute('data-image');
   const secondImageUrl = element.getAttribute('data-second-image');
   
-  console.log('Updating product link:', {
-    productId: productId,
-    imageUrl: imageUrl,
-    secondImageUrl: secondImageUrl,
-    variantId: variantId,
-    debugGallery: element.getAttribute('data-debug-gallery'),
-    debugVariant: element.getAttribute('data-debug-variant'),
-    debugGallerySize: element.getAttribute('data-debug-gallery-size'),
-    debugMetafieldExists: element.getAttribute('data-debug-metafield-exists'),
-    debugMetafieldValue: element.getAttribute('data-debug-metafield-value'),
-    debugFirstImage: element.getAttribute('data-debug-first-image'),
-    debugVariantId: element.getAttribute('data-debug-variant-id'),
-    debugVariantTitle: element.getAttribute('data-debug-variant-title'),
-    debugStyleVariantId: element.getAttribute('data-debug-style-variant-id'),
-    debugStyleVariantTitle: element.getAttribute('data-debug-style-variant-title'),
-    debugNoGallery: element.getAttribute('data-debug-no-gallery'),
-    debugFallback: element.getAttribute('data-debug-fallback'),
-    debugHasGallery: element.getAttribute('data-debug-has-gallery')
-  });
-  
   if (imageUrl) {
     const img = document.getElementById('main-image-product-' + productId);
     if (img) {
-      console.log('Found image element, updating...');
       // Safari-specific image loading
       if (isSafari) {
         const newImg = new Image();
@@ -1345,11 +1316,10 @@ function updateProductLink(element, productUrl, variantId) {
           // Update second image if available
           if (secondImageUrl) {
             img.dataset.secondImage = secondImageUrl;
-            console.log('Updated second image to:', secondImageUrl);
           }
         };
         newImg.onerror = function() {
-          console.warn('Failed to load variant image for Safari:', imageUrl);
+          // Silent error handling for Safari
           // Fallback to original image
           if (img.dataset.firstImage) {
             img.src = img.dataset.firstImage;
@@ -1362,15 +1332,11 @@ function updateProductLink(element, productUrl, variantId) {
         // Update second image if available
         if (secondImageUrl) {
           img.dataset.secondImage = secondImageUrl;
-          console.log('Updated second image to:', secondImageUrl);
         } else {
           // Clear second image if no gallery available
           delete img.dataset.secondImage;
-          console.log('Cleared second image - no gallery available');
         }
       }
-    } else {
-      console.warn('Image element not found for productId:', productId);
     }
   }
   
@@ -1398,7 +1364,7 @@ if (isSafari) {
           // Image loaded successfully
         };
         newImg.onerror = function() {
-          console.warn('Failed to preload image for Safari:', img.src);
+          // Silent error handling for Safari
         };
         newImg.src = img.src;
       }
@@ -1432,7 +1398,7 @@ if (isSafari) {
   // Additional Safari image error handling
   document.addEventListener('error', function(e) {
     if (e.target.tagName === 'IMG') {
-      console.warn('Image failed to load in Safari:', e.target.src);
+      // Silent error handling for Safari
       // Try to reload the image
       const img = e.target;
       if (img.dataset.firstImage) {
