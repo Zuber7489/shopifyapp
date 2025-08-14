@@ -166,7 +166,7 @@
 .compare-modal-overview,
 .compare-modal-available-in-wrapper {
   position: relative;
-  padding-left: 50px;
+  padding-left: 53px;
       padding-right: 46px;
 }
 
@@ -218,7 +218,7 @@
   align-items: center;
   justify-content: center;
   width: 94%;
-  max-width: 261px;
+  max-width: 228px;
   margin: 0 auto;
   
 }
@@ -391,6 +391,16 @@
   justify-content: flex-start;
   width: 100%;
   overflow: visible;
+  margin-left: 49px;
+}
+
+/* Size tab specific margin */
+.compare-modal-available-in-content[data-tab="size"] {
+  margin-left: 59px;
+}
+
+/* Fabric tab specific margin */
+.compare-modal-available-in-content[data-tab="fabric"] {
   margin-left: 49px;
 }
 
@@ -733,7 +743,7 @@ padding-right: 4% !important;
   width:100%;
 }
   .compare-modal-available-in-content {
-    margin-left: 13%; /* Or whatever smaller value you prefer */
+    margin-left: 13% !important; /* Or whatever smaller value you prefer */
     flex-direction: row;
     align-items: center;
     gap: 7px;
@@ -1725,7 +1735,7 @@ function renderProducts(products, tab) {
         // Generate Available in section HTML with dynamic swatches
         const availableInHtml = `
           <div class="compare-modal-available-in">
-            <div class="compare-modal-available-in-content">
+            <div class="compare-modal-available-in-content" data-tab="${tab}">
               ${generateSwatchOptions(prod, tab, cardPosition)}
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
@@ -1763,7 +1773,7 @@ function renderProducts(products, tab) {
         // Generate Available in section HTML for fabric tab with dynamic swatches
         const availableInHtml = `
           <div class="compare-modal-available-in">
-            <div class="compare-modal-available-in-content">
+            <div class="compare-modal-available-in-content" data-tab="${tab}">
               ${generateSwatchOptions(prod, tab, cardPosition)}
               <div class="compare-modal-available-in-price">${prod.price}</div>
             </div>
@@ -1958,7 +1968,7 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
       // Generate Available in section HTML with dynamic swatches
       const availableInHtml = `
         <div class="compare-modal-available-in">
-          <div class="compare-modal-available-in-content">
+          <div class="compare-modal-available-in-content" data-tab="${tabName}">
             ${generateSwatchOptions(productData, tabName, cardPosition, variantId)}
             <div class="compare-modal-available-in-price">${productData.price}</div>
           </div>
@@ -1996,7 +2006,7 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
       // Generate Available in section HTML for fabric tab with dynamic swatches
       const availableInHtml = `
         <div class="compare-modal-available-in">
-          <div class="compare-modal-available-in-content">
+          <div class="compare-modal-available-in-content" data-tab="${tabName}">
             ${generateSwatchOptions(productData, tabName, cardPosition, variantId)}
             <div class="compare-modal-available-in-price">${productData.price}</div>
           </div>
