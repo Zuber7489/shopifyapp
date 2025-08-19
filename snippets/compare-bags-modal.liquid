@@ -276,6 +276,14 @@
           margin: 0;
         }
 
+        /* Class-based spacing (no nth-child): set different margins */
+        .compare-modal-specs .compare-modal-spec-item--weight {
+          margin-right: 3px;
+        }
+        .compare-modal-specs .compare-modal-spec-item--price {
+          margin-right: -8px;
+        }
+
 .compare-modal-specs-golden-labels {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -853,6 +861,14 @@ padding-right: 4% !important;
   /* Mobile responsive adjustments for compare modal elements */
   .compare-modal-category-label {
     left: -16px !important;
+  }
+
+  /* Mobile: reduce spacing; weight vs price different */
+  .compare-modal-specs .compare-modal-spec-item--weight {
+    margin-right: 8px;
+  }
+  .compare-modal-specs .compare-modal-spec-item--price {
+    margin-right: -6px;
   }
 
   /* Per-section top offsets: mobile */
@@ -1712,19 +1728,19 @@ function renderProducts(products, tab) {
       if (tab === 'size') {
         // Size tab content with structured specs in 2x2 grid (values with golden labels below)
         const specsHtml = `
-          <div class="compare-modal-spec-item">
+          <div class="compare-modal-spec-item compare-modal-spec-item--capacity">
             <span class="compare-modal-spec-value">${prod.capacity || '20L'}</span>
             <span class="compare-modal-golden-label">${compareProductsData.labels.capacityLabel}</span>
           </div>
-          <div class="compare-modal-spec-item">
+          <div class="compare-modal-spec-item compare-modal-spec-item--dimensions">
             <span class="compare-modal-spec-value">${prod.dimensions || '19" x 18" x 4"'}</span>
             <span class="compare-modal-golden-label">${compareProductsData.labels.dimensionsLabel}</span>
           </div>
-          <div class="compare-modal-spec-item">
+          <div class="compare-modal-spec-item compare-modal-spec-item--weight">
             <span class="compare-modal-spec-value">${prod.weight || '2.5lbs'}</span>
             <span class="compare-modal-golden-label">${compareProductsData.labels.weightLabel}</span>
           </div>
-          <div class="compare-modal-spec-item">
+          <div class="compare-modal-spec-item compare-modal-spec-item--price">
             <span class="compare-modal-spec-value">${prod.price}</span>
             <span class="compare-modal-golden-label">${compareProductsData.labels.priceLabel}</span>
           </div>
@@ -1771,7 +1787,7 @@ function renderProducts(products, tab) {
             </div>
             <div class="compare-modal-available-in-wrapper">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
-            ${availableInHtml}
+              ${availableInHtml}
             </div>
           </div>
         `;
@@ -1945,19 +1961,19 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
     if (tabName === 'size') {
       // Update size tab content
       const specsHtml = `
-        <div class="compare-modal-spec-item">
+        <div class="compare-modal-spec-item compare-modal-spec-item--capacity">
           <span class="compare-modal-spec-value">${productData.capacity || '20L'}</span>
           <span class="compare-modal-golden-label">${compareProductsData.labels.capacityLabel}</span>
         </div>
-        <div class="compare-modal-spec-item">
+        <div class="compare-modal-spec-item compare-modal-spec-item--dimensions">
           <span class="compare-modal-spec-value">${productData.dimensions || '19" x 18" x 4"'}</span>
           <span class="compare-modal-golden-label">${compareProductsData.labels.dimensionsLabel}</span>
         </div>
-        <div class="compare-modal-spec-item">
+        <div class="compare-modal-spec-item compare-modal-spec-item--weight">
           <span class="compare-modal-spec-value">${productData.weight || '2.5lbs'}</span>
           <span class="compare-modal-golden-label">${compareProductsData.labels.weightLabel}</span>
         </div>
-        <div class="compare-modal-spec-item">
+        <div class="compare-modal-spec-item compare-modal-spec-item--price">
           <span class="compare-modal-spec-value">${productData.price}</span>
           <span class="compare-modal-golden-label">${compareProductsData.labels.priceLabel}</span>
         </div>
