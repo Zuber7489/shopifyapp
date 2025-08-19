@@ -26,9 +26,9 @@
 }
 
 /* Desktop: per-section label top offsets for precise alignment */
-.compare-modal-specs > .compare-modal-category-label { top: 3px; }
-.compare-modal-fabric > .compare-modal-category-label { top: 4px; }
-.compare-modal-tech-specs > .compare-modal-category-label { top: 29px; }
+.compare-modal-specs > .compare-modal-category-label { top: 2px; }
+.compare-modal-fabric > .compare-modal-category-label { top: 1px; }
+.compare-modal-tech-specs > .compare-modal-category-label { top: 28px; }
 .compare-modal-features > .compare-modal-category-label { top: 8px; }
 .compare-modal-overview > .compare-modal-category-label { top: 35px; }
 .compare-modal-available-in-wrapper > .compare-modal-category-label { top: 51px; }
@@ -548,7 +548,7 @@
 .compare-modal-product[data-card-position="left"] .compare-modal-fabric::after {
   content: '';
   position: absolute;
-  bottom: -12px;
+  bottom: -16px;
   left: 0px; /* Account for left padding */
   height: 1px;
   background: #e0e0e0;
@@ -580,7 +580,7 @@
 .compare-modal-product[data-card-position="left"] .compare-modal-tech-specs::after {
   content: '';
   position: absolute;
-  bottom: -12px;
+  bottom: 0px;
   left: 0px; /* Account for left padding */
   height: 1px;
   background: #e0e0e0;
