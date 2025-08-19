@@ -519,7 +519,35 @@
                   <div class="product-image-wrapper" 
                        onmouseenter="showSecondImage('{{ product.id }}-{{ size_variant.id }}')" 
                        onmouseleave="showFirstImage('{{ product.id }}-{{ size_variant.id }}')">
-                    {% if size_variant.featured_image %}
+                    {% comment %}Hover image logic: prefer variant gallery (first=main, second=hover); else product images[0]/[1]{% endcomment %}
+                    {% assign hover_first = nil %}
+                    {% assign hover_second = nil %}
+                    {% if size_variant.metafields.custom.variant_gallery.value != blank %}
+                      {% for gimg in size_variant.metafields.custom.variant_gallery.value limit: 2 %}
+                        {% if forloop.first %}
+                          {% assign hover_first = gimg %}
+                        {% else %}
+                          {% assign hover_second = gimg %}
+                        {% endif %}
+                      {% endfor %}
+                    {% elsif product.images.size > 0 %}
+                      {% assign hover_first = product.images.first %}
+                      {% if product.images.size > 1 %}
+                        {% assign hover_second = product.images[1] %}
+                      {% endif %}
+                    {% endif %}
+                    {% if hover_first %}
+                      <img 
+                        id="main-image-product-{{ product.id }}-{{ size_variant.id }}"
+                        src="{{ hover_first | img_url: '2000x2000' }}" 
+                        alt="{{ size_variant.featured_image.alt | escape }}"
+                        class="product-image"
+                        loading="lazy"
+                        data-first-image="{{ hover_first | img_url: '2000x2000' }}"
+                        {% if hover_second %}data-second-image="{{ hover_second | img_url: '2000x2000' }}"{% endif %}
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
+                      >
+                    {% elsif size_variant.featured_image %}
                       <img 
                         id="main-image-product-{{ product.id }}-{{ size_variant.id }}"
                         src="{{ size_variant.featured_image | img_url: '2000x2000' }}" 
@@ -527,16 +555,6 @@
                         class="product-image"
                         loading="lazy"
                         data-first-image="{{ size_variant.featured_image | img_url: '2000x2000' }}"
-                        {% comment %}Get variant gallery images for second image{% endcomment %}
-                        {% if size_variant.metafields.custom.variant_gallery.value != blank %}
-                          {% assign first_gallery_image = size_variant.metafields.custom.variant_gallery.value | first %}
-                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                        {% elsif product.images.size > 1 %}
-                          {% comment %}Fallback to product gallery second image{% endcomment %}
-                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                        {% endif %}
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
                     {% elsif product.featured_image %}
@@ -547,16 +565,6 @@
                         class="product-image"
                         loading="lazy"
                         data-first-image="{{ product.featured_image | img_url: '2000x2000' }}"
-                        {% comment %}Get variant gallery images for second image{% endcomment %}
-                        {% if size_variant.metafields.custom.variant_gallery.value != blank %}
-                          {% assign first_gallery_image = size_variant.metafields.custom.variant_gallery.value | first %}
-                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                        {% elsif product.images.size > 1 %}
-                          {% comment %}Fallback to product gallery second image{% endcomment %}
-                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                        {% endif %}
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
                     {% else %}
@@ -638,30 +646,28 @@
                           {% endunless %}
                         {% endunless %}
                         
+                        {% comment %}Swatch hover images: prefer variant gallery (first/second), else product images[0]/[1]{% endcomment %}
+                        {% assign swatch_first = nil %}
+                        {% assign swatch_second = nil %}
+                        {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
+                          {% for gimg in matched_variant.metafields.custom.variant_gallery.value limit: 2 %}
+                            {% if forloop.first %}
+                              {% assign swatch_first = gimg %}
+                            {% else %}
+                              {% assign swatch_second = gimg %}
+                            {% endif %}
+                          {% endfor %}
+                        {% elsif product.images.size > 0 %}
+                          {% assign swatch_first = product.images.first %}
+                          {% if product.images.size > 1 %}
+                            {% assign swatch_second = product.images[1] %}
+                          {% endif %}
+                        {% endif %}
                         <div 
                           class="color-swatch-variant" 
-                          data-image="{% if matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
-                          {% comment %}Get variant gallery images for second image{% endcomment %}
-                          {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
-                            {% assign first_gallery_image = matched_variant.metafields.custom.variant_gallery.value | first %}
-                            {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                            data-second-image="{{ second_image_url }}"
-                            data-debug-gallery="true"
-                            data-debug-gallery-size="{{ matched_variant.metafields.custom.variant_gallery.value.size }}"
-                            data-debug-first-image="{{ first_gallery_image }}"
-                          {% elsif product.images.size > 1 %}
-                            {% comment %}Fallback to product gallery second image{% endcomment %}
-                            {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                            data-second-image="{{ second_image_url }}"
-                            data-debug-fallback="true"
-                            data-debug-variant="{{ matched_variant.id }}"
-                          {% else %}
-                            data-debug-gallery="false"
-                            data-debug-variant="{{ matched_variant.id }}"
-                            data-debug-gallery-size="0"
-                            data-debug-metafield-exists="false"
-                            data-debug-metafield-value="null"
-                          {% endif %}
+                          data-image="{% if swatch_first %}{{ swatch_first | img_url: '2000x2000' }}{% elsif matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
+                          {% if swatch_second %}data-second-image="{{ swatch_second | img_url: '2000x2000' }}"{% endif %}
+                          {% if matched_variant.metafields.custom.variant_gallery.value != blank %}data-variant-gallery="true"{% endif %}
                           data-product-id="{{ product.id }}-{{ size_variant.id }}"
                           data-variant-index="{{ forloop.index0 }}"
                           title="{{ value | capitalize }}"
@@ -761,7 +767,35 @@
                   <div class="product-image-wrapper" 
                        onmouseenter="showSecondImage('{{ product.id }}-{{ style_variant.id }}')" 
                        onmouseleave="showFirstImage('{{ product.id }}-{{ style_variant.id }}')">
-                    {% if style_variant.featured_image %}
+                    {% comment %}Hover image logic for style variants{% endcomment %}
+                    {% assign hover_first = nil %}
+                    {% assign hover_second = nil %}
+                    {% if style_variant.metafields.custom.variant_gallery.value != blank %}
+                      {% for gimg in style_variant.metafields.custom.variant_gallery.value limit: 2 %}
+                        {% if forloop.first %}
+                          {% assign hover_first = gimg %}
+                        {% else %}
+                          {% assign hover_second = gimg %}
+                        {% endif %}
+                      {% endfor %}
+                    {% elsif product.images.size > 0 %}
+                      {% assign hover_first = product.images.first %}
+                      {% if product.images.size > 1 %}
+                        {% assign hover_second = product.images[1] %}
+                      {% endif %}
+                    {% endif %}
+                    {% if hover_first %}
+                      <img 
+                        id="main-image-product-{{ product.id }}-{{ style_variant.id }}"
+                        src="{{ hover_first | img_url: '2000x2000' }}" 
+                        alt="{{ style_variant.featured_image.alt | escape }}"
+                        class="product-image"
+                        loading="lazy"
+                        data-first-image="{{ hover_first | img_url: '2000x2000' }}"
+                        {% if hover_second %}data-second-image="{{ hover_second | img_url: '2000x2000' }}"{% endif %}
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
+                      >
+                    {% elsif style_variant.featured_image %}
                       <img 
                         id="main-image-product-{{ product.id }}-{{ style_variant.id }}"
                         src="{{ style_variant.featured_image | img_url: '2000x2000' }}" 
@@ -769,16 +803,6 @@
                         class="product-image"
                         loading="lazy"
                         data-first-image="{{ style_variant.featured_image | img_url: '2000x2000' }}"
-                        {% comment %}Get variant gallery images for second image{% endcomment %}
-                        {% if style_variant.metafields.custom.variant_gallery.value != blank %}
-                          {% assign first_gallery_image = style_variant.metafields.custom.variant_gallery.value | first %}
-                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                        {% elsif product.images.size > 1 %}
-                          {% comment %}Fallback to product gallery second image{% endcomment %}
-                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                        {% endif %}
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
                     {% elsif product.featured_image %}
@@ -789,26 +813,7 @@
                         class="product-image"
                         loading="lazy"
                         data-first-image="{{ product.featured_image | img_url: '2000x2000' }}"
-                        {% comment %}Get variant gallery images for second image{% endcomment %}
-                        {% if style_variant.metafields.custom.variant_gallery.value != blank %}
-                          {% assign first_gallery_image = style_variant.metafields.custom.variant_gallery.value | first %}
-                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                          data-debug-style-variant-id="{{ style_variant.id }}"
-                          data-debug-style-variant-title="{{ style_variant.title }}"
-                          data-debug-has-gallery="true"
-                        {% elsif product.images.size > 1 %}
-                          {% comment %}Fallback to product gallery second image{% endcomment %}
-                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                          data-debug-style-variant-id="{{ style_variant.id }}"
-                          data-debug-style-variant-title="{{ style_variant.title }}"
-                          data-debug-fallback="true"
-                        {% else %}
-                          data-debug-style-variant-id="{{ style_variant.id }}"
-                          data-debug-style-variant-title="{{ style_variant.title }}"
-                          data-debug-no-gallery="true"
-                        {% endif %}
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
                     {% else %}
                       <div class="product-image-placeholder">
@@ -889,28 +894,28 @@
                           {% endunless %}
                         {% endunless %}
                         
+                        {% comment %}Swatch hover images for style block{% endcomment %}
+                        {% assign swatch_first = nil %}
+                        {% assign swatch_second = nil %}
+                        {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
+                          {% for gimg in matched_variant.metafields.custom.variant_gallery.value limit: 2 %}
+                            {% if forloop.first %}
+                              {% assign swatch_first = gimg %}
+                            {% else %}
+                              {% assign swatch_second = gimg %}
+                            {% endif %}
+                          {% endfor %}
+                        {% elsif product.images.size > 0 %}
+                          {% assign swatch_first = product.images.first %}
+                          {% if product.images.size > 1 %}
+                            {% assign swatch_second = product.images[1] %}
+                          {% endif %}
+                        {% endif %}
                         <div 
                           class="color-swatch-variant" 
-                          data-image="{% if matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
-                          {% comment %}Get variant gallery images for second image{% endcomment %}
-                          {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
-                            {% assign first_gallery_image = matched_variant.metafields.custom.variant_gallery.value | first %}
-                            {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                            data-second-image="{{ second_image_url }}"
-                            data-debug-variant-id="{{ matched_variant.id }}"
-                            data-debug-variant-title="{{ matched_variant.title }}"
-                          {% elsif product.images.size > 1 %}
-                            {% comment %}Fallback to product gallery second image{% endcomment %}
-                            {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                            data-second-image="{{ second_image_url }}"
-                            data-debug-variant-id="{{ matched_variant.id }}"
-                            data-debug-variant-title="{{ matched_variant.title }}"
-                            data-debug-fallback="true"
-                          {% else %}
-                            data-debug-variant-id="{{ matched_variant.id }}"
-                            data-debug-variant-title="{{ matched_variant.title }}"
-                            data-debug-no-gallery="true"
-                          {% endif %}
+                          data-image="{% if swatch_first %}{{ swatch_first | img_url: '2000x2000' }}{% elsif matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
+                          {% if swatch_second %}data-second-image="{{ swatch_second | img_url: '2000x2000' }}"{% endif %}
+                          {% if matched_variant.metafields.custom.variant_gallery.value != blank %}data-variant-gallery="true"{% endif %}
                           data-product-id="{{ product.id }}-{{ style_variant.id }}"
                           data-variant-index="{{ forloop.index0 }}"
                           title="{{ value | capitalize }}"
@@ -979,10 +984,54 @@
           <div class="product-card">
             <a href="{{ product.url }}" class="product-link">
                                 <!-- Product Image -->
-                  <div class="product-image-wrapper" 
-                       onmouseenter="showSecondImage('{{ product.id }}')" 
-                       onmouseleave="showFirstImage('{{ product.id }}')">
-                    {% if product.featured_image %}
+                <div class="product-image-wrapper" 
+                     onmouseenter="showSecondImage('{{ product.id }}')" 
+                     onmouseleave="showFirstImage('{{ product.id }}')">
+                    {% comment %}Hover image logic for products without size variants{% endcomment %}
+                    {% assign first_fabric_variant = product.selected_or_first_available_variant %}
+                    {% for option in product.options_with_values %}
+                      {% assign option_name_lower = option.name | downcase %}
+                      {% if option_name_lower == 'color' or option_name_lower == 'colour' or option_name_lower == 'fabric' %}
+                        {% assign first_color_value = option.values.first %}
+                        {% for variant in product.variants %}
+                          {% if variant.option1 == first_color_value or variant.option2 == first_color_value or variant.option3 == first_color_value %}
+                            {% assign first_fabric_variant = variant %}
+                            {% break %}
+                          {% endif %}
+                        {% endfor %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+
+                    {% assign hover_first = nil %}
+                    {% assign hover_second = nil %}
+                    {% if first_fabric_variant and first_fabric_variant.metafields.custom.variant_gallery.value != blank %}
+                      {% for gimg in first_fabric_variant.metafields.custom.variant_gallery.value limit: 2 %}
+                        {% if forloop.first %}
+                          {% assign hover_first = gimg %}
+                        {% else %}
+                          {% assign hover_second = gimg %}
+                        {% endif %}
+                      {% endfor %}
+                    {% elsif product.images.size > 0 %}
+                      {% assign hover_first = product.images.first %}
+                      {% if product.images.size > 1 %}
+                        {% assign hover_second = product.images[1] %}
+                      {% endif %}
+                    {% endif %}
+
+                    {% if hover_first %}
+                      <img 
+                        id="main-image-product-{{ product.id }}"
+                        src="{{ hover_first | img_url: '2000x2000' }}" 
+                        alt="{{ product.featured_image.alt | escape }}"
+                        class="product-image"
+                        loading="lazy"
+                        data-first-image="{{ hover_first | img_url: '2000x2000' }}"
+                        {% if hover_second %}data-second-image="{{ hover_second | img_url: '2000x2000' }}"{% endif %}
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
+                      >
+                {% elsif product.featured_image %}
                       <img 
                         id="main-image-product-{{ product.id }}"
                         src="{{ product.featured_image | img_url: '2000x2000' }}" 
@@ -990,51 +1039,6 @@
                         class="product-image"
                         loading="lazy"
                         data-first-image="{{ product.featured_image | img_url: '2000x2000' }}"
-                        {% comment %}Get variant gallery images for second image - prioritize variant gallery over product gallery{% endcomment %}
-                        {% comment %}Find the first fabric variant to get its gallery images for initial hover{% endcomment %}
-                        {% assign first_fabric_variant = product.selected_or_first_available_variant %}
-                        {% for option in product.options_with_values %}
-                          {% assign option_name_lower = option.name | downcase %}
-                          {% if option_name_lower == 'color' or option_name_lower == 'colour' or option_name_lower == 'fabric' %}
-                            {% assign first_color_value = option.values.first %}
-                            {% for variant in product.variants %}
-                              {% if variant.option1 == first_color_value or variant.option2 == first_color_value or variant.option3 == first_color_value %}
-                                {% assign first_fabric_variant = variant %}
-                                {% break %}
-                              {% endif %}
-                            {% endfor %}
-                            {% break %}
-                          {% endif %}
-                        {% endfor %}
-                        
-                        {% comment %}Check if product has only one variant and use main gallery if variant gallery is empty{% endcomment %}
-                        {% if product.variants.size == 1 %}
-                          {% comment %}Single variant product - use main product gallery if variant gallery is empty{% endcomment %}
-                          {% if first_fabric_variant.metafields.custom.variant_gallery.value != blank %}
-                            {% assign first_gallery_image = first_fabric_variant.metafields.custom.variant_gallery.value | first %}
-                            {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                            data-second-image="{{ second_image_url }}"
-                            data-variant-gallery="true"
-                          {% elsif product.images.size > 1 %}
-                            {% comment %}Use main product gallery when variant gallery is empty{% endcomment %}
-                            {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                            data-second-image="{{ second_image_url }}"
-                            data-fallback="true"
-                          {% endif %}
-                        {% else %}
-                          {% comment %}Multiple variants - prioritize variant gallery{% endcomment %}
-                          {% if first_fabric_variant.metafields.custom.variant_gallery.value != blank %}
-                            {% assign first_gallery_image = first_fabric_variant.metafields.custom.variant_gallery.value | first %}
-                            {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                            data-second-image="{{ second_image_url }}"
-                            data-variant-gallery="true"
-                          {% elsif product.images.size > 1 %}
-                            {% comment %}Only fallback to product gallery if no variant gallery exists{% endcomment %}
-                            {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                            data-second-image="{{ second_image_url }}"
-                            data-fallback="true"
-                          {% endif %}
-                        {% endif %}
                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 100%; height: 100%; background: #f6f6f6; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px;\'>Image not available</div>';"
                       >
                 {% else %}
@@ -1089,38 +1093,28 @@
                       {% assign matched_variant = product.variants | where: 'option3', value | first %}
                     {% endunless %}
                     
+                    {% comment %}Swatch hover images for no-size cards{% endcomment %}
+                    {% assign swatch_first = nil %}
+                    {% assign swatch_second = nil %}
+                    {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
+                      {% for gimg in matched_variant.metafields.custom.variant_gallery.value limit: 2 %}
+                        {% if forloop.first %}
+                          {% assign swatch_first = gimg %}
+                        {% else %}
+                          {% assign swatch_second = gimg %}
+                        {% endif %}
+                      {% endfor %}
+                    {% elsif product.images.size > 0 %}
+                      {% assign swatch_first = product.images.first %}
+                      {% if product.images.size > 1 %}
+                        {% assign swatch_second = product.images[1] %}
+                      {% endif %}
+                    {% endif %}
                     <div 
                       class="color-swatch-variant" 
-                      data-image="{% if matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
-                      {% comment %}Get variant gallery images for second image - prioritize variant gallery over product gallery{% endcomment %}
-                      {% comment %}Check if product has only one variant and use main gallery if variant gallery is empty{% endcomment %}
-                      {% if product.variants.size == 1 %}
-                        {% comment %}Single variant product - use main product gallery if variant gallery is empty{% endcomment %}
-                        {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
-                          {% assign first_gallery_image = matched_variant.metafields.custom.variant_gallery.value | first %}
-                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                          data-variant-gallery="true"
-                        {% elsif product.images.size > 1 %}
-                          {% comment %}Use main product gallery when variant gallery is empty{% endcomment %}
-                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                          data-fallback="true"
-                        {% endif %}
-                      {% else %}
-                        {% comment %}Multiple variants - prioritize variant gallery{% endcomment %}
-                        {% if matched_variant.metafields.custom.variant_gallery.value != blank %}
-                          {% assign first_gallery_image = matched_variant.metafields.custom.variant_gallery.value | first %}
-                          {% assign second_image_url = first_gallery_image | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                          data-variant-gallery="true"
-                        {% elsif product.images.size > 1 %}
-                          {% comment %}Only fallback to product gallery if no variant gallery exists{% endcomment %}
-                          {% assign second_image_url = product.images[1] | img_url: '2000x2000' %}
-                          data-second-image="{{ second_image_url }}"
-                          data-fallback="true"
-                        {% endif %}
-                      {% endif %}
+                      data-image="{% if swatch_first %}{{ swatch_first | img_url: '2000x2000' }}{% elsif matched_variant.featured_image %}{{ matched_variant.featured_image | img_url: '2000x2000' }}{% endif %}"
+                      {% if swatch_second %}data-second-image="{{ swatch_second | img_url: '2000x2000' }}"{% endif %}
+                      {% if matched_variant.metafields.custom.variant_gallery.value != blank %}data-variant-gallery="true"{% endif %}
                       data-product-id="{{ product.id }}"
                       data-variant-index="{{ forloop.index0 }}"
                       title="{{ value | capitalize }}"
