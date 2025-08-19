@@ -25,6 +25,14 @@
   justify-content: center;
 }
 
+/* Desktop: per-section label top offsets for precise alignment */
+.compare-modal-specs > .compare-modal-category-label { top: 3px; }
+.compare-modal-fabric > .compare-modal-category-label { top: 4px; }
+.compare-modal-tech-specs > .compare-modal-category-label { top: 29px; }
+.compare-modal-features > .compare-modal-category-label { top: 8px; }
+.compare-modal-overview > .compare-modal-category-label { top: 35px; }
+.compare-modal-available-in-wrapper > .compare-modal-category-label { top: 51px; }
+
 .compare-modal-content {
   background: #fff; 
   max-width: 700px; 
@@ -150,8 +158,7 @@
   white-space: nowrap;
   position: absolute;
   left: -7px;
-  top: 50%;
-  transform: translateY(-50%) rotate(-90deg);
+  top: 0; /* default; overridden per-section below */
   width: 40px;
   height: 40px;
   display: flex;
@@ -845,14 +852,16 @@ padding-right: 4% !important;
   
   /* Mobile responsive adjustments for compare modal elements */
   .compare-modal-category-label {
-    left: -19px !important;
-  }
-  
-  .compare-modal-available-in-wrapper .compare-modal-category-label {
-    left: 1px !important;
-    top: 66px !important;
+    left: -16px !important;
   }
 
+  /* Per-section top offsets: mobile */
+  .compare-modal-specs > .compare-modal-category-label { top: 3px !important; }
+  .compare-modal-tech-specs > .compare-modal-category-label { top: 29px !important; }
+  .compare-modal-fabric > .compare-modal-category-label { top: 3px !important; }
+  .compare-modal-features > .compare-modal-category-label { top: 8px !important; }
+  .compare-modal-overview > .compare-modal-category-label { top: 35px !important; }
+  .compare-modal-available-in-wrapper > .compare-modal-category-label { top: 43px !important; left: 2px !important; }
 }
 
 /* Compare Bags button styles */
