@@ -11,15 +11,25 @@
   <div class="custom-cart-overlay"></div>
   
   <div class="custom-cart-content">
-    <!-- Free Shipping Banner -->
-    <div class="free-shipping-banner">
-      {% if cart_total >= free_shipping_threshold %}
-        <span class="free-shipping-text">You got free shipping!</span>
-      {% else %}
-        {% assign remaining_amount = free_shipping_threshold | minus: cart_total %}
-        <span class="free-shipping-text">Almost there! Add {{ remaining_amount | money }} more for free shipping</span>
-      {% endif %}
-      <button class="banner-close" aria-label="Close banner">×</button>
+    <!-- Free Shipping Progress Bar -->
+    <div class="free-shipping-progress">
+      <div class="progress-text">
+        {% if cart_total >= free_shipping_threshold %}
+          <span class="free-shipping-achieved">You got free shipping!</span>
+        {% else %}
+          {% assign remaining_amount = free_shipping_threshold | minus: cart_total %}
+          <span class="free-shipping-progress-text">
+            Almost there! Add <span class="remaining-amount">{{ remaining_amount | money }}</span> more for free shipping
+          </span>
+        {% endif %}
+      </div>
+      
+      <div class="progress-bar-container">
+        {% assign progress_percentage = cart_total | times: 100 | divided_by: free_shipping_threshold | at_most: 100 %}
+        <div class="progress-bar" style="width: {{ progress_percentage }}%">
+          <div class="truck-icon">🚚</div>
+        </div>
+      </div>
     </div>
 
     <!-- Cart Header -->
@@ -118,14 +128,62 @@
           
           <!-- Payment Methods -->
           <div class="payment-methods">
-            <img src="https://cdn.shopify.com/s/files/1/0000/0000/files/visa.svg" alt="Visa" class="payment-icon">
-            <img src="https://cdn.shopify.com/s/files/1/0000/0000/files/mastercard.svg" alt="Mastercard" class="payment-icon">
-            <img src="https://cdn.shopify.com/s/files/1/0000/0000/files/paypal.svg" alt="PayPal" class="payment-icon">
-            <img src="https://cdn.shopify.com/s/files/1/0000/0000/files/apple-pay.svg" alt="Apple Pay" class="payment-icon">
-            <img src="https://cdn.shopify.com/s/files/1/0000/0000/files/amex.svg" alt="American Express" class="payment-icon">
-            <img src="https://cdn.shopify.com/s/files/1/0000/0000/files/shop-pay.svg" alt="Shop Pay" class="payment-icon">
-            <img src="https://cdn.shopify.com/s/files/1/0000/0000/files/google-pay.svg" alt="Google Pay" class="payment-icon">
-            <img src="https://cdn.shopify.com/s/files/1/0000/0000/files/klarna.svg" alt="Klarna" class="payment-icon">
+            <!-- Visa -->
+            <svg class="payment-icon" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="16" rx="2" fill="#1A1F71"/>
+              <path d="M20.5 4.5L18.5 11.5H16.5L18.5 4.5H20.5ZM22.5 4.5L24.5 8.5L25.5 4.5H27.5L25.5 11.5H24.5L22.5 7.5V11.5H20.5V4.5H22.5ZM28.5 4.5V11.5H26.5V4.5H28.5ZM30.5 4.5L32.5 8.5L33.5 4.5H35.5L33.5 11.5H32.5L30.5 7.5V11.5H28.5V4.5H30.5Z" fill="white"/>
+            </svg>
+            
+            <!-- Mastercard -->
+            <svg class="payment-icon" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="16" rx="2" fill="#EB001B"/>
+              <circle cx="20" cy="8" r="6" fill="#F79E1B"/>
+              <circle cx="24" cy="8" r="6" fill="#FF5F00"/>
+              <path d="M20 2C17.8 2 15.8 3 14.5 4.5C16.2 6.2 18.2 7.5 20.5 8.5C22.8 7.5 24.8 6.2 26.5 4.5C25.2 3 23.2 2 21 2H20Z" fill="#EB001B"/>
+            </svg>
+            
+            <!-- PayPal -->
+            <svg class="payment-icon" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="16" rx="2" fill="#003087"/>
+              <path d="M18.5 6.5C18.5 5.5 19.5 4.5 20.5 4.5H23.5C24.5 4.5 25.5 5.5 25.5 6.5V8.5C25.5 9.5 24.5 10.5 23.5 10.5H20.5C19.5 10.5 18.5 9.5 18.5 8.5V6.5ZM22.5 6.5H21.5V8.5H22.5V6.5Z" fill="white"/>
+              <path d="M26.5 6.5C26.5 5.5 27.5 4.5 28.5 4.5H31.5C32.5 4.5 33.5 5.5 33.5 6.5V8.5C33.5 9.5 32.5 10.5 31.5 10.5H28.5C27.5 10.5 26.5 9.5 26.5 8.5V6.5ZM30.5 6.5H29.5V8.5H30.5V6.5Z" fill="white"/>
+            </svg>
+            
+            <!-- Apple Pay -->
+            <svg class="payment-icon" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="16" rx="2" fill="black"/>
+              <path d="M18.5 4.5C18.5 3.5 19.5 2.5 20.5 2.5H21.5C22.5 2.5 23.5 3.5 23.5 4.5V5.5C23.5 6.5 22.5 7.5 21.5 7.5H20.5C19.5 7.5 18.5 6.5 18.5 5.5V4.5ZM21.5 4.5H20.5V5.5H21.5V4.5Z" fill="white"/>
+              <path d="M24.5 4.5C24.5 3.5 25.5 2.5 26.5 2.5H27.5C28.5 2.5 29.5 3.5 29.5 4.5V5.5C29.5 6.5 28.5 7.5 27.5 7.5H26.5C25.5 7.5 24.5 6.5 24.5 5.5V4.5ZM27.5 4.5H26.5V5.5H27.5V4.5Z" fill="white"/>
+              <path d="M30.5 4.5C30.5 3.5 31.5 2.5 32.5 2.5H33.5C34.5 2.5 35.5 3.5 35.5 4.5V5.5C35.5 6.5 34.5 7.5 33.5 7.5H32.5C31.5 7.5 30.5 6.5 30.5 5.5V4.5ZM33.5 4.5H32.5V5.5H33.5V4.5Z" fill="white"/>
+            </svg>
+            
+            <!-- American Express -->
+            <svg class="payment-icon" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="16" rx="2" fill="#006FCF"/>
+              <path d="M18.5 4.5L20.5 8.5L22.5 4.5H24.5L21.5 11.5H19.5L18.5 4.5ZM25.5 4.5L27.5 8.5L29.5 4.5H31.5L28.5 11.5H26.5L25.5 4.5ZM32.5 4.5L34.5 8.5L36.5 4.5H38.5L35.5 11.5H33.5L32.5 4.5Z" fill="white"/>
+            </svg>
+            
+            <!-- Shop Pay -->
+            <svg class="payment-icon" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="16" rx="2" fill="#5A31F4"/>
+              <path d="M18.5 4.5C18.5 3.5 19.5 2.5 20.5 2.5H21.5C22.5 2.5 23.5 3.5 23.5 4.5V5.5C23.5 6.5 22.5 7.5 21.5 7.5H20.5C19.5 7.5 18.5 6.5 18.5 5.5V4.5ZM21.5 4.5H20.5V5.5H21.5V4.5Z" fill="white"/>
+              <path d="M24.5 4.5C24.5 3.5 25.5 2.5 26.5 2.5H27.5C28.5 2.5 29.5 3.5 29.5 4.5V5.5C29.5 6.5 28.5 7.5 27.5 7.5H26.5C25.5 7.5 24.5 6.5 24.5 5.5V4.5ZM27.5 4.5H26.5V5.5H27.5V4.5Z" fill="white"/>
+              <path d="M30.5 4.5C30.5 3.5 31.5 2.5 32.5 2.5H33.5C34.5 2.5 35.5 3.5 35.5 4.5V5.5C35.5 6.5 34.5 7.5 33.5 7.5H32.5C31.5 7.5 30.5 6.5 30.5 5.5V4.5ZM33.5 4.5H32.5V5.5H33.5V4.5Z" fill="white"/>
+            </svg>
+            
+            <!-- Google Pay -->
+            <svg class="payment-icon" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="16" rx="2" fill="#000000"/>
+              <path d="M18.5 4.5C18.5 3.5 19.5 2.5 20.5 2.5H21.5C22.5 2.5 23.5 3.5 23.5 4.5V5.5C23.5 6.5 22.5 7.5 21.5 7.5H20.5C19.5 7.5 18.5 6.5 18.5 5.5V4.5ZM21.5 4.5H20.5V5.5H21.5V4.5Z" fill="white"/>
+              <path d="M24.5 4.5C24.5 3.5 25.5 2.5 26.5 2.5H27.5C28.5 2.5 29.5 3.5 29.5 4.5V5.5C29.5 6.5 28.5 7.5 27.5 7.5H26.5C25.5 7.5 24.5 6.5 24.5 5.5V4.5ZM27.5 4.5H26.5V5.5H27.5V4.5Z" fill="white"/>
+              <path d="M30.5 4.5C30.5 3.5 31.5 2.5 32.5 2.5H33.5C34.5 2.5 35.5 3.5 35.5 4.5V5.5C35.5 6.5 34.5 7.5 33.5 7.5H32.5C31.5 7.5 30.5 6.5 30.5 5.5V4.5ZM33.5 4.5H32.5V5.5H33.5V4.5Z" fill="white"/>
+            </svg>
+            
+            <!-- Klarna -->
+            <svg class="payment-icon" viewBox="0 0 48 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="16" rx="2" fill="#FFB3C7"/>
+              <path d="M18.5 4.5L20.5 8.5L22.5 4.5H24.5L21.5 11.5H19.5L18.5 4.5ZM25.5 4.5L27.5 8.5L29.5 4.5H31.5L28.5 11.5H26.5L25.5 4.5ZM32.5 4.5L34.5 8.5L36.5 4.5H38.5L35.5 11.5H33.5L32.5 4.5Z" fill="#000000"/>
+            </svg>
           </div>
         </div>
         
@@ -219,50 +277,72 @@
   border-radius: 0;
 }
 
-/* Free Shipping Banner */
-.free-shipping-banner {
+/* Free Shipping Progress Bar */
+.free-shipping-progress {
+  background: #ffffff;
+  color: #111827;
+  text-align: center;
+  padding: 16px 16px 20px;
+  position: relative;
+}
+
+.free-shipping-progress .progress-text {
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.free-shipping-progress .free-shipping-achieved {
+  color: #111827;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.free-shipping-progress .free-shipping-progress-text {
+  color: #111827;
+  font-size: 14px;
+}
+
+.free-shipping-progress .remaining-amount {
+  color: #111827;
+  font-weight: 600;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #2dd4bf;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+  position: relative;
+}
+
+.truck-icon {
+  position: absolute;
+  right: -8px;
+  top: -4px;
+  font-size: 16px;
   background: #2dd4bf;
   color: white;
-  text-align: center;
-  padding: 12px 16px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.free-shipping-text {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.banner-close {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: white;
+  border-radius: 50%;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.banner-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 /* Cart Header */
 .cart-header {
   padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
   position: relative;
 }
 
@@ -309,12 +389,7 @@
   display: flex;
   align-items: center;
   padding: 24px 0;
-  border-bottom: 1px solid #e5e7eb;
   gap: 16px;
-}
-
-.cart-item:last-child {
-  border-bottom: none;
 }
 
 .cart-item-image {
@@ -471,7 +546,6 @@
 .bundle-save-section {
   padding: 24px 16px;
   background: #ffffff;
-  border-top: 1px solid #e5e7eb;
 }
 
 .bundle-title {
@@ -493,34 +567,40 @@
   padding: 8px 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
 }
 
 .bundle-products-scroll::-webkit-scrollbar {
   display: none;
 }
 
+.bundle-products-scroll:active {
+  cursor: grabbing;
+}
+
 .bundle-product {
   flex: 0 0 128px;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
+  background: transparent;
+  border-radius: 0;
+  padding: 12px;
   text-align: center;
-  border: 1px solid #e9ecef;
+  border: none;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .bundle-product:hover {
-  border-color: #2dd4bf;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 .bundle-product-image {
   width: 100%;
-  height: 80px;
+  height: 100px;
   border-radius: 8px;
   overflow: hidden;
-  background: #f8f9fa;
+  background: #f3f4f6;
   margin-bottom: 8px;
 }
 
@@ -543,7 +623,7 @@
   font-size: 14px;
   color: #111827;
   font-weight: 500;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .bundle-product-variants {
@@ -577,6 +657,8 @@
   color: #f97316;
   font-weight: 500;
   margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .add-to-bag-btn {
@@ -591,6 +673,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .add-to-bag-btn:hover {
@@ -601,7 +685,6 @@
 /* Checkout Section */
 .checkout-section {
   background: #ffffff;
-  border-top: 1px solid #e5e7eb;
   padding: 20px 16px 24px;
   position: sticky;
   bottom: 0;
@@ -690,15 +773,17 @@
 
 .payment-icon {
   height: 20px;
-  width: auto;
+  width: 32px;
   opacity: 0.8;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
   filter: grayscale(20%);
+  border-radius: 2px;
 }
 
 .payment-icon:hover {
   opacity: 1;
   filter: grayscale(0%);
+  transform: scale(1.05);
 }
 
 .shipping-totals {
@@ -850,6 +935,10 @@
     max-width: 100%;
   }
   
+  .free-shipping-progress {
+    padding: 12px 16px 16px;
+  }
+  
   .cart-header {
     padding: 16px;
   }
@@ -873,6 +962,10 @@
 }
 
 @media (max-width: 480px) {
+  .free-shipping-progress {
+    padding: 12px 16px 16px;
+  }
+  
   .cart-header {
     padding: 16px;
   }
@@ -966,13 +1059,7 @@ class CustomCart {
         }
       }
       
-      if (e.target.matches('.banner-close') || e.target.closest('.banner-close')) {
-        // Hide the banner
-        const banner = document.querySelector('.free-shipping-banner');
-        if (banner) {
-          banner.style.display = 'none';
-        }
-      }
+
       
       if (e.target.matches('.cart-close') || e.target.closest('.cart-close')) {
         this.closeCart();
@@ -1621,6 +1708,63 @@ class CustomCart {
 
   setupBundleRecommendations() {
     this.updateBundleRecommendations();
+    this.setupBundleScrolling();
+  }
+
+  setupBundleScrolling() {
+    const bundleScroll = document.getElementById('bundle-products-scroll');
+    if (!bundleScroll) return;
+
+    let isScrolling = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+
+
+    // Touch scrolling for mobile
+    bundleScroll.addEventListener('touchstart', (e) => {
+      isScrolling = true;
+      startX = e.touches[0].pageX - bundleScroll.offsetLeft;
+      scrollLeft = bundleScroll.scrollLeft;
+    });
+
+    bundleScroll.addEventListener('touchmove', (e) => {
+      if (!isScrolling) return;
+      e.preventDefault();
+      const x = e.touches[0].pageX - bundleScroll.offsetLeft;
+      const walk = (x - startX) * 2;
+      bundleScroll.scrollLeft = scrollLeft - walk;
+    });
+
+    bundleScroll.addEventListener('touchend', () => {
+      isScrolling = false;
+    });
+
+    // Mouse drag scrolling for desktop
+    bundleScroll.addEventListener('mousedown', (e) => {
+      isScrolling = true;
+      startX = e.pageX - bundleScroll.offsetLeft;
+      scrollLeft = bundleScroll.scrollLeft;
+      bundleScroll.style.cursor = 'grabbing';
+    });
+
+    bundleScroll.addEventListener('mousemove', (e) => {
+      if (!isScrolling) return;
+      e.preventDefault();
+      const x = e.pageX - bundleScroll.offsetLeft;
+      const walk = (x - startX) * 2;
+      bundleScroll.scrollLeft = scrollLeft - walk;
+    });
+
+    bundleScroll.addEventListener('mouseup', () => {
+      isScrolling = false;
+      bundleScroll.style.cursor = 'grab';
+    });
+
+    bundleScroll.addEventListener('mouseleave', () => {
+      isScrolling = false;
+      bundleScroll.style.cursor = 'grab';
+    });
   }
 
   setupCartListener() {
@@ -1761,7 +1905,7 @@ class CustomCart {
         title: 'Vergara Tote',
         price: 14900,
         compare_at_price: null,
-        image: 'https://via.placeholder.com/200x120/e8f4f8/4a6f64?text=Vergara+Tote',
+        image: 'https://symplofficial.com/cdn/shop/files/Commuter-Carb-20L_preorder_2200x2800_crop_center.jpg?v=1754951777',
         variants: [
           { id: 'fallback-1-v1', title: 'Ballistic' },
           { id: 'fallback-1-v2', title: 'Ballistic' }
@@ -1772,7 +1916,7 @@ class CustomCart {
         title: 'Motion Sling 3L',
         price: 9900,
         compare_at_price: null,
-        image: 'https://via.placeholder.com/200x120/e8f4f8/4a6f64?text=Motion+Sling+3L',
+        image: 'https://symplofficial.com/cdn/shop/files/Commuter-Carb-20L_preorder_2200x2800_crop_center.jpg?v=1754951777',
         variants: [
           { id: 'fallback-2-v1', title: 'X-Pac' },
           { id: 'fallback-2-v2', title: 'X-Pac' }
@@ -1783,7 +1927,7 @@ class CustomCart {
         title: 'Tech Kit',
         price: 5900,
         compare_at_price: null,
-        image: 'https://via.placeholder.com/200x120/e8f4f8/4a6f64?text=Tech+Kit',
+        image: 'https://symplofficial.com/cdn/shop/files/Commuter-Carb-20L_preorder_2200x2800_crop_center.jpg?v=1754951777',
         variants: [
           { id: 'fallback-3-v1', title: 'Carbonate' },
           { id: 'fallback-3-v2', title: 'Carbonate' }
@@ -1791,13 +1935,13 @@ class CustomCart {
       },
       {
         id: 'fallback-4',
-        title: 'Water Bottle',
-        price: 3500,
+        title: 'Vergara Tote',
+        price: 14900,
         compare_at_price: null,
-        image: 'https://via.placeholder.com/200x120/e8f4f8/4a6f64?text=Water+Bottle',
+        image: 'https://symplofficial.com/cdn/shop/files/Commuter-Carb-20L_preorder_2200x2800_crop_center.jpg?v=1754951777',
         variants: [
-          { id: 'fallback-4-v1', title: 'White' },
-          { id: 'fallback-4-v2', title: 'Black' }
+          { id: 'fallback-4-v1', title: 'Ballistic' },
+          { id: 'fallback-4-v2', title: 'Ballistic' }
         ]
       }
     ];
