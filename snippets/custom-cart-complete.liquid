@@ -58,9 +58,17 @@
               
               <div class="cart-item-actions">
                 <div class="cart-item-quantity">
-                  <button class="quantity-btn minus" data-action="decrease">-</button>
+                  <button class="quantity-btn minus" data-action="decrease">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                    </svg>
+                  </button>
                   <span class="quantity-display">{{ item.quantity }}</span>
-                  <button class="quantity-btn plus" data-action="increase">+</button>
+                  <button class="quantity-btn plus" data-action="increase">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                  </button>
                 </div>
                 
                 <div class="cart-item-pricing">
@@ -81,7 +89,7 @@
                   {% endif %}
                 </div>
                 
-                <button class="cart-item-remove" data-item-key="{{ item.key }}">
+                <button class="cart-item-remove" data-item-key="{{ item.key }}" aria-label="Remove item">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                   </svg>
@@ -266,7 +274,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  width: 448px;
+  width: 520px;
   height: 100vh;
   background: #ffffff;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
@@ -439,6 +447,7 @@
   border: 1px solid #d1d5db;
   border-radius: 9999px;
   overflow: hidden;
+  background: #ffffff;
 }
 
 .quantity-btn {
@@ -446,20 +455,22 @@
   height: 32px;
   border: none;
   background: #ffffff;
-  color: #9ca3af;
+  color: #6b7280;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  font-weight: 600;
   transition: all 0.2s ease;
 }
 
 .quantity-btn:hover {
   background: #f8f9fa;
-  color: #6b7280;
-  transform: scale(1.05);
+  color: #111827;
+}
+
+.quantity-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .quantity-display {
@@ -539,6 +550,11 @@
 .cart-item-remove:hover {
   background: #f8f9fa;
   color: #dc2626;
+}
+
+.cart-item-remove svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Bundle & Save Section */
@@ -1574,9 +1590,17 @@ class CustomCart {
         
         <div class="cart-item-actions">
           <div class="cart-item-quantity">
-            <button class="quantity-btn minus" data-action="decrease">-</button>
+            <button class="quantity-btn minus" data-action="decrease">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+              </svg>
+            </button>
             <span class="quantity-display">${item.quantity || 1}</span>
-            <button class="quantity-btn plus" data-action="increase">+</button>
+            <button class="quantity-btn plus" data-action="increase">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </button>
           </div>
           
           <div class="cart-item-pricing">
@@ -1596,7 +1620,7 @@ class CustomCart {
             }
           </div>
           
-          <button class="cart-item-remove" data-item-key="${item.key || ''}">
+          <button class="cart-item-remove" data-item-key="${item.key || ''}" aria-label="Remove item">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
