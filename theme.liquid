@@ -96,6 +96,7 @@
   <body class="gradient {{ template.name }} {{ page_image }}" id="{{ page_title }}">
     <div id="page">
       {% comment %}{% section 'slide-cart' %}{% endcomment %}
+      {% render 'custom-cart-complete' %}
       {% section 'header' %}
       {% capture ICART_FULL_PAGE_LAYOUT %}{{ content_for_layout }}{% endcapture -%}
       {%- include 'icart-variables', ICART_FULL_PAGE_LAYOUT: ICART_FULL_PAGE_LAYOUT %}
@@ -103,7 +104,7 @@
       {% section 'footer' %}
     </div>
     {% render 'footer-scripts' %}
-
+ 
     {% if template contains 'collection' %}
       <style>
         body{background:#F5F5F5}
