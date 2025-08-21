@@ -950,6 +950,57 @@
   }
 }
 
+/* Cart Page Specific Styles */
+.custom-cart-container.cart-page {
+  position: relative;
+  top: auto;
+  right: auto;
+  width: 100%;
+  height: auto;
+  z-index: auto;
+  transform: none;
+  box-shadow: none;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-top: 24px;
+}
+
+.custom-cart-container.cart-page .custom-cart-overlay {
+  display: none;
+}
+
+.custom-cart-container.cart-page .custom-cart-content {
+  position: relative;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.custom-cart-container.cart-page .free-shipping-progress {
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.custom-cart-container.cart-page .cart-header {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.custom-cart-container.cart-page .cart-items-container {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.custom-cart-container.cart-page .bundle-save-section {
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.custom-cart-container.cart-page .checkout-section {
+  border-radius: 0 0 8px 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .custom-cart-content {
@@ -1045,9 +1096,78 @@ class CustomCart {
 
   init() {
     this.bindEvents();
-    this.loadCart();
-    this.setupBundleRecommendations();
     this.setupCartListener();
+    
+    // Check if we're on the cart page
+    if (window.location.pathname === '/cart') {
+      this.isCartPage = true;
+      console.log('Custom cart initialized on cart page');
+      // Auto-open cart on cart page
+      setTimeout(() => {
+        this.openCart();
+      }, 100);
+    } else {
+      console.log('Custom cart initialized for cart drawer');
+    }
+    
+    // Wait for cart container to be available before loading data
+    this.waitForCartContainer();
+  }
+
+  waitForCartContainer() {
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const checkContainer = () => {
+      attempts++;
+      console.log(`Checking for cart container, attempt ${attempts}`);
+      
+      if (this.isCartReady()) {
+        console.log('Cart container found, loading data');
+        this.loadCart();
+        this.setupBundleRecommendations();
+      } else if (attempts < maxAttempts) {
+        console.log('Cart container not ready, retrying...');
+        setTimeout(checkContainer, 200);
+      } else {
+        console.warn('Cart container not found after maximum attempts');
+        // Set up a retry mechanism for when cart becomes available later
+        this.setupRetryMechanism();
+      }
+    };
+    
+    // Start checking after a short delay
+    setTimeout(checkContainer, 100);
+  }
+
+  setupRetryMechanism() {
+    // Listen for when cart becomes available
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && this.isCartReady()) {
+          console.log('Cart became available, loading data now');
+          observer.disconnect();
+          this.loadCart();
+          this.setupBundleRecommendations();
+        }
+      });
+    });
+    
+    // Observe the document body for changes
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    // Also set up a periodic check as backup
+    setTimeout(() => {
+      if (this.isCartReady()) {
+        console.log('Cart available on periodic check, loading data');
+        observer.disconnect();
+        this.loadCart();
+        this.setupBundleRecommendations();
+      }
+    }, 1000);
   }
 
   bindEvents() {
@@ -1148,14 +1268,20 @@ class CustomCart {
       }
       
       if (e.target.matches('.continue-shopping')) {
-        this.closeCart();
-        
-        // Refresh cart when continuing shopping
-        setTimeout(() => {
-          if (this.cart) {
-            this.refreshCart();
-          }
-        }, 300);
+        if (this.isCartPage) {
+          // On cart page, redirect to products
+          window.location.href = '/collections/all';
+        } else {
+          // In cart drawer, close it
+          this.closeCart();
+          
+          // Refresh cart when continuing shopping
+          setTimeout(() => {
+            if (this.cart) {
+              this.refreshCart();
+            }
+          }, 300);
+        }
         
         // Trigger cart interaction event
         document.dispatchEvent(new CustomEvent('cart:interaction', {
@@ -1205,6 +1331,7 @@ class CustomCart {
 
   async loadCart() {
     try {
+      console.log('Loading cart data...');
       const response = await fetch('/cart.js');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1221,8 +1348,29 @@ class CustomCart {
           ...cartData
         };
         
-        this.updateCartDisplay();
-        this.updateBundleRecommendations();
+        console.log('Cart data loaded successfully:', this.cart);
+        
+        // Debug cart item structure
+        if (this.cart.items && this.cart.items.length > 0) {
+          console.log('Cart items structure:', this.cart.items.map(item => ({
+            id: item.id,
+            product_id: item.product_id,
+            product_handle: item.product_handle,
+            title: item.title,
+            product_title: item.product_title
+          })));
+        }
+        
+        // Only update display if cart is fully ready
+        if (this.isCartReady()) {
+          this.updateCartDisplay();
+          // Only update bundle recommendations if cart has items
+          if (this.cart.item_count > 0) {
+            this.updateBundleRecommendations();
+          }
+        } else {
+          console.log('Cart not ready for display update, will retry later');
+        }
       } else {
         throw new Error('Invalid cart data received');
       }
@@ -1236,7 +1384,10 @@ class CustomCart {
         items: []
       };
       
-      this.updateCartDisplay();
+      // Only update display if cart is fully ready
+      if (this.isCartReady()) {
+        this.updateCartDisplay();
+      }
     }
   }
 
@@ -1476,7 +1627,16 @@ class CustomCart {
       detail: { action: 'checkout_initiated' }
     }));
     
-    window.location.href = '/checkout';
+    // If on cart page, redirect to checkout
+    if (this.isCartPage) {
+      window.location.href = '/checkout';
+    } else {
+      // If in cart drawer, close it first then redirect
+      this.closeCart();
+      setTimeout(() => {
+        window.location.href = '/checkout';
+      }, 350);
+    }
   }
 
   toggleCart() {
@@ -1500,11 +1660,31 @@ class CustomCart {
 
   openCart() {
     const cart = document.getElementById('custom-cart');
-    cart.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    if (!cart) {
+      console.warn('Cart container not found when trying to open');
+      return;
+    }
     
-    // Always refresh cart data when opening
-    this.refreshCartImmediate();
+    cart.style.display = 'block';
+    
+    // Add cart-page class if on cart page
+    if (this.isCartPage) {
+      cart.classList.add('cart-page');
+    }
+    
+    // Only hide body overflow if not on cart page
+    if (!this.isCartPage) {
+      document.body.style.overflow = 'hidden';
+    }
+    
+    // Check if cart is ready before refreshing
+    if (this.isCartReady()) {
+      console.log('Cart ready, refreshing data');
+      this.refreshCartImmediate();
+    } else {
+      console.log('Cart not ready, setting up retry mechanism');
+      this.setupRetryMechanism();
+    }
     
     setTimeout(() => {
       cart.classList.add('open');
@@ -1522,7 +1702,11 @@ class CustomCart {
     
     setTimeout(() => {
       cart.style.display = 'none';
-      document.body.style.overflow = '';
+      
+      // Only restore body overflow if not on cart page
+      if (!this.isCartPage) {
+        document.body.style.overflow = '';
+      }
       
       // Refresh cart data when closed for next open
       if (this.cart) {
@@ -1542,13 +1726,22 @@ class CustomCart {
       return;
     }
 
+    // Double-check that cart is ready before proceeding
+    if (!this.isCartReady()) {
+      console.log('Cart not ready for display update, skipping');
+      return;
+    }
+
     try {
+      console.log('Updating cart display...');
+      
       // Update cart title with count
       const cartTitle = document.querySelector('.cart-title');
       if (cartTitle) {
         cartTitle.textContent = `Your bag (${this.cart.item_count || 0})`;
       }
 
+      // Render cart items
       this.renderCartItems();
       this.updateTotals();
       this.updateFreeShippingProgress();
@@ -1557,6 +1750,8 @@ class CustomCart {
       if (checkoutBtn) {
         checkoutBtn.disabled = (this.cart.item_count || 0) === 0;
       }
+      
+      console.log('Cart display updated successfully');
     } catch (error) {
       console.error('Error updating cart display:', error);
     }
@@ -1565,9 +1760,11 @@ class CustomCart {
   renderCartItems() {
     const cartItemsList = document.getElementById('cart-items-list');
     if (!cartItemsList) {
-      console.warn('Cart items list element not found');
+      console.warn('Cart items list element not found - cart may not be fully loaded yet');
       return;
     }
+
+    console.log('Rendering cart items...');
 
     if (!this.cart || !this.cart.items || (this.cart.item_count || 0) === 0) {
       cartItemsList.innerHTML = `
@@ -1745,10 +1942,71 @@ class CustomCart {
     }
   }
 
+  isCartReady() {
+    const cartContainer = document.getElementById('custom-cart');
+    const cartItemsList = document.getElementById('cart-items-list');
+    const bundleContainer = document.getElementById('bundle-products-scroll');
+    
+    const isReady = cartContainer !== null && 
+                   cartItemsList !== null && 
+                   bundleContainer !== null;
+    
+    if (!isReady) {
+      console.log('Cart readiness check:', {
+        cartContainer: !!cartContainer,
+        cartItemsList: !!cartItemsList,
+        bundleContainer: !!bundleContainer
+      });
+    }
+    
+    return isReady;
+  }
+
   setupBundleRecommendations() {
     this.updateBundleRecommendations();
     // Remove setupBundleScrolling since we're using drag instead
     // this.setupBundleScrolling();
+  }
+
+  setupCartListener() {
+    // Listen for cart updates from other parts of the site
+    document.addEventListener('cart:updated', (event) => {
+      if (event.detail && event.detail.cart) {
+        this.cart = event.detail.cart;
+        this.updateCartDisplay();
+        this.updateCartCount();
+      }
+    });
+
+    // Listen for cart item additions
+    document.addEventListener('cart:item:added', (event) => {
+      if (event.detail && event.detail.cart) {
+        this.cart = event.detail.cart;
+        this.updateCartDisplay();
+        this.updateCartCount();
+        this.updateBundleRecommendations();
+      }
+    });
+
+    // Listen for cart item removals
+    document.addEventListener('cart:item:removed', (event) => {
+      if (event.detail && event.detail.cart) {
+        this.cart = event.detail.cart;
+        this.updateCartDisplay();
+        this.updateCartCount();
+        this.updateBundleRecommendations();
+      }
+    });
+
+    // Listen for quantity changes
+    document.addEventListener('cart:quantity:changed', (event) => {
+      if (event.detail && event.detail.cart) {
+        this.cart = event.detail.cart;
+        this.updateCartDisplay();
+        this.updateCartCount();
+        this.updateBundleRecommendations();
+      }
+    });
   }
 
   setupBundleDragAndTouch() {
@@ -2003,7 +2261,7 @@ class CustomCart {
       bundleContainer.classList.add('no-transition');
       // Add visual feedback
       bundleContainer.parentElement.classList.add('grabbing');
-    }, { passive: false });
+    }, { passive: true });
 
     bundleContainer.addEventListener('touchmove', function(e) {
       if (!touchIsDragging || e.touches.length !== 1) return;
@@ -2025,6 +2283,7 @@ class CustomCart {
       }
 
       if (touchDirection === 'horizontal') {
+        // Only prevent default for horizontal swipes to avoid blocking vertical scrolling
         e.preventDefault();
         touchCurrentX = currentX;
         const diff = touchCurrentX - touchStartX;
@@ -2118,13 +2377,23 @@ class CustomCart {
   }
 
   async updateBundleRecommendations() {
-    if (!this.cart || this.cart.item_count === 0) return;
+    // Check if cart and bundle container are ready
+    if (!this.cart) {
+      console.log('Cart not available for bundle recommendations');
+      return;
+    }
 
     const bundleContainer = document.getElementById('bundle-products-scroll');
-    if (!bundleContainer) return;
+    if (!bundleContainer) {
+      console.log('Bundle container not found, skipping bundle recommendations');
+      return;
+    }
 
     try {
-      const bundleProducts = await this.getBundleProductsForCart();
+      // Show loading state
+      bundleContainer.innerHTML = '<p class="no-bundles">Loading recommendations...</p>';
+      
+      const bundleProducts = await this.getBundleRecommendations();
       
       if (bundleProducts.length === 0) {
         bundleContainer.innerHTML = '<p class="no-bundles">No bundle recommendations available</p>';
@@ -2133,17 +2402,66 @@ class CustomCart {
 
       bundleContainer.innerHTML = bundleProducts.map(product => this.renderBundleProduct(product)).join('');
       this.setupBundleDragAndTouch(); // Setup drag and touch after products are rendered
+      
+      console.log(`Bundle recommendations loaded: ${bundleProducts.length} products`);
     } catch (error) {
       console.error('Error loading bundle recommendations:', error);
-      bundleContainer.innerHTML = '<p class="no-bundles">Unable to load bundle recommendations</p>';
+      if (bundleContainer) {
+        bundleContainer.innerHTML = '<p class="no-bundles">Unable to load bundle recommendations</p>';
+      }
     }
+  }
+
+  async getBundleRecommendations() {
+    // If cart is empty, return fallback products
+    if (!this.cart || this.cart.item_count === 0) {
+      console.log('Cart is empty, returning fallback bundle products');
+      return this.getFallbackBundleProducts();
+    }
+
+    // Try to get bundle products from metafields
+    try {
+      const bundleProducts = await this.getBundleProductsForCart();
+      if (bundleProducts.length > 0) {
+        return bundleProducts;
+      }
+    } catch (error) {
+      console.error('Error getting bundle products from metafields:', error);
+    }
+
+    // Fallback to default products
+    console.log('Using fallback bundle products');
+    return this.getFallbackBundleProducts();
   }
 
   async getBundleProductsForCart() {
     const bundleProducts = [];
     
-    for (const cartItem of this.cart.items) {
+    // Check if cart has valid items
+    if (!this.cart || !this.cart.items || this.cart.items.length === 0) {
+      console.log('No cart items to fetch bundle recommendations for');
+      return this.getFallbackBundleProducts().slice(0, 6);
+    }
+    
+    // Filter out invalid cart items
+    const validCartItems = this.cart.items.filter(item => 
+      item && 
+      item.product_handle && 
+      typeof item.product_handle === 'string' && 
+      item.product_handle.trim() !== ''
+    );
+    
+    if (validCartItems.length === 0) {
+      console.warn('No valid cart items with product_handle found');
+      return this.getFallbackBundleProducts().slice(0, 6);
+    }
+    
+    console.log(`Processing ${validCartItems.length} valid cart items for bundle recommendations`);
+    
+    for (const cartItem of validCartItems) {
       try {
+        console.log(`Fetching bundle recommendations for product: ${cartItem.product_handle}`);
+        
         // Get product metafields for bundle recommendations
         const response = await fetch(`/products/${cartItem.product_handle}.js`);
         if (response.ok) {
@@ -2151,14 +2469,22 @@ class CustomCart {
           
           // Check if product has bundle metafield
           if (product.metafields && product.metafields.bundle_recommendations) {
-            const bundleData = JSON.parse(product.metafields.bundle_recommendations.value);
-            
-            bundleData.forEach(bundleProduct => {
-              if (!bundleProducts.find(p => p.id === bundleProduct.id)) {
-                bundleProducts.push(bundleProduct);
+            try {
+              const bundleData = JSON.parse(product.metafields.bundle_recommendations.value);
+              
+              if (Array.isArray(bundleData)) {
+                bundleData.forEach(bundleProduct => {
+                  if (bundleProduct && bundleProduct.id && !bundleProducts.find(p => p.id === bundleProduct.id)) {
+                    bundleProducts.push(bundleProduct);
+                  }
+                });
               }
-            });
+            } catch (parseError) {
+              console.error(`Error parsing bundle metafield for ${cartItem.product_handle}:`, parseError);
+            }
           }
+        } else {
+          console.warn(`Failed to fetch product ${cartItem.product_handle}: ${response.status}`);
         }
       } catch (error) {
         console.error(`Error fetching product ${cartItem.product_handle}:`, error);
@@ -2167,6 +2493,7 @@ class CustomCart {
 
     // If no bundle products from metafields, use fallback products
     if (bundleProducts.length === 0) {
+      console.log('No bundle products found from metafields, using fallback products');
       bundleProducts.push(...this.getFallbackBundleProducts());
     }
 
@@ -2339,7 +2666,20 @@ class CustomCart {
 
 // Initialize cart when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  window.customCart = new CustomCart();
+  // Wait a bit more to ensure all elements are loaded
+  setTimeout(() => {
+    // Check if we're on the cart page
+    const isCartPage = window.location.pathname === '/cart';
+    
+    if (isCartPage) {
+      // On cart page, initialize and auto-open
+      window.customCart = new CustomCart();
+      // The cart will auto-open in the init method
+    } else {
+      // On other pages, just initialize for cart drawer
+      window.customCart = new CustomCart();
+    }
+  }, 100);
 });
 
 window.CustomCart = CustomCart;
