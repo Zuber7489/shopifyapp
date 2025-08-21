@@ -301,7 +301,7 @@
 
 .progress-bar {
   height: 100%;
-  background: #2dd4bf;
+  background: #5896a1;
   border-radius: 6px;
   transition: width 0.6s ease;
   position: relative;
@@ -311,7 +311,7 @@
   position: absolute;
   right: -6px;
   top: -6px;
-  background: #2dd4bf;
+  background: #5896a1;
   border-radius: 50%;
   width: 24px;
   height: 24px;
@@ -566,16 +566,11 @@
   -ms-overflow-style: none;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  cursor: grab;
   margin-left: 0;
 }
 
 .bundle-products-scroll::-webkit-scrollbar {
   display: none;
-}
-
-.bundle-products-scroll:active {
-  cursor: grabbing;
 }
 
 .bundle-product {
@@ -672,7 +667,7 @@
 
 .add-to-bag-btn {
   width: 100%;
-  background: #1F4F4F;
+  background: #037e85;
   color: #ffffff;
   border: none;
   padding: 8px 16px;
@@ -1742,59 +1737,13 @@ class CustomCart {
   }
 
   setupBundleScrolling() {
+    // Scroll functionality removed - bundle products will use native scrolling
     const bundleScroll = document.getElementById('bundle-products-scroll');
     if (!bundleScroll) return;
-
-    let isScrolling = false;
-    let startX = 0;
-    let scrollLeft = 0;
-
-
-
-    // Touch scrolling for mobile
-    bundleScroll.addEventListener('touchstart', (e) => {
-      isScrolling = true;
-      startX = e.touches[0].pageX - bundleScroll.offsetLeft;
-      scrollLeft = bundleScroll.scrollLeft;
-    });
-
-    bundleScroll.addEventListener('touchmove', (e) => {
-      if (!isScrolling) return;
-      e.preventDefault();
-      const x = e.touches[0].pageX - bundleScroll.offsetLeft;
-      const walk = (x - startX) * 2;
-      bundleScroll.scrollLeft = scrollLeft - walk;
-    });
-
-    bundleScroll.addEventListener('touchend', () => {
-      isScrolling = false;
-    });
-
-    // Mouse drag scrolling for desktop
-    bundleScroll.addEventListener('mousedown', (e) => {
-      isScrolling = true;
-      startX = e.pageX - bundleScroll.offsetLeft;
-      scrollLeft = bundleScroll.scrollLeft;
-      bundleScroll.style.cursor = 'grabbing';
-    });
-
-    bundleScroll.addEventListener('mousemove', (e) => {
-      if (!isScrolling) return;
-      e.preventDefault();
-      const x = e.pageX - bundleScroll.offsetLeft;
-      const walk = (x - startX) * 2;
-      bundleScroll.scrollLeft = scrollLeft - walk;
-    });
-
-    bundleScroll.addEventListener('mouseup', () => {
-      isScrolling = false;
-      bundleScroll.style.cursor = 'grab';
-    });
-
-    bundleScroll.addEventListener('mouseleave', () => {
-      isScrolling = false;
-      bundleScroll.style.cursor = 'grab';
-    });
+    
+    // Keep native scrolling behavior only
+    bundleScroll.style.overflowX = 'auto';
+    bundleScroll.style.scrollBehavior = 'smooth';
   }
 
   setupCartListener() {
