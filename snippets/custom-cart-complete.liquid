@@ -223,12 +223,14 @@
 <!-- Bundle Product Template -->
 <template id="bundle-product-template">
   <div class="bundle-product" data-product-id="">
-    <div class="bundle-product-image">
-      <img src="" alt="" loading="lazy">
-    </div>
-    <div class="bundle-product-info">
+    <div class="bundle-product-gray-box">
+      <div class="bundle-product-image">
+        <img src="" alt="" loading="lazy">
+      </div>
       <h4 class="bundle-product-title"></h4>
       <div class="bundle-product-price"></div>
+    </div>
+    <div class="bundle-product-info">
       <div class="bundle-product-variants"></div>
       <p class="bundle-product-material"></p>
       <button class="add-to-bag-btn">Add to bag</button>
@@ -559,9 +561,9 @@
 
 /* Bundle & Save Section */
 .bundle-save-section {
-  padding: 24px 16px;
+  padding: 24px 0px;
   background: #ffffff;
-  margin: 0 16px;
+  margin: 0 0px;
 }
 
 .bundle-title {
@@ -599,10 +601,10 @@
 }
 
 .bundle-product {
-  flex: 0 0 128px;
+  flex: 0 0 140px;
   background: transparent;
   border-radius: 0;
-  padding: 12px;
+  padding: 0;
   text-align: center;
   border: none;
   transition: all 0.2s ease;
@@ -616,11 +618,11 @@
 
 .bundle-product-image {
   width: 100%;
-  height: 100px;
-  border-radius: 8px;
+  height: 120px;
+  border-radius: 0;
   overflow: hidden;
-  background: #f3f4f6;
-  margin-bottom: 8px;
+  background: transparent;
+  margin-bottom: 0;
 }
 
 .bundle-product-image img {
@@ -633,16 +635,26 @@
   font-size: 14px;
   font-weight: 500;
   color: #111827;
-  margin: 0 0 4px 0;
+  margin: 0;
   line-height: 1.3;
   font-family: inherit;
+  padding: 8px 8px 4px 8px;
 }
 
 .bundle-product-price {
   font-size: 14px;
   color: #111827;
   font-weight: 500;
-  margin-bottom: 6px;
+  margin: 0;
+  padding: 0 8px 8px 8px;
+}
+
+.bundle-product-gray-box {
+  background: #f3f4f6;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  padding-bottom: 16px;
 }
 
 .bundle-product-variants {
@@ -673,7 +685,7 @@
 
 .bundle-product-material {
   font-size: 12px;
-  color: #f97316;
+  color: #D97706;
   font-weight: 500;
   margin: 0 0 8px 0;
   text-transform: uppercase;
@@ -682,7 +694,7 @@
 
 .add-to-bag-btn {
   width: 100%;
-  background: #2dd4bf;
+  background: #1F4F4F;
   color: #ffffff;
   border: none;
   padding: 8px 16px;
@@ -697,7 +709,7 @@
 }
 
 .add-to-bag-btn:hover {
-  background: #14b8a6;
+  background: #2D5A5A;
   transform: translateY(-1px);
 }
 
@@ -718,7 +730,7 @@
 
 .discount-input {
   flex: 1;
-  padding: 12px 16px;
+  padding: 8px 16px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 14px;
@@ -735,14 +747,15 @@
   background: #111827;
   color: #ffffff;
   border: none;
-  padding: 12px 24px;
+  padding: 8px 16px;
   border-radius: 9999px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
   white-space: nowrap;
+  width: 100%;
 }
 
 .apply-discount-btn:hover {
