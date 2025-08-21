@@ -558,7 +558,7 @@
   position: relative;
   cursor: grab;
   /* Add padding to show drag area */
-  padding: 0 10px;
+  padding: 0 0px;
 }
 
 .bundle-products-container.grabbing {
@@ -1772,6 +1772,8 @@ class CustomCart {
     let clickPrevented = false;
     let lastDeltaX = 0;
     let hasDragged = false;
+    let dragStartTime = 0;
+    let dragThreshold = 10; // Minimum pixels to move before considering it a drag
 
     // Calculate dimensions
     function calculateDimensions() {
@@ -1818,6 +1820,15 @@ class CustomCart {
       bundleContainer.style.transform = `translateX(${translateX}px)`;
     }
 
+    // Check if target is interactive (variant dots, buttons, etc.)
+    function isInteractiveTarget(target) {
+      return target.closest('.variant-dot') || 
+             target.closest('.add-to-bag-btn') || 
+             target.closest('button') ||
+             target.closest('input') ||
+             target.closest('select');
+    }
+
     // Prevent link clicks during drag
     bundleContainer.addEventListener('click', function(e) {
       if (hasDragged) {
@@ -1834,12 +1845,19 @@ class CustomCart {
     let mouseLastTime = 0;
 
     bundleContainer.addEventListener('mousedown', function(e) {
+      // Don't start drag if clicking on interactive elements
+      if (isInteractiveTarget(e.target)) {
+        console.log('Mouse down on interactive element, not starting drag');
+        return;
+      }
+
       console.log('Mouse down on bundle container');
       if (e.button !== 0) return;
       e.preventDefault();
       isDragging = true;
       clickPrevented = false;
       hasDragged = false;
+      dragStartTime = Date.now();
       mouseStartX = startPos = e.clientX;
       mouseLastX = e.clientX;
       mouseStartTime = mouseLastTime = Date.now();
@@ -1855,6 +1873,12 @@ class CustomCart {
     // Use event delegation instead of direct binding
     bundleContainer.addEventListener('mousedown', function(e) {
       if (e.target.closest('.bundle-product')) {
+        // Don't start drag if clicking on interactive elements
+        if (isInteractiveTarget(e.target)) {
+          console.log('Mouse down on interactive element in bundle product, not starting drag');
+          return;
+        }
+
         console.log('Mouse down on bundle product');
         if (e.button !== 0) return;
         e.preventDefault();
@@ -1880,7 +1904,8 @@ class CustomCart {
         currentTranslate = minTranslate + diff * 0.3;
       }
       
-      if (Math.abs(diff) > 5) {
+      // Only mark as dragged if movement exceeds threshold
+      if (Math.abs(diff) > dragThreshold) {
         clickPrevented = true;
         hasDragged = true;
       }
@@ -1888,13 +1913,26 @@ class CustomCart {
 
     function mouseDragEnd(e) {
       if (!isDragging) return;
+      
+      const dragDuration = Date.now() - dragStartTime;
+      const movedBy = mouseLastX - mouseStartX;
+      
+      // If it was a very short interaction and minimal movement, don't consider it a drag
+      if (dragDuration < 200 && Math.abs(movedBy) < dragThreshold) {
+        console.log('Short interaction, not a drag');
+        isDragging = false;
+        bundleContainer.classList.remove('no-transition');
+        bundleContainer.parentElement.classList.remove('grabbing');
+        cancelAnimationFrame(animationID);
+        return;
+      }
+      
       console.log('Mouse drag end');
       isDragging = false;
       bundleContainer.classList.remove('no-transition');
       // Remove visual feedback
       bundleContainer.parentElement.classList.remove('grabbing');
       
-      const movedBy = mouseLastX - mouseStartX;
       const timeElapsed = (mouseLastTime - mouseStartTime) || 1;
       const velocity = movedBy / timeElapsed;
       let targetIndex = currentIndex;
@@ -1945,11 +1983,18 @@ class CustomCart {
     let touchDirection = null;
 
     bundleContainer.addEventListener('touchstart', function(e) {
+      // Don't start drag if touching interactive elements
+      if (isInteractiveTarget(e.target)) {
+        console.log('Touch start on interactive element, not starting drag');
+        return;
+      }
+
       console.log('Touch start on bundle container');
       if (e.touches.length !== 1) return;
       touchIsDragging = true;
       touchHasDragged = false;
       touchDirection = null;
+      dragStartTime = Date.now();
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
       touchCurrentX = e.touches[0].clientX;
@@ -1995,7 +2040,8 @@ class CustomCart {
         
         bundleContainer.style.transform = `translateX(${currentTranslate}px)`;
         
-        if (Math.abs(diff) > 5) {
+        // Only mark as dragged if movement exceeds threshold
+        if (Math.abs(diff) > dragThreshold) {
           touchHasDragged = true;
           hasDragged = true;
         }
@@ -2014,12 +2060,22 @@ class CustomCart {
         return;
       }
       
+      const dragDuration = Date.now() - dragStartTime;
+      const movedBy = touchCurrentX - touchStartX;
+      
+      // If it was a very short interaction and minimal movement, don't consider it a drag
+      if (dragDuration < 200 && Math.abs(movedBy) < dragThreshold) {
+        console.log('Short touch interaction, not a drag');
+        bundleContainer.classList.remove('no-transition');
+        bundleContainer.parentElement.classList.remove('grabbing');
+        return;
+      }
+      
       console.log('Touch end on bundle container');
       bundleContainer.classList.remove('no-transition');
       // Remove visual feedback
       bundleContainer.parentElement.classList.remove('grabbing');
       
-      const movedBy = touchCurrentX - touchStartX;
       const timeElapsed = (Date.now() - touchStartTime) || 1;
       const velocity = movedBy / timeElapsed;
       let targetIndex = currentIndex;
@@ -2154,13 +2210,35 @@ class CustomCart {
       },
       {
         id: 'fallback-4',
-        title: 'Vergara Tote',
-        price: 14900,
+        title: 'Commuter Backpack',
+        price: 12900,
         compare_at_price: null,
         image: 'https://symplofficial.com/cdn/shop/files/Commuter-Carb-20L_preorder_2200x2800_crop_center.jpg?v=1754951777',
         variants: [
-          { id: 'fallback-4-v1', title: 'Ballistic' },
-          { id: 'fallback-4-v2', title: 'Ballistic' }
+          { id: 'fallback-4-v1', title: 'Carbon Fiber' },
+          { id: 'fallback-4-v2', title: 'Carbon Fiber' }
+        ]
+      },
+      {
+        id: 'fallback-5',
+        title: 'Travel Duffel',
+        price: 8900,
+        compare_at_price: null,
+        image: 'https://symplofficial.com/cdn/shop/files/Commuter-Carb-20L_preorder_2200x2800_crop_center.jpg?v=1754951777',
+        variants: [
+          { id: 'fallback-5-v1', title: 'Waterproof' },
+          { id: 'fallback-5-v2', title: 'Waterproof' }
+        ]
+      },
+      {
+        id: 'fallback-6',
+        title: 'Laptop Sleeve',
+        price: 3900,
+        compare_at_price: null,
+        image: 'https://symplofficial.com/cdn/shop/files/Commuter-Carb-20L_preorder_2200x2800_crop_center.jpg?v=1754951777',
+        variants: [
+          { id: 'fallback-6-v1', title: 'Neoprene' },
+          { id: 'fallback-6-v2', title: 'Neoprene' }
         ]
       }
     ];
