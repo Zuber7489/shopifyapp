@@ -546,7 +546,7 @@
 
 .bundle-title {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 600 !important;
   color: #111827;
   margin: 0 0 16px 0;
   font-family: inherit;
@@ -692,12 +692,13 @@
 }
 
 .discount-input {
-  flex: 1;
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
+    flex: 1;
+    padding: 8px 16px;
+    width: 371px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
 }
 
 .discount-input:focus {
@@ -707,18 +708,18 @@
 }
 
 .apply-discount-btn {
-  background: #111827;
-  color: #ffffff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-  white-space: nowrap;
-  width: 100%;
+    background: black;
+    color: #ffffff;
+    border: none;
+    padding: 8px 9px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    white-space: nowrap;
+    width: 35%;
 }
 
 .apply-discount-btn:hover {
@@ -786,7 +787,7 @@
 .shipping-totals {
   text-align: right;
   margin-left: 16px;
-  min-width: 120px;
+  min-width: 189px;
 }
 
 .shipping-row, .total-row {
@@ -823,10 +824,10 @@
 
 .checkout-btn {
   width: 100%;
-  background: #111827;
+  background: black;
   color: #ffffff;
   border: none;
-  padding: 16px 24px;
+  padding: 9px 24px;
   border-radius: 9999px;
   font-size: 18px;
   font-weight: 500;
