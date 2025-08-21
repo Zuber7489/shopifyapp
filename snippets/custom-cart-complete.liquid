@@ -562,16 +562,10 @@
   gap: 12px;
   overflow-x: auto;
   padding: 8px 0;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
   margin-left: 0;
 }
 
-.bundle-products-scroll::-webkit-scrollbar {
-  display: none;
-}
+
 
 .bundle-product {
   flex: 0 0 140px;
@@ -1059,8 +1053,8 @@ class CustomCart {
         }
       }
       
-      // Refresh cart when scrolling in cart
-      if (e.target.closest('.cart-items-container') || e.target.closest('.bundle-products-scroll')) {
+      // Refresh cart when interacting with cart items
+      if (e.target.closest('.cart-items-container')) {
         if (this.cart) {
           this.refreshCart();
         }
@@ -1736,15 +1730,7 @@ class CustomCart {
     this.setupBundleScrolling();
   }
 
-  setupBundleScrolling() {
-    // Scroll functionality removed - bundle products will use native scrolling
-    const bundleScroll = document.getElementById('bundle-products-scroll');
-    if (!bundleScroll) return;
-    
-    // Keep native scrolling behavior only
-    bundleScroll.style.overflowX = 'auto';
-    bundleScroll.style.scrollBehavior = 'smooth';
-  }
+
 
   setupCartListener() {
     // Listen for cart updates from other parts of the site
