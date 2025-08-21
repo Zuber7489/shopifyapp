@@ -555,17 +555,36 @@
 
 .bundle-products-container {
   overflow: hidden;
+  position: relative;
+  cursor: grab;
+  /* Add padding to show drag area */
+  padding: 0 10px;
+}
+
+.bundle-products-container.grabbing {
+  cursor: grabbing;
 }
 
 .bundle-products-scroll {
   display: flex;
   gap: 9px;
-  overflow-x: auto;
+  /* Remove overflow-x: auto to eliminate scrollbar with arrows */
+  /* overflow-x: auto; */
   padding: 8px 0;
   margin-left: 0;
+  /* MODIFIED: Smoother transition for drag */
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); 
+  will-change: transform;
+  /* Ensure the container can be dragged */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
-
+.bundle-products-scroll.no-transition {
+  transition: none;
+}
 
 .bundle-product {
   flex: 0 0 152px;
@@ -577,6 +596,10 @@
   transition: all 0.2s ease;
   box-shadow: none;
   margin: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 
@@ -1724,85 +1747,318 @@ class CustomCart {
 
   setupBundleRecommendations() {
     this.updateBundleRecommendations();
-    this.setupBundleScrolling();
+    // Remove setupBundleScrolling since we're using drag instead
+    // this.setupBundleScrolling();
   }
 
+  setupBundleDragAndTouch() {
+    const bundleContainer = document.getElementById('bundle-products-scroll');
+    if (!bundleContainer) {
+      console.log('Bundle container not found');
+      return;
+    }
 
+    console.log('Setting up bundle drag and touch');
 
-  setupCartListener() {
-    // Listen for cart updates from other parts of the site
-    document.addEventListener('cart:updated', () => {
-      this.refreshCart();
+    let currentIndex = 0;
+    let cardWidth;
+    let totalCards;
+    let visibleCards;
+    let isDragging = false;
+    let startPos = 0;
+    let currentTranslate = 0;
+    let prevTranslate = 0;
+    let animationID = 0;
+    let clickPrevented = false;
+    let lastDeltaX = 0;
+    let hasDragged = false;
+
+    // Calculate dimensions
+    function calculateDimensions() {
+      const bundleProducts = bundleContainer.querySelectorAll('.bundle-product');
+      console.log('Bundle products found:', bundleProducts.length);
+      if (bundleProducts.length === 0) return;
+      
+      totalCards = bundleProducts.length;
+      const firstCard = bundleProducts[0];
+      const style = window.getComputedStyle(firstCard);
+      const marginLeft = parseInt(style.marginLeft) || 0;
+      const marginRight = parseInt(style.marginRight) || 0;
+      
+      cardWidth = firstCard.offsetWidth + marginLeft + marginRight;
+      console.log('Card width:', cardWidth, 'Total cards:', totalCards);
+      
+      const containerWidth = bundleContainer.parentElement.offsetWidth;
+      visibleCards = Math.floor(containerWidth / cardWidth);
+      visibleCards = Math.max(1, visibleCards);
+      console.log('Container width:', containerWidth, 'Visible cards:', visibleCards);
+    }
+
+    // Initialize
+    calculateDimensions();
+    updateBundlePosition();
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      calculateDimensions();
+      if (currentIndex > totalCards - visibleCards) {
+        currentIndex = Math.max(0, totalCards - visibleCards);
+      }
+      updateBundlePosition();
     });
 
-    // Listen for cart item additions
-    document.addEventListener('cart:item:added', () => {
-      this.refreshCart();
-    });
+    // Update bundle position
+    function updateBundlePosition() {
+      if (isNaN(cardWidth) || cardWidth <= 0) {
+        calculateDimensions();
+        if (isNaN(cardWidth) || cardWidth <= 0) return;
+      }
+      const translateX = -currentIndex * cardWidth;
+      console.log('Updating position:', translateX, 'Current index:', currentIndex);
+      bundleContainer.style.transform = `translateX(${translateX}px)`;
+    }
 
-    // Listen for cart item removals
-    document.addEventListener('cart:item:removed', () => {
-      this.refreshCart();
-    });
-
-    // Listen for Shopify cart updates
-    document.addEventListener('cart:refresh', () => {
-      this.refreshCartImmediate();
-    });
-
-    // Listen for AJAX cart additions
-    document.addEventListener('cart:add', () => {
-      this.refreshCartImmediate();
-    });
-
-    // Listen for page visibility changes
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && this.cart) {
-        this.refreshCart();
+    // Prevent link clicks during drag
+    bundleContainer.addEventListener('click', function(e) {
+      if (hasDragged) {
+        e.preventDefault();
+        e.stopPropagation();
+        hasDragged = false;
       }
     });
 
-    // Listen for focus events (when user returns to tab)
-    window.addEventListener('focus', () => {
-      if (this.cart) {
-        this.refreshCart();
+    // Mouse drag support (SWIPE/FLICK)
+    let mouseStartTime = 0;
+    let mouseStartX = 0;
+    let mouseLastX = 0;
+    let mouseLastTime = 0;
+
+    bundleContainer.addEventListener('mousedown', function(e) {
+      console.log('Mouse down on bundle container');
+      if (e.button !== 0) return;
+      e.preventDefault();
+      isDragging = true;
+      clickPrevented = false;
+      hasDragged = false;
+      mouseStartX = startPos = e.clientX;
+      mouseLastX = e.clientX;
+      mouseStartTime = mouseLastTime = Date.now();
+      prevTranslate = -currentIndex * cardWidth;
+      bundleContainer.classList.add('no-transition');
+      // Add visual feedback
+      bundleContainer.parentElement.classList.add('grabbing');
+      cancelAnimationFrame(animationID);
+      animationID = requestAnimationFrame(animation);
+    });
+
+    // Forward mousedown from bundle products to container
+    // Use event delegation instead of direct binding
+    bundleContainer.addEventListener('mousedown', function(e) {
+      if (e.target.closest('.bundle-product')) {
+        console.log('Mouse down on bundle product');
+        if (e.button !== 0) return;
+        e.preventDefault();
+        // Forward the event to bundleContainer
+        bundleContainer.dispatchEvent(new MouseEvent('mousedown', e));
       }
     });
 
-    // Listen for cart interactions
-    document.addEventListener('cart:interaction', () => {
-      if (this.cart) {
-        this.refreshCart();
+    window.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      const currentPosition = e.clientX;
+      const diff = currentPosition - mouseStartX;
+      lastDeltaX = diff;
+      currentTranslate = prevTranslate + diff;
+      mouseLastX = currentPosition;
+      mouseLastTime = Date.now();
+      
+      const maxTranslate = 0;
+      const minTranslate = -(totalCards - visibleCards) * cardWidth;
+      if (currentTranslate > maxTranslate) {
+        currentTranslate = maxTranslate + diff * 0.3;
+      } else if (currentTranslate < minTranslate) {
+        currentTranslate = minTranslate + diff * 0.3;
+      }
+      
+      if (Math.abs(diff) > 5) {
+        clickPrevented = true;
+        hasDragged = true;
       }
     });
 
-    // Listen for product additions from other parts of the site
-    document.addEventListener('product:added', () => {
-      this.refreshCartImmediate();
-    });
-
-    // Listen for cart quantity changes
-    document.addEventListener('cart:quantity:changed', () => {
-      this.refreshCart();
-    });
-
-    // Listen for navigation events
-    window.addEventListener('popstate', () => {
-      if (this.cart) {
-        this.refreshCart();
-      }
-    });
-
-    // Listen for URL changes
-    let currentUrl = window.location.href;
-    setInterval(() => {
-      if (window.location.href !== currentUrl) {
-        currentUrl = window.location.href;
-        if (this.cart) {
-          this.refreshCart();
+    function mouseDragEnd(e) {
+      if (!isDragging) return;
+      console.log('Mouse drag end');
+      isDragging = false;
+      bundleContainer.classList.remove('no-transition');
+      // Remove visual feedback
+      bundleContainer.parentElement.classList.remove('grabbing');
+      
+      const movedBy = mouseLastX - mouseStartX;
+      const timeElapsed = (mouseLastTime - mouseStartTime) || 1;
+      const velocity = movedBy / timeElapsed;
+      let targetIndex = currentIndex;
+      
+      const flickVelocity = 0.5;
+      if (cardWidth > 0) {
+        if (Math.abs(velocity) > flickVelocity) {
+          // Flicked fast: move two cards in the direction
+          if (velocity < 0) {
+            targetIndex = Math.min(totalCards - visibleCards, currentIndex + 2);
+          } else {
+            targetIndex = Math.max(0, currentIndex - 2);
+          }
+        } else if (Math.abs(movedBy) > cardWidth * 0.15) {
+          // Slow drag, but far enough: move two cards in the direction
+          if (movedBy < 0) {
+            targetIndex = Math.min(totalCards - visibleCards, currentIndex + 2);
+          } else {
+            targetIndex = Math.max(0, currentIndex - 2);
+          }
+        } else {
+          // Not enough movement: stay on current
+          targetIndex = currentIndex;
         }
       }
-    }, 1000);
+      
+      targetIndex = Math.max(0, Math.min(totalCards - visibleCards, targetIndex));
+      currentIndex = targetIndex;
+      updateBundlePosition();
+      
+      cancelAnimationFrame(animationID);
+      setTimeout(() => {
+        clickPrevented = false;
+      }, 550);
+    }
+
+    window.addEventListener('mouseup', mouseDragEnd);
+    bundleContainer.addEventListener('mouseleave', mouseDragEnd);
+
+    // Touch swipe support for mobile
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchCurrentX = 0;
+    let touchStartTime = 0;
+    let touchPrevTranslate = 0;
+    let touchIsDragging = false;
+    let touchHasDragged = false;
+    let touchDirection = null;
+
+    bundleContainer.addEventListener('touchstart', function(e) {
+      console.log('Touch start on bundle container');
+      if (e.touches.length !== 1) return;
+      touchIsDragging = true;
+      touchHasDragged = false;
+      touchDirection = null;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchCurrentX = e.touches[0].clientX;
+      touchStartTime = Date.now();
+      touchPrevTranslate = -currentIndex * cardWidth;
+      bundleContainer.classList.add('no-transition');
+      // Add visual feedback
+      bundleContainer.parentElement.classList.add('grabbing');
+    }, { passive: false });
+
+    bundleContainer.addEventListener('touchmove', function(e) {
+      if (!touchIsDragging || e.touches.length !== 1) return;
+
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+
+      if (touchDirection === null) {
+        const deltaX = Math.abs(currentX - touchStartX);
+        const deltaY = Math.abs(currentY - touchStartY);
+
+        if (deltaX > 5 || deltaY > 5) {
+          if (deltaX > deltaY) {
+            touchDirection = 'horizontal';
+          } else {
+            touchDirection = 'vertical';
+          }
+        }
+      }
+
+      if (touchDirection === 'horizontal') {
+        e.preventDefault();
+        touchCurrentX = currentX;
+        const diff = touchCurrentX - touchStartX;
+        currentTranslate = touchPrevTranslate + diff;
+        
+        const maxTranslate = 0;
+        const minTranslate = -(totalCards - visibleCards) * cardWidth;
+        if (currentTranslate > maxTranslate) {
+          currentTranslate = maxTranslate + diff * 0.3;
+        } else if (currentTranslate < minTranslate) {
+          currentTranslate = minTranslate + diff * 0.3;
+        }
+        
+        bundleContainer.style.transform = `translateX(${currentTranslate}px)`;
+        
+        if (Math.abs(diff) > 5) {
+          touchHasDragged = true;
+          hasDragged = true;
+        }
+      }
+    }, { passive: false });
+
+    bundleContainer.addEventListener('touchend', function(e) {
+      if (!touchIsDragging) return;
+
+      const wasHorizontal = touchDirection === 'horizontal';
+      
+      touchIsDragging = false;
+      touchDirection = null;
+
+      if (!wasHorizontal) {
+        return;
+      }
+      
+      console.log('Touch end on bundle container');
+      bundleContainer.classList.remove('no-transition');
+      // Remove visual feedback
+      bundleContainer.parentElement.classList.remove('grabbing');
+      
+      const movedBy = touchCurrentX - touchStartX;
+      const timeElapsed = (Date.now() - touchStartTime) || 1;
+      const velocity = movedBy / timeElapsed;
+      let targetIndex = currentIndex;
+      const flickVelocity = 0.5;
+      
+      if (cardWidth > 0) {
+        if (Math.abs(velocity) > flickVelocity) {
+          // Flicked
+          if (velocity < 0) {
+            targetIndex = Math.min(totalCards - visibleCards, currentIndex + 2);
+          } else {
+            targetIndex = Math.max(0, currentIndex - 2);
+          }
+        } else if (Math.abs(movedBy) > cardWidth * 0.15) {
+          // Dragged far enough
+          if (movedBy < 0) {
+            targetIndex = Math.min(totalCards - visibleCards, currentIndex + 2);
+          } else {
+            targetIndex = Math.max(0, currentIndex - 2);
+          }
+        }
+      }
+      
+      targetIndex = Math.max(0, Math.min(totalCards - visibleCards, targetIndex));
+      currentIndex = targetIndex;
+      updateBundlePosition();
+      
+      setTimeout(() => {
+        hasDragged = false;
+      }, 550);
+    });
+
+    // Animation function
+    function animation() {
+      if (isDragging) {
+        bundleContainer.style.transform = `translateX(${currentTranslate}px)`;
+        animationID = requestAnimationFrame(animation);
+      }
+    }
   }
 
   async updateBundleRecommendations() {
@@ -1820,6 +2076,7 @@ class CustomCart {
       }
 
       bundleContainer.innerHTML = bundleProducts.map(product => this.renderBundleProduct(product)).join('');
+      this.setupBundleDragAndTouch(); // Setup drag and touch after products are rendered
     } catch (error) {
       console.error('Error loading bundle recommendations:', error);
       bundleContainer.innerHTML = '<p class="no-bundles">Unable to load bundle recommendations</p>';
