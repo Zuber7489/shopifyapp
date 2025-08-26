@@ -738,7 +738,7 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
     
     
     <div style="text-align: center;">
-      <form action="/cart/add" method="post" enctype="multipart/form-data" id="AddToCartForm" data-cart-toggle>
+      <form action="/cart/add" method="post" enctype="multipart/form-data" id="AddToCartForm">
         <select name="id" id="ProductSelect" class="product-single__variants no-js" style="display: none;">
           {% for variant in product.variants %}
             {% if variant.available %}
@@ -753,7 +753,7 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
           {% endfor %}
         </select>
     
-        <button type="submit" name="add" id="AddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: {% if current_variant.available %}#2f6f6f{% else %}#999{% endif %}; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: {% if current_variant.available %}pointer{% else %}not-allowed{% endif %}; border-radius:31px !important; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}opacity: 0.6;{% endunless %}">
+        <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: {% if current_variant.available %}#2f6f6f{% else %}#999{% endif %}; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: {% if current_variant.available %}pointer{% else %}not-allowed{% endif %}; border-radius:31px !important; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}opacity: 0.6;{% endunless %}">
           <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to Bag{% else %}Out of Stock{% endif %}</span>
         </button>
         
@@ -1959,7 +1959,7 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
     
     .testimonial-section {
     padding: 40px 20px !important;
-              margin-top: 70px;
+              margin-top: 40px;
     }
     #modalZoomControls {
       top: 70px !important; /* Adjust for mobile if needed */
@@ -5471,6 +5471,7 @@ let globalTouchManager = {
       .testimonial-section {
         padding-top: 50px !important;
         padding-bottom: 50px !important;
+        margin-top:40px !important;
       }
       .testimonial-section h3 {
         font-weight: 550 !important;
@@ -5609,7 +5610,7 @@ let globalTouchManager = {
     
 
     <div class="mobile-sticky-add-to-cart" style="display: none;">
-      <form action="/cart/add" method="post" enctype="multipart/form-data" id="MobileAddToCartForm" style="width: 100%;" data-cart-toggle>
+      <form action="/cart/add" method="post" enctype="multipart/form-data" id="MobileAddToCartForm" style="width: 100%;">
         <select name="id" id="MobileProductSelect" class="product-single__variants no-js" style="display: none;">
           {% for variant in product.variants %}
             {% if variant.available %}
