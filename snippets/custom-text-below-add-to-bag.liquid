@@ -1,0 +1,67 @@
+{% comment %}
+  Custom Text Below Add to Bag Button
+  
+  This snippet displays variant-specific custom text below the Add to Bag button.
+  Uses the metafield: text_below_add_to_bag
+  
+  Features:
+  - Variant-specific text display
+  - Site-wide configurable colors (black, orange, green)
+  - Only shows when metafield has content
+  - Responsive design with proper spacing
+  - Dynamic variant switching support
+  
+  Usage:
+  {% render 'custom-text-below-add-to-bag', product: product, current_variant: current_variant %}
+{% endcomment %}
+
+{% comment %} Create container for all variant texts {% endcomment %}
+<div class="custom-text-below-add-to-bag-container" style="margin-top: 12px; margin-bottom: 8px; text-align: center; min-height: 0;">
+  
+  {% comment %} Loop through all variants to create text elements {% endcomment %}
+  {% for variant in product.variants %}
+    {% assign variant_text = variant.metafields.custom.text_below_add_to_bag.value | default: variant.metafields.custom.text_below_add_to_bag %}
+    {% if variant_text == blank %}
+      {% assign variant_text = product.metafields.custom.text_below_add_to_bag.value | default: product.metafields.custom.text_below_add_to_bag %}
+    {% endif %}
+    
+    {% if variant_text != blank %}
+      <div class="custom-text-below-add-to-bag" 
+           data-variant-id="{{ variant.id }}"
+           style="display: {% if variant.id == current_variant.id %}block{% else %}none{% endif %}; margin: 0;">
+        
+        {% comment %} Custom text content {% endcomment %}
+        <span class="custom-text-content" 
+              style="font-size: 14px; font-weight: 500; letter-spacing: 0.3px; color: var(--custom-text-color, #ff6600);">
+          {{ variant_text | strip }}
+        </span>
+      </div>
+    {% endif %}
+  {% endfor %}
+  
+  {% comment %} If no variants have text, show nothing {% endcomment %}
+  {% assign has_any_text = false %}
+  {% for variant in product.variants %}
+    {% assign variant_text = variant.metafields.custom.text_below_add_to_bag.value | default: variant.metafields.custom.text_below_add_to_bag %}
+    {% if variant_text != blank %}
+      {% assign has_any_text = true %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+  
+  {% if has_any_text == false %}
+    {% assign product_text = product.metafields.custom.text_below_add_to_bag.value | default: product.metafields.custom.text_below_add_to_bag %}
+    {% if product_text != blank %}
+      <div class="custom-text-below-add-to-bag" 
+           data-variant-id="product-level"
+           style="display: {% if current_variant.metafields.custom.text_below_add_to_bag.value == blank and current_variant.metafields.custom.text_below_add_to_bag == blank %}block{% else %}none{% endif %}; margin: 0;">
+        
+        <span class="custom-text-content" 
+              style="font-size: 14px; font-weight: 500; letter-spacing: 0.3px; color: var(--custom-text-color, #ff6600);">
+          {{ product_text | strip }}
+        </span>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+

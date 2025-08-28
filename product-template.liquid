@@ -761,8 +761,8 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
           <span id="AddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to Bag{% else %}Out of Stock{% endif %}</span>
         </button>
         
-
-        
+        {% comment %} Custom text below Add to Bag button {% endcomment %}
+        {% render 'custom-text-below-add-to-bag', product: product, current_variant: current_variant %}
 
         <div class="apple-pay-button-container" style="margin-top: 10px;">
           {{ form | payment_button }}
@@ -815,7 +815,7 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
     </div>
     
         
-    <div style="margin-top: 32px; color: #333;" id="dynamicFeatureHighlights">
+    <div style="margin-top: 42px; color: #333;" id="dynamicFeatureHighlights">
       <h3 class="featurehighlightshide" style="font-size: 18px; font-weight: 500; margin-bottom: 16px;">Feature highlights:</h3>
       <div class="featurehighlightshide" style="display: flex; gap: 67px;">
         <ul style="flex: 1 1 300px; list-style: none; padding: 0; margin: 0;" id="featureHighlightsLeft">
@@ -5342,6 +5342,29 @@ let globalTouchManager = {
       .iconshide {
         display: none !important;
       }
+      /* Custom Text Below Add to Bag */
+      .custom-text-below-add-to-bag-container {
+        margin-top: 12px !important;
+        margin-bottom: 8px !important;
+        text-align: center !important;
+        min-height: 0 !important;
+        transition: all 0.3s ease !important;
+      }
+      
+      .custom-text-below-add-to-bag {
+        margin: 0 !important;
+        transition: all 0.3s ease !important;
+      }
+      
+
+      
+      .custom-text-below-add-to-bag .custom-text-content {
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.3px !important;
+        color: var(--custom-text-color, #ff6600) !important;
+      }
+      
       /* Feature Highlights */
       #dynamicFeatureHighlights h3.featurehighlightshide {
         font-weight: 500 !important;
@@ -5631,11 +5654,26 @@ let globalTouchManager = {
         <button type="submit" name="add" id="MobileAddToCart" class="btn add-to-cart-button{% unless current_variant.available %} disabled{% endunless %}" style="width: 100%; padding: 16px 24px; background-color: {% if current_variant.available %}#2f6f6f{% else %}#999{% endif %}; color: white; border: none; border-radius: 999px; font-size: 18px; font-weight: 400; cursor: {% if current_variant.available %}pointer{% else %}not-allowed{% endif %}; border-radius:31px !important; margin-bottom: 0; margin-top:3px; transition: background 0.3s; text-transform: none !important; {% unless current_variant.available %}opacity: 0.6;{% endunless %}">
           <span id="MobileAddToCartText" style="text-transform: none !important;">{% if current_variant.available %}Add to Bag{% else %}Out of Stock{% endif %}</span>
         </button>
+        
+        {% comment %} Custom text below Add to Bag button (mobile) {% endcomment %}
+        {% render 'custom-text-below-add-to-bag', product: product, current_variant: current_variant %}
       </form>
     </div>
     
     <style>
     @media (max-width: 900px) {
+      /* Custom Text Below Add to Bag - Mobile Styles */
+      .custom-text-below-add-to-bag-container {
+        margin-top: 10px !important;
+        margin-bottom: 6px !important;
+      }
+      
+      .custom-text-below-add-to-bag .custom-text-content {
+        font-size: 13px !important;
+      }
+      
+
+      
       .mobile-sticky-add-to-cart {
         display: none; /* Initially hidden, shown by JavaScript when needed */
         position: fixed;
@@ -5704,6 +5742,37 @@ let globalTouchManager = {
       }
       document.addEventListener('variant:change', syncMobileAddToCartState);
       syncMobileAddToCartState();
+      
+      // Update custom text below Add to Bag when variant changes
+      document.addEventListener('variant:change', function(e) {
+        if (e.detail && e.detail.variant) {
+          updateCustomTextBelowAddToBag(e.detail.variant);
+        }
+      });
+      
+      // Function to update custom text based on variant
+      function updateCustomTextBelowAddToBag(variant) {
+        // Get all custom text elements (both desktop and mobile)
+        var customTextElements = document.querySelectorAll('.custom-text-below-add-to-bag');
+        
+        customTextElements.forEach(function(element) {
+          var variantId = element.getAttribute('data-variant-id');
+          
+          if (variantId == variant.id || (variantId == 'product-level' && !hasVariantSpecificText(variant))) {
+            // Show text for current variant or product-level fallback
+            element.style.display = 'block';
+          } else {
+            // Hide text for other variants
+            element.style.display = 'none';
+          }
+        });
+      }
+      
+      // Helper function to check if variant has specific text
+      function hasVariantSpecificText(variant) {
+        var variantElements = document.querySelectorAll('.custom-text-below-add-to-bag[data-variant-id="' + variant.id + '"]');
+        return variantElements.length > 0;
+      }
       
       // Sticky cart scroll functionality
       function initStickyCart() {
