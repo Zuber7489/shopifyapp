@@ -1283,13 +1283,13 @@ const compareProductsData = {
     url: "{{ product.url | default: '#' }}",
     isCurrentProduct: true,
     // Current variant data - using JSON data from product template with rich text parsing
-    capacity: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.capacity)) || "{{ current_variant.option1 | default: '20L' }}",
-    dimensions: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.dimensions)) || "19\" x 18\" x 4\"",
-    weight: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.weight)) || "2.5lbs",
-    fabric: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.fabric)) || "420D Cordura Polycarbonate Nylon",
-    features: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
-    techSpecs: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
-    overview: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.overview)) || "Premium quality bag designed for modern lifestyle.",
+    capacity: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.capacity)) || "",
+    dimensions: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.dimensions)) || "",
+    weight: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.weight)) || "",
+    fabric: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.fabric)) || "",
+    features: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.features)) || "",
+    techSpecs: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.techSpecs)) || "",
+    overview: parseRichText(decodeHtmlEntities(window.productMetafieldsData?.currentVariant?.metafields?.overview)) || "",
     // Available colors/variants
     colors: [
       {% for variant in product.variants %}
@@ -1325,13 +1325,13 @@ const compareProductsData = {
     url: "{{ product.url }}?variant=" + variant.id,
     isCurrentProduct: variant.id == {{ current_variant.id | default: 'null' }},
     variantTitle: variant.option1,
-    capacity: parseRichText(decodeHtmlEntities(variant.metafields?.capacity)) || variant.option1,
-    dimensions: parseRichText(decodeHtmlEntities(variant.metafields?.dimensions)) || "19\" x 18\" x 4\"",
-    weight: parseRichText(decodeHtmlEntities(variant.metafields?.weight)) || "2.5lbs",
-    fabric: parseRichText(decodeHtmlEntities(variant.metafields?.fabric)) || "420D Cordura Polycarbonate Nylon",
-    features: parseRichText(decodeHtmlEntities(variant.metafields?.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
-    techSpecs: parseRichText(decodeHtmlEntities(variant.metafields?.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
-    overview: parseRichText(decodeHtmlEntities(variant.metafields?.overview)) || "Premium quality bag designed for modern lifestyle.",
+    capacity: parseRichText(decodeHtmlEntities(variant.metafields?.capacity)) || "",
+    dimensions: parseRichText(decodeHtmlEntities(variant.metafields?.dimensions)) || "",
+    weight: parseRichText(decodeHtmlEntities(variant.metafields?.weight)) || "",
+    fabric: parseRichText(decodeHtmlEntities(variant.metafields?.fabric)) || "",
+    features: parseRichText(decodeHtmlEntities(variant.metafields?.features)) || "",
+    techSpecs: parseRichText(decodeHtmlEntities(variant.metafields?.techSpecs)) || "",
+    overview: parseRichText(decodeHtmlEntities(variant.metafields?.overview)) || "",
     colors: [
       {% for color_variant in product.variants %}
         {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
@@ -1367,13 +1367,13 @@ const compareProductsData = {
     url: "{{ product.url }}?variant=" + variant.id,
     isCurrentProduct: variant.id == {{ current_variant.id | default: 'null' }},
     variantTitle: variant.option2,
-    capacity: parseRichText(decodeHtmlEntities(variant.metafields?.capacity)) || variant.option1,
-    dimensions: parseRichText(decodeHtmlEntities(variant.metafields?.dimensions)) || "19\" x 18\" x 4\"",
-    weight: parseRichText(decodeHtmlEntities(variant.metafields?.weight)) || "2.5lbs",
-    fabric: parseRichText(decodeHtmlEntities(variant.metafields?.fabric)) || variant.option2,
-    features: parseRichText(decodeHtmlEntities(variant.metafields?.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
-    techSpecs: parseRichText(decodeHtmlEntities(variant.metafields?.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
-    overview: parseRichText(decodeHtmlEntities(variant.metafields?.overview)) || "Premium quality bag designed for modern lifestyle.",
+    capacity: parseRichText(decodeHtmlEntities(variant.metafields?.capacity)) || "",
+    dimensions: parseRichText(decodeHtmlEntities(variant.metafields?.dimensions)) || "",
+    weight: parseRichText(decodeHtmlEntities(variant.metafields?.weight)) || "",
+    fabric: parseRichText(decodeHtmlEntities(variant.metafields?.fabric)) || "",
+    features: parseRichText(decodeHtmlEntities(variant.metafields?.features)) || "",
+    techSpecs: parseRichText(decodeHtmlEntities(variant.metafields?.techSpecs)) || "",
+    overview: parseRichText(decodeHtmlEntities(variant.metafields?.overview)) || "",
     colors: [
       {% for color_variant in product.variants %}
         {% if color_variant.option1 contains 'Color' or color_variant.option1 contains 'color' %}
@@ -1750,34 +1750,30 @@ function renderProducts(products, tab) {
       if (tab === 'size') {
         // Size tab content with structured specs in 2x2 grid (values with golden labels below)
         const specsHtml = `
-          <div class="compare-modal-spec-item compare-modal-spec-item--capacity">
-            <span class="compare-modal-spec-value">${prod.capacity || '20L'}</span>
+          ${prod.capacity ? `<div class="compare-modal-spec-item compare-modal-spec-item--capacity">
+            <span class="compare-modal-spec-value">${prod.capacity}</span>
             <span class="compare-modal-golden-label">${compareProductsData.labels.capacityLabel}</span>
-          </div>
-          <div class="compare-modal-spec-item compare-modal-spec-item--dimensions">
-            <span class="compare-modal-spec-value">${prod.dimensions || '19" x 18" x 4"'}</span>
+          </div>` : ''}
+          ${prod.dimensions ? `<div class="compare-modal-spec-item compare-modal-spec-item--dimensions">
+            <span class="compare-modal-spec-value">${prod.dimensions}</span>
             <span class="compare-modal-golden-label">${compareProductsData.labels.dimensionsLabel}</span>
-          </div>
-          <div class="compare-modal-spec-item compare-modal-spec-item--weight">
-            <span class="compare-modal-spec-value">${prod.weight || '2.5lbs'}</span>
+          </div>` : ''}
+          ${prod.weight ? `<div class="compare-modal-spec-item compare-modal-spec-item--weight">
+            <span class="compare-modal-spec-value">${prod.weight}</span>
             <span class="compare-modal-golden-label">${compareProductsData.labels.weightLabel}</span>
-          </div>
-          <div class="compare-modal-spec-item compare-modal-spec-item--price">
+          </div>` : ''}
+          ${prod.price ? `<div class="compare-modal-spec-item compare-modal-spec-item--price">
             <span class="compare-modal-spec-value">${prod.price}</span>
             <span class="compare-modal-golden-label">${compareProductsData.labels.priceLabel}</span>
-          </div>
+          </div>` : ''}
         `;
         
-        // Generate features HTML with proper bullet points
-        const featuresList = prod.features ? 
-          prod.features.split(/[•\n]/).filter(feature => feature.trim()).map(feature => feature.trim()) : 
-          ['Water bottle pocket', 'Luggage pass through', 'Laptop compartment', 'Carry handle', 'Water proof', 'Zippers', 'Tech caddy'];
-        
-        const featuresHtml = `
+        // Generate features HTML with proper bullet points - only if features exist
+        const featuresHtml = prod.features ? `
           <ul>
-            ${featuresList.map(feature => `<li>${feature}</li>`).join('')}
+            ${prod.features.split(/[•\n]/).filter(feature => feature.trim()).map(feature => feature.trim()).map(feature => `<li>${feature}</li>`).join('')}
           </ul>
-        `;
+        ` : '';
         
         // Generate Available in section HTML with dynamic swatches
         const availableInHtml = `
@@ -1799,23 +1795,23 @@ function renderProducts(products, tab) {
             </div>
             
             <h3 class="compare-modal-product-title">${prod.title}</h3>
-            <div class="compare-modal-specs">
+            ${compareProductsData.labels.specsLabel ? `<div class="compare-modal-specs">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.specsLabel}</div>` : ''}
               ${specsHtml}
-            </div>
-            <div class="compare-modal-features">
+            </div>` : ''}
+            ${compareProductsData.labels.featuresLabel && featuresHtml ? `<div class="compare-modal-features">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.featuresLabel}</div>` : ''}
               ${featuresHtml}
-            </div>
+            </div>` : ''}
             <div class="compare-modal-available-in-wrapper">
-              ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
+              ${prod.isCurrentProduct && compareProductsData.labels.availableInLabel ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
               ${availableInHtml}
             </div>
           </div>
         `;
       } else if (tab === 'fabric') {
-        // Fabric tab content with structured layout
-        const fabricHtml = prod.fabric || 'Fabric type not specified';
+        // Fabric tab content with structured layout - only display sections that have content
+        const fabricHtml = prod.fabric || '';
         
         // Generate Available in section HTML for fabric tab with dynamic swatches
         const availableInHtml = `
@@ -1836,21 +1832,20 @@ function renderProducts(products, tab) {
               <img class="compare-modal-img" src="${prod.image}" alt="${prod.title}">
             </div>
             
-            <div class="compare-modal-fabric">
+            ${prod.fabric && compareProductsData.labels.fabricLabel ? `<div class="compare-modal-fabric">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.fabricLabel}</div>` : ''}
               <strong>${fabricHtml}</strong>
-            </div>
-            <div class="compare-modal-tech-specs">
+            </div>` : ''}
+            ${prod.techSpecs && compareProductsData.labels.techSpecsLabel ? `<div class="compare-modal-tech-specs">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.techSpecsLabel}</div>` : ''}
-              ${prod.techSpecs ? `<p>${prod.techSpecs.replace(/\n/g, '</p><p>')}</p>` : '<p><strong>Silicon Face Coating:</strong> This coating provides extra weather, strain, abrasion resistance without changing the look and hand feel of the fabric.</p><p><strong>Coal PU Backside:</strong> This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.</p>'}
-            </div>
-            <div class="compare-modal-overview">
+              <p>${prod.techSpecs.replace(/\n/g, '</p><p>')}</p>
+            </div>` : ''}
+            ${prod.overview && compareProductsData.labels.overallDifferenceLabel ? `<div class="compare-modal-overview">
               ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.overallDifferenceLabel}</div>` : ''}
-              <p><strong>Overall Difference:</strong> ${prod.overview || 'Has a modern technical aesthetic with a smooth supple feel. Has slightly more structure than our ballistic version, without being stiff and rigid like many PU and TPU coated fabrics. It\'s the ideal choice for adventure enthusiast that want a hybrid option to transition between office and outdoors.'}</p>
-                 
-            </div>
+              <p><strong>Overall Difference:</strong> ${prod.overview}</p>
+            </div>` : ''}
             <div class="compare-modal-available-in-wrapper">
-              ${prod.isCurrentProduct ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
+              ${prod.isCurrentProduct && compareProductsData.labels.availableInLabel ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
               ${availableInHtml}
             </div>
           </div>
@@ -1983,34 +1978,30 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
     if (tabName === 'size') {
       // Update size tab content
       const specsHtml = `
-        <div class="compare-modal-spec-item compare-modal-spec-item--capacity">
-          <span class="compare-modal-spec-value">${productData.capacity || '20L'}</span>
+        ${productData.capacity ? `<div class="compare-modal-spec-item compare-modal-spec-item--capacity">
+          <span class="compare-modal-spec-value">${productData.capacity}</span>
           <span class="compare-modal-golden-label">${compareProductsData.labels.capacityLabel}</span>
-        </div>
-        <div class="compare-modal-spec-item compare-modal-spec-item--dimensions">
-          <span class="compare-modal-spec-value">${productData.dimensions || '19" x 18" x 4"'}</span>
+        </div>` : ''}
+        ${productData.dimensions ? `<div class="compare-modal-spec-item compare-modal-spec-item--dimensions">
+          <span class="compare-modal-spec-value">${productData.dimensions}</span>
           <span class="compare-modal-golden-label">${compareProductsData.labels.dimensionsLabel}</span>
-        </div>
-        <div class="compare-modal-spec-item compare-modal-spec-item--weight">
-          <span class="compare-modal-spec-value">${productData.weight || '2.5lbs'}</span>
+        </div>` : ''}
+        ${productData.weight ? `<div class="compare-modal-spec-item compare-modal-spec-item--weight">
+          <span class="compare-modal-spec-value">${productData.weight}</span>
           <span class="compare-modal-golden-label">${compareProductsData.labels.weightLabel}</span>
-        </div>
-        <div class="compare-modal-spec-item compare-modal-spec-item--price">
+        </div>` : ''}
+        ${productData.price ? `<div class="compare-modal-spec-item compare-modal-spec-item--price">
           <span class="compare-modal-spec-value">${productData.price}</span>
           <span class="compare-modal-golden-label">${compareProductsData.labels.priceLabel}</span>
-        </div>
+        </div>` : ''}
       `;
       
-      // Generate features HTML with proper bullet points
-      const featuresList = productData.features ? 
-        productData.features.split(/[•\n]/).filter(feature => feature.trim()).map(feature => feature.trim()) : 
-        ['Water bottle pocket', 'Luggage pass through', 'Laptop compartment', 'Carry handle', 'Water proof', 'Zippers', 'Tech caddy'];
-      
-      const featuresHtml = `
+      // Generate features HTML with proper bullet points - only if features exist
+      const featuresHtml = productData.features ? `
         <ul>
-          ${featuresList.map(feature => `<li>${feature}</li>`).join('')}
+          ${productData.features.split(/[•\n]/).filter(feature => feature.trim()).map(feature => feature.trim()).map(feature => `<li>${feature}</li>`).join('')}
         </ul>
-      `;
+      ` : '';
       
       // Generate Available in section HTML with dynamic swatches
       const availableInHtml = `
@@ -2025,30 +2016,30 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
         </div>
       `;
     
-    // Update the card content - preserve labels for left card
+    // Update the card content - preserve labels for left card, only show sections with content
     cardElement.innerHTML = `
       <div class="compare-modal-img-wrap">
         <img class="compare-modal-img" src="${productData.image}" alt="${productData.title}">
       </div>
       
       <h3 class="compare-modal-product-title">${productData.title}</h3>
-      <div class="compare-modal-specs">
+      ${compareProductsData.labels.specsLabel ? `<div class="compare-modal-specs">
         ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.specsLabel}</div>` : ''}
         ${specsHtml}
-      </div>
-      <div class="compare-modal-features">
+      </div>` : ''}
+      ${compareProductsData.labels.featuresLabel && featuresHtml ? `<div class="compare-modal-features">
         ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.featuresLabel}</div>` : ''}
         ${featuresHtml}
-      </div>
+      </div>` : ''}
       <div class="compare-modal-available-in-wrapper">
-        ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
+        ${cardPosition === 'left' && compareProductsData.labels.availableInLabel ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
         ${availableInHtml}
       </div>
     `;
     
       } else if (tabName === 'fabric') {
-      // Update fabric tab content
-      const fabricHtml = productData.fabric || 'Fabric type not specified';
+      // Update fabric tab content - only display sections that have content
+      const fabricHtml = productData.fabric || '';
       
       // Generate Available in section HTML for fabric tab with dynamic swatches
       const availableInHtml = `
@@ -2063,26 +2054,26 @@ function updateSpecificCardWithVariant(variantId, cardPosition) {
         </div>
       `;
     
-    // Update the card content - preserve labels for left card
+    // Update the card content - preserve labels for left card, only show sections with content
     cardElement.innerHTML = `
       <div class="compare-modal-img-wrap">
         <img class="compare-modal-img" src="${productData.image}" alt="${productData.title}">
       </div>
       
-      <div class="compare-modal-fabric">
+      ${productData.fabric && compareProductsData.labels.fabricLabel ? `<div class="compare-modal-fabric">
         ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.fabricLabel}</div>` : ''}
         <strong>${fabricHtml}</strong>
-      </div>
-      <div class="compare-modal-tech-specs">
+      </div>` : ''}
+      ${productData.techSpecs && compareProductsData.labels.techSpecsLabel ? `<div class="compare-modal-tech-specs">
         ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.techSpecsLabel}</div>` : ''}
-        ${productData.techSpecs ? `<p>${productData.techSpecs.replace(/\n/g, '</p><p>')}</p>` : '<p><strong>Silicon Face Coating:</strong> This coating provides extra weather, strain, abrasion resistance without changing the look and hand feel of the fabric.</p><p><strong>Coal PU Backside:</strong> This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.</p>'}
-      </div>
-      <div class="compare-modal-overview">
+        <p>${productData.techSpecs.replace(/\n/g, '</p><p>')}</p>
+      </div>` : ''}
+      ${productData.overview && compareProductsData.labels.overallDifferenceLabel ? `<div class="compare-modal-overview">
         ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.overallDifferenceLabel}</div>` : ''}
-        <p><strong>Overall Difference:</strong> ${productData.overview || 'Has a modern technical aesthetic with a smooth supple feel. Has slightly more structure than our ballistic version, without being stiff and rigid like many PU and TPU coated fabrics. It\'s the ideal choice for adventure enthusiast that want a hybrid option to transition between office and outdoors.'}</p>
-      </div>
+        <p><strong>Overall Difference:</strong> ${productData.overview}</p>
+      </div>` : ''}
       <div class="compare-modal-available-in-wrapper">
-        ${cardPosition === 'left' ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
+        ${cardPosition === 'left' && compareProductsData.labels.availableInLabel ? `<div class="compare-modal-category-label">${compareProductsData.labels.availableInLabel}</div>` : ''}
         ${availableInHtml}
       </div>
     `;
@@ -2210,13 +2201,13 @@ function updateModalWithVariant(variantId) {
     title: parseRichText(decodeHtmlEntities(variantData.metafields?.productTitle)) || variantData.title,
     image: parseRichText(decodeHtmlEntities(variantData.metafields?.variantImage)) || variantData.image,
     price: parseRichText(decodeHtmlEntities(variantData.metafields?.customPrice)) || variantData.price,
-    capacity: parseRichText(decodeHtmlEntities(variantData.metafields?.capacity)) || variantData.option1,
-    dimensions: parseRichText(decodeHtmlEntities(variantData.metafields?.dimensions)) || "19\" x 18\" x 4\"",
-    weight: parseRichText(decodeHtmlEntities(variantData.metafields?.weight)) || "2.5lbs",
-    fabric: parseRichText(decodeHtmlEntities(variantData.metafields?.fabric)) || variantData.option2,
-    features: parseRichText(decodeHtmlEntities(variantData.metafields?.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
-    techSpecs: parseRichText(decodeHtmlEntities(variantData.metafields?.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
-    overview: parseRichText(decodeHtmlEntities(variantData.metafields?.overview)) || "Premium quality bag designed for modern lifestyle.",
+    capacity: parseRichText(decodeHtmlEntities(variantData.metafields?.capacity)) || "",
+    dimensions: parseRichText(decodeHtmlEntities(variantData.metafields?.dimensions)) || "",
+    weight: parseRichText(decodeHtmlEntities(variantData.metafields?.weight)) || "",
+    fabric: parseRichText(decodeHtmlEntities(variantData.metafields?.fabric)) || "",
+    features: parseRichText(decodeHtmlEntities(variantData.metafields?.features)) || "",
+    techSpecs: parseRichText(decodeHtmlEntities(variantData.metafields?.techSpecs)) || "",
+    overview: parseRichText(decodeHtmlEntities(variantData.metafields?.overview)) || "",
     isCurrentProduct: true
   };
   
@@ -2233,7 +2224,7 @@ function updateModalWithVariant(variantId) {
       
       // Golden labels (under spec values)
       capacityLabel: parseRichText(decodeHtmlEntities(variantData.metafields.capacityLabel)) || "Capacity",
-      dimensionsLabel: parseRichText(decodeHtmlEntities(variantData.metafields.dimensionsLabel)) || "Dimensions",
+      dimensionsLabel: parseRichText(decodeHtmlEntities(variantData.metafields.capacityLabel)) || "Dimensions",
       weightLabel: parseRichText(decodeHtmlEntities(variantData.metafields.weightLabel)) || "Weight",
       priceLabel: parseRichText(decodeHtmlEntities(variantData.metafields.priceLabel)) || "Price"
     };
@@ -2412,13 +2403,13 @@ window.updateCompareModalWithVariant = function(variantId) {
       title: parseRichText(decodeHtmlEntities(variantData.metafields?.productTitle)) || variantData.title,
       image: parseRichText(decodeHtmlEntities(variantData.metafields?.variantImage)) || variantData.image,
       price: parseRichText(decodeHtmlEntities(variantData.metafields?.customPrice)) || variantData.price,
-      capacity: parseRichText(decodeHtmlEntities(variantData.metafields?.capacity)) || variantData.option1,
-      dimensions: parseRichText(decodeHtmlEntities(variantData.metafields?.dimensions)) || "19\" x 18\" x 4\"",
-      weight: parseRichText(decodeHtmlEntities(variantData.metafields?.weight)) || "2.5lbs",
-      fabric: parseRichText(decodeHtmlEntities(variantData.metafields?.fabric)) || variantData.option2,
-      features: parseRichText(decodeHtmlEntities(variantData.metafields?.features)) || "Water bottle pocket, Luggage pass through, Laptop compartment, Carry handle, Water proof, Zippers, Tech caddy",
-      techSpecs: parseRichText(decodeHtmlEntities(variantData.metafields?.techSpecs)) || "Silicon Face Coating: This coating provides extreme weather, strain abrasion resistance without changing the look and hand feel of the fabric. Coal PU Backside: This coating makes the fabric waterproof and also weldable which allows the seams of the bag to be bonded for additional weather resistance.",
-      overview: parseRichText(decodeHtmlEntities(variantData.metafields?.overview)) || "Premium quality bag designed for modern lifestyle.",
+      capacity: parseRichText(decodeHtmlEntities(variantData.metafields?.capacity)) || "",
+      dimensions: parseRichText(decodeHtmlEntities(variantData.metafields?.dimensions)) || "",
+      weight: parseRichText(decodeHtmlEntities(variantData.metafields?.weight)) || "",
+      fabric: parseRichText(decodeHtmlEntities(variantData.metafields?.fabric)) || "",
+      features: parseRichText(decodeHtmlEntities(variantData.metafields?.features)) || "",
+      techSpecs: parseRichText(decodeHtmlEntities(variantData.metafields?.techSpecs)) || "",
+      overview: parseRichText(decodeHtmlEntities(variantData.metafields?.overview)) || "",
       isCurrentProduct: true
     };
     
