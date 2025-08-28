@@ -650,7 +650,8 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
                   {{ display_option.selected_value | default: display_option.values.first }}
                 </div>
               </div>
-              <div class="fabric-options" style="display: flex; gap: 19px; flex-wrap: wrap;">
+                          <div class="fabric-and-reviews-container" style="display: flex; align-items: flex-start; gap: 20px;">
+              <div class="fabric-options" style="display: flex; gap: 19px; flex-wrap: nowrap; align-items: center;">
                 {% for value in display_option.values %}
                   {% assign fabric_variant = null %}
                   {% if size_option and size_option.selected_value %}
@@ -686,7 +687,7 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
                   <div class="fabric-option{% if display_option.selected_value == value or forloop.first and display_option.selected_value == blank %} active{% endif %}"
                         data-value="{{ value | escape }}"
                         data-variant-id="{{ fabric_variant.id }}"
-                        style="width: 75px; height: 75px; border-radius: 8px; cursor: pointer; border: 3px solid lightgray; overflow: hidden; transition: all 0.3s ease; position: relative;">
+                        style="width: 75px; height: 75px; border-radius: 8px; cursor: pointer; border: 3px solid lightgray; overflow: hidden; transition: all 0.3s ease; position: relative; flex-shrink: 0;">
                     {% if fabric_variant.featured_image %}
                       <img src="{{ fabric_variant.featured_image | img_url: '100x100', crop: 'center' }}"
                             alt="{{ value }}"
@@ -699,6 +700,14 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
                   </div>
                 {% endfor %}
               </div>
+              
+              <!-- Reviews positioned to the right of product thumbnails -->
+              <div class="desktop-reviews-next-to-thumbnails" style="display: flex; align-items: center; gap: 8px; color: #2f6f6f; flex-shrink: 0;">
+                <div class="reviewadjust" style="font-size: 14px; color: #444; cursor: pointer;" onclick="scrollToReviews()">
+                  {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
+                </div>
+              </div>
+            </div>
             </div>
 
             <div class="mobile-reviews" style="display: flex; flex-direction: column; align-items: flex-end; min-width: 130px; display:none;">
@@ -715,11 +724,11 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
 
     
       {% if has_fabric_options or has_color_options %}
-        <div class="pricesizeadjust" style="font-size: 15px; font-weight: bold; color: #111; position:relative; top: 26px;" id="variantPrice">
+        <div class="pricesizeadjust" style="font-size: 15px; font-weight: bold; color: #111; position:relative; top: 26px; white-space: nowrap;" id="variantPrice">
           {{ current_variant.price | money }}
         </div>
       {% else %}
-        <div class="pricesizeadjust" style="font-size: 15px; font-weight: bold; color: #111; margin-left: 20px;" id="variantPrice">
+        <div class="pricesizeadjust" style="font-size: 15px; font-weight: bold; color: #111; margin-left: 20px; white-space: nowrap;" id="variantPrice">
           {{ current_variant.price | money }}
         </div>
       {% endif %}
@@ -727,13 +736,8 @@ margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !importan
       
       
 
-    <div class="lower-compare-reviews-section" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-bottom: 16px;">
+    <div class="lower-compare-reviews-section" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; margin-top: 10px;">
       {% render 'compare-bags-buttons' %}
-      <div class="review-fix" style="display: flex; align-items: center; gap: 8px; color: #2f6f6f;">
-        <div class="reviewadjust" style="font-size: 14px; color: #444; cursor: pointer;" onclick="scrollToReviews()">
-          {% render 'judgeme_widgets', widget_type: 'judgeme_preview_badge', concierge_install: true, product: product %}
-        </div>
-      </div>
     </div>
     
     
@@ -5796,9 +5800,19 @@ let globalTouchManager = {
     <style>
     @media (min-width: 901px) {
       .mobile-only-reviews { display: none !important; }
+      
+      /* Desktop reviews next to thumbnails */
+      .desktop-reviews-next-to-thumbnails {
+        display: flex !important;
+      }
     }
     @media (max-width: 900px) {
       .mobile-only-reviews { display: block !important; }
+      
+      /* Hide desktop reviews on mobile */
+      .desktop-reviews-next-to-thumbnails {
+        display: none !important;
+      }
       
       /* Hide the lower Compare Button and Reviews section on mobile */
       .lower-compare-reviews-section {
