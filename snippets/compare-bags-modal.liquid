@@ -27,7 +27,7 @@
 
 /* Desktop: per-section label top offsets for precise alignment */
 .compare-modal-specs > .compare-modal-category-label { top: 2px; }
-.compare-modal-fabric > .compare-modal-category-label { top: 1px; }
+.compare-modal-fabric > .compare-modal-category-label { top: -51px; }
 .compare-modal-tech-specs > .compare-modal-category-label { top: 28px; }
 .compare-modal-features > .compare-modal-category-label { top: 8px; }
 .compare-modal-overview > .compare-modal-category-label { top: 35px; }
@@ -660,6 +660,20 @@
     }
 }
 
+/* For 0px to 446px - fabric category label positioning */
+@media (max-width: 446px) {
+    .compare-modal-fabric > .compare-modal-category-label {
+        top: 6px !important;
+    }
+}
+
+/* For 447px to 700px - fabric category label positioning */
+@media (min-width: 447px) and (max-width: 700px) {
+    .compare-modal-fabric > .compare-modal-category-label {
+        top: -3px;
+    }
+}
+
 /* For 460px to 600px */
 @media (min-width: 460px) and (max-width: 500px) {
     .compare-modal-features ul {
@@ -790,8 +804,8 @@ padding-left: 15% !important;
 @media (min-width: 0px) and (max-width: 510px) {
     .compare-modal-available-in-price {
        margin-left: 0;
-    margin-top: 0;
-    margin-right: 50%;
+    margin-top: 10px;
+    margin-right: 44%;
     text-align: center;
     width: 100%;
     order: 2;
@@ -870,7 +884,7 @@ padding-left: 15% !important;
   /* Per-section top offsets: mobile */
   .compare-modal-specs > .compare-modal-category-label { top: 3px !important; }
   .compare-modal-tech-specs > .compare-modal-category-label { top: 29px !important; }
-  .compare-modal-fabric > .compare-modal-category-label { top: 3px !important; }
+  .compare-modal-fabric > .compare-modal-category-label { top: -3px; }
   .compare-modal-features > .compare-modal-category-label { top: 8px !important; }
   .compare-modal-overview > .compare-modal-category-label { top: 35px !important; }
   .compare-modal-available-in-wrapper > .compare-modal-category-label { top: 43px !important; left: 2px !important; }
