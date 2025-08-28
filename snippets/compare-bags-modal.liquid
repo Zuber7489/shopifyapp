@@ -486,7 +486,7 @@
   font-weight: 600;
   color: #333;
   margin-left: 16px;
-  margin-top: 34px;
+  margin-top: 45px;
 }
 
 .compare-modal-button {
@@ -696,6 +696,12 @@
   }
 }
 
+@media (min-width: 401px) and (max-width: 700px) {
+  .compare-modal-specs {
+    padding-left: 15% !important;
+  }
+}
+
 @media (min-width: 600px) and (max-width: 700px) {
     .compare-modal-fabric,
     .compare-modal-tech-specs,
@@ -714,7 +720,7 @@
     .compare-modal-fabric,
     .compare-modal-tech-specs,
     .compare-modal-overview {
-        padding-left: 15%;
+        padding-left: 15% !important;
         padding-right: 26px;
     }
 
@@ -744,9 +750,11 @@ padding: 3px 18px;
   font-size:11px;
   padding-left:21px;
   padding-right:21px;
+  min-height:22px;
   }
   .compare-modal-specs {
 padding-right: 4% !important;
+padding-left: 15% !important;
   }
 .compare-modal-img-wrap {
   width:100%;
