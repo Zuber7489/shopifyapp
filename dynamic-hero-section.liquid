@@ -376,9 +376,12 @@
   /* Hero Bottom Navigation - Positioned outside hero block */
   .hero-bottom-nav {
     justify-content: flex-start !important;
-    padding: 0 20px !important;
-    margin-top: 30px !important;
-    margin-left: 14px !important;
+    padding: 20px !important;
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+    background-color: #f8f8f8; /* Light gray background to match reviews section */
+    border-top: 1px solid #e5e5e5; /* Subtle border separator */
+    width: 100%;
   }
 
   .hero-nav-arrows button {
@@ -450,11 +453,12 @@
       margin: 0 10px;
     }
 
-    /* Mobile navigation adjustments */
-    .hero-bottom-nav {
-      justify-content: flex-start !important;
-      margin-left: 0 !important;
-    }
+      /* Mobile navigation adjustments */
+  .hero-bottom-nav {
+    justify-content: flex-start !important;
+    margin-left: 0 !important;
+    padding: 15px 20px !important; /* Slightly reduced padding for mobile */
+  }
 
     /* Hide arrows on mobile */
     .hero-nav-arrows {
